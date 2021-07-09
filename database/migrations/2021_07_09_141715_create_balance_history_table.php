@@ -15,6 +15,9 @@ class CreateBalanceHistoryTable extends Migration
     {
         Schema::create('balance_history', function (Blueprint $table) {
             $table->id();
+            $table->integer('id_order');
+            $table->double('amount');
+            $table->integer('id_user');
             $table->timestamps();
         });
     }
