@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class UserController extends Controller
 {
@@ -69,5 +71,76 @@ class UserController extends Controller
         } while (false);
 
         return response()->json($result);
+    }
+
+    public function signIn(Request $request)
+    {
+        $phone = $request->input('phone');
+        $password = $request->input('password');
+        $result['success'] = false;
+        do {
+            if (!$phone) {
+                $result['message'] = 'Не передан телефон';
+                break;
+            }
+            if (!$password) {
+                $result['message'] = 'Не передан пароль';
+                break;
+            }
+            $token = Str::random(60);
+            $token = sha1(time().$token);
+            $userID = DB::table('users')->select('id', 'password')->where('phone', $phone)->first();
+            if (is_null($userID)) {
+                $result['message'] = 'Не найден пользователь';
+                break;
+            }
+            if (!Hash::check($password, $userID->password)) {
+                $result['message'] = 'Пароль или логин не совпадает';
+                break;
+            }
+            DB::table('users')->where('id',$userID->id)->update([
+               'token' => $token,
+            ]);
+            $result['success'] = true;
+            $result['token'] = $token;
+        } while (false);
+
+        return response()->json($result);
+    }
+
+    public function profile(Request $request){
+        $token = $request->input('token');
+        $result['success'] = false;
+        do{
+            if (!$token){
+                $result['message'] = 'Не передан токен';
+                break;
+            }
+            $user = $this->checkUser($token);
+            if (!$this->checkUser($token)){
+                $result['message'] = 'Не найден пользователь';
+                break;
+            }
+            $result['success'] = true;
+            $result['id'] = $user->id;
+            $result['name'] = $user->name;
+            $result['surname'] = $user->surname;
+            $result['phone'] = $user->phone;
+            $result['type'] = $user->type;
+            ksort($result);
+        }while(false);
+        return response()->json($result);
+    }
+
+    public function checkUser($token){
+        $user = DB::table('users')
+            ->where('token',$token)
+            ->select('id','name','surname','phone','type')
+            ->first();
+        if (!$user){
+            return false;
+        }else{
+            return $user;
+        }
     }
 }
