@@ -143,4 +143,7 @@ class UserController extends Controller
             return $user;
         }
     }
+    public function test(){
+        echo "something";
+    }
 }
