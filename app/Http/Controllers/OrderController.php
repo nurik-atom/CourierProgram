@@ -45,12 +45,12 @@ class OrderController extends Controller
             }
 
             $new_order = DB::table("orders")->insertGetId([
-                'id_allfood'=>$id_allfood,
-                'phone'=>$phone,
-                'name'=>$name,
-                'blob'=>$blob,
-                'status'=>$status,
-                'id_courier'=>$id_courier,
+                'id_allfood' => $id_allfood,
+                'phone' => $phone,
+                'name' => $name,
+                'blob' => $blob,
+                'status' => $status,
+                'id_courier' => $id_courier,
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ]);
@@ -58,8 +58,8 @@ class OrderController extends Controller
             $result['success'] = true;
 
 
-
         } while (false);
         return response()->json($result);
     }
+
 }

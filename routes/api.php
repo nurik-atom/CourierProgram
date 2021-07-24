@@ -24,3 +24,4 @@ Route::post('/register', [UserController::class, 'register']);
 Route::post('/signIn', [UserController::class, 'signIn']);
 Route::post('/profile', [UserController::class, 'profile']);
 Route::post('/newOrder', [OrderController::class, 'newOrder']);
+Route::get('/testCourier',[OrderController::class,'testCourier']);
