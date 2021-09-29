@@ -29,4 +29,4 @@ Route::get('/testCourier',[OrderController::class,'testCourier']);
 Route::post('/sendSMS',[UserController::class,'authTel']);
 //checkSMS
 Route::post('/checkSMS',[UserController::class,'inputSmsCode']);
-Route::get('/test',[UserController::class,'test']);
+
