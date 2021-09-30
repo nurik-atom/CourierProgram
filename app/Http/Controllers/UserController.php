@@ -58,7 +58,7 @@ class UserController extends Controller
             curl_close($ch);
 
             if (!$response) {
-                $data['message'] = 'Попробуйте позже';
+                $data['message'] = 'Ошибка отправки смс';
                 break;
             }
 
