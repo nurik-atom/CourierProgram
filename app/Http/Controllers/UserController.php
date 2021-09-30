@@ -10,11 +10,18 @@ use Illuminate\Support\Str;
 
 class UserController extends Controller
 {
-    public function authTel(Request $request)
+    public function signStepOne(Request $request)
     {
         $phone = $request->input('phone');
         $data['success'] = false;
         do {
+
+            //Тестовые номера пароль по умолчанию 4321
+            if ($phone == '77089222820' || $phone == '77081139347'){
+                $data['success'] = true;
+                break;
+            }
+
             if (strlen($phone) != 11) {
                 $data['message'] = 'Номер телефона неправильно введен!';
                 break;
@@ -44,9 +51,9 @@ class UserController extends Controller
             }
             DB::commit();
             $mess = "Ваш пароль: $code \n С уважением, ALLFOOD Courier";
-            $sender = env('SMS_SENDER');
-            $login = env('SMS_LOGIN');
-            $psw = env('SMS_PASSWORD');
+            $sender = 'ALLFOOD';
+            $login = 'allfood';
+            $psw = 'ceb183606831afdd536973f8523e51d3';
 
             $url = "https://smsc.ru/sys/send.php?sender=$sender&login=$login&psw=$psw&phones=$phone&mes=$mess";
 
@@ -67,7 +74,7 @@ class UserController extends Controller
         return response()->json($data);
     }
 
-    public function inputSmsCode(Request $request)
+    public function signStepTwo(Request $request)
     {
         $phone = $request->input('phone');
         $sms = $request->input('code');
@@ -82,169 +89,48 @@ class UserController extends Controller
             $user_sms = DB::table('users_sms')->where('phone', $phone)->orderByDesc('id')->first();
 
             if (!empty($user_sms) && $user_sms->code != $sms) {
+
+                //Если тестовые аккаунты продолжаем
+                if (($phone == '77089222820' || $phone == '77081139347') && $sms == '4321')
+                continue;
+
                 $data['message'] = 'Код неверный';
                 break;
             }
 
             $user = DB::table('users')->where('phone', $phone)->orderByDesc('id')->first();
-            $password = "AllFood-" . rand(123456, 999999) . time();
+            $password = bcrypt("AllFood-" . rand(123456, 999999) . time());
 
             if (!$user) {
                 $users_sms_id = DB::table('users')->insertGetId([
                     'phone' => $phone,
                     'status' => 1,
-                    'password' => bcrypt($password),
+                    'password' => $password,
                     'created_at' => Carbon::now(),
                     'updated_at' => Carbon::now(),
                 ]);
                 $data['id'] = $users_sms_id;
                 $data['status'] = 1;
                 $data['success'] = true;
+                $data['password'] = $password;
                 break;
             }
+            $user_pass_update = DB::table("users")->where("phone",$phone)->update(['password' => $password]);
+
             $data['status'] = $user->status;
             $data['id'] = $user->id;
             $data['success'] = true;
+            $data['password'] = $password;
         } while (false);
 
         return response()->json($data);
     }
-
-    public function register(Request $request)
-    {
-        $name = $request->input('name');
-        $surname = $request->input('surname');
-        $phone = $request->input('phone');
-        $type = $request->input('type');
-        $id_cafe = $request->input('id_cafe');
-        $password = $request->input('password');
-        $result['success'] = false;
-
-        do {
-            if (!$name) {
-                $result['message'] = 'Не передан имя';
-                break;
-            }
-            if (!$surname) {
-                $result['message'] = 'Не передан фамилия';
-                break;
-            }
-            if (!$phone) {
-                $result['message'] = 'Не передан Телефон';
-                break;
-            }
-            if (!$type) {
-                $result['message'] = 'Не передан тип';
-                break;
-            }
-            if (!$password) {
-                $result['message'] = 'Не передан пароль';
-                break;
-            }
-
-            $user = DB::table('users')->select('id')->where('phone', $phone)->first();
-            if (!is_null($user)) {
-                $result['message'] = 'Этот пользователь уже зарегистрован';
-                break;
-            }
-            DB::beginTransaction();
-            $userID = DB::table('users')->insertGetId([
-                'name' => $name,
-                'surname' => $surname,
-                'phone' => $phone,
-                'status' => 1,
-                'type' => $type,
-                'id_cafe' => $id_cafe,
-                'password' => bcrypt($password),
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
-            ]);
-
-            if (!$userID) {
-                DB::rollBack();
-                $result['message'] = 'Попробуйте позже';
-                break;
-            }
-
-            DB::commit();
-            $result['success'] = true;
-        } while (false);
-
-        return response()->json($result);
-    }
-
-    public function signIn(Request $request)
-    {
+    public function profileUser(Request $request){
         $phone = $request->input('phone');
         $password = $request->input('password');
-        $result['success'] = false;
-        do {
-            if (!$phone) {
-                $result['message'] = 'Не передан телефон';
-                break;
-            }
-            if (!$password) {
-                $result['message'] = 'Не передан пароль';
-                break;
-            }
-            $token = Str::random(60);
-            $token = sha1(time() . $token);
-            $userID = DB::table('users')->select('id', 'password')->where('phone', $phone)->first();
-            if (is_null($userID)) {
-                $result['message'] = 'Не найден пользователь';
-                break;
-            }
-            if (!Hash::check($password, $userID->password)) {
-                $result['message'] = 'Пароль или логин не совпадает';
-                break;
-            }
-            DB::table('users')->where('id', $userID->id)->update([
-                'token' => $token,
-            ]);
-            $result['success'] = true;
-            $result['token'] = $token;
-        } while (false);
 
-        return response()->json($result);
     }
 
-    public function profile(Request $request)
-    {
-        $token = $request->input('token');
-        $result['success'] = false;
-        do {
-            if (!$token) {
-                $result['message'] = 'Не передан токен';
-                break;
-            }
-            $user = $this->checkUser($token);
-            if (!$this->checkUser($token)) {
-                $result['message'] = 'Не найден пользователь';
-                break;
-            }
-            $result['success'] = true;
-            $result['id'] = $user->id;
-            $result['name'] = $user->name;
-            $result['surname'] = $user->surname;
-            $result['phone'] = $user->phone;
-            $result['type'] = $user->type;
-            ksort($result);
-        } while (false);
-        return response()->json($result);
-    }
-
-    public function checkUser($token)
-    {
-        $user = DB::table('users')
-            ->where('token', $token)
-            ->select('id', 'name', 'surname', 'phone', 'type')
-            ->first();
-        if (!$user) {
-            return false;
-        } else {
-            return $user;
-        }
-    }
 
     public function test()
     {

@@ -26,7 +26,8 @@ Route::post('/profile', [UserController::class, 'profile']);
 Route::post('/newOrder', [OrderController::class, 'newOrder']);
 Route::get('/testCourier',[OrderController::class,'testCourier']);
 //sendSms
-Route::post('/sendSMS',[UserController::class,'authTel']);
-//checkSMS
+Route::post('/signStepOne',[UserController::class,'signStepOne']);
+//checkSms
+Route::post('/signStepTwo',[UserController::class,'signStepTwo']);
 Route::post('/checkSMS',[UserController::class,'inputSmsCode']);
 
