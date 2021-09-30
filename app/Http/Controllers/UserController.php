@@ -48,10 +48,8 @@ class UserController extends Controller
             $login = env('SMS_LOGIN');
             $psw = env('SMS_PASSWORD');
 
-            echo $sender." ".$login." ".$psw;
-
             $url = "https://smsc.ru/sys/send.php?sender=$sender&login=$login&psw=$psw&phones=$phone&mes=$mess";
-            echo $url;
+
             $ch = curl_init($url);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
