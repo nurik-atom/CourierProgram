@@ -37,28 +37,16 @@ class UserController extends Controller
 
             $code = rand(1234, 9998);
 
-            DB::beginTransaction();
-
-            $users_sms_id = DB::table('users_sms')->insertGetId([
-                'phone' => $phone,
-                'code' => $code,
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
-            ]);
-            if (!$users_sms_id) {
-                DB::rollBack();
-                $data['message'] = 'Попробуйте позже';
-                break;
-            }
-            DB::commit();
-            $mess = "Ваш пароль: $code \n С уважением, ALLFOOD Courier\n".$signatureCode;
-            $sender = 'ALLFOOD';
-            $login = 'allfood';
-            $psw = 'ceb183606831afdd536973f8523e51d3';
-
-            $url = "https://smsc.ru/sys/send.php?sender=$sender&login=$login&psw=$psw&phones=$phone&mes=$mess";
-
-            $ch = curl_init($url);
+            $mess = "Ваш пароль: $code \n С уважением, ALLFOOD Courier\n".$signatureCode." ";
+            $array = array(
+                'login'    => 'allfood',
+                'psw' => 'ceb183606831afdd536973f8523e51d3',
+                'phones' => $phone,
+                'mes' => $mess
+            );
+            $ch = curl_init('https://smsc.ru/sys/send.php');
+            curl_setopt($ch, CURLOPT_POST, 1);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $array);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
             curl_setopt($ch, CURLOPT_HEADER, false);
@@ -68,6 +56,21 @@ class UserController extends Controller
             if (!$response) {
                 $data['message'] = 'Ошибка отправки смс';
                 break;
+            }else{
+                DB::beginTransaction();
+
+                $users_sms_id = DB::table('users_sms')->insertGetId([
+                    'phone' => $phone,
+                    'code' => $code,
+                    'created_at' => Carbon::now(),
+                    'updated_at' => Carbon::now(),
+                ]);
+                if (!$users_sms_id) {
+                    DB::rollBack();
+                    $data['message'] = 'Попробуйте позже';
+                    break;
+                }
+                DB::commit();
             }
 
             $data['success'] = true;
