@@ -13,11 +13,12 @@ class UserController extends Controller
     public function signStepOne(Request $request)
     {
         $phone = $request->input('phone');
+        $signatureCode = $request->input('signatureCode');
         $data['success'] = false;
         do {
 
             //Тестовые номера пароль по умолчанию 4321
-            if ($phone == '77089222820' || $phone == '77081139347'){
+            if ($phone == '77089222820') {
                 $data['success'] = true;
                 break;
             }
@@ -50,7 +51,7 @@ class UserController extends Controller
                 break;
             }
             DB::commit();
-            $mess = "Ваш пароль: $code \n С уважением, ALLFOOD Courier";
+            $mess = "Ваш пароль: $code \n С уважением, ALLFOOD Courier\n".$signatureCode;
             $sender = 'ALLFOOD';
             $login = 'allfood';
             $psw = 'ceb183606831afdd536973f8523e51d3';
@@ -88,14 +89,14 @@ class UserController extends Controller
 
             $user_sms = DB::table('users_sms')->where('phone', $phone)->orderByDesc('id')->first();
 
-            if (!empty($user_sms) && $user_sms->code != $sms) {
-
+            if (!$user_sms || ($user_sms->code != $sms)) {
                 //Если тестовые аккаунты продолжаем
-                if (($phone == '77089222820' || $phone == '77081139347') && $sms == '4321')
-                continue;
-
-                $data['message'] = 'Код неверный';
-                break;
+                if ($phone == '77089222820' && $sms == '4321')
+                    $data['success'] = true;
+                else {
+                    $data['message'] = 'Код неверный';
+                    break;
+                }
             }
 
             $user = DB::table('users')->where('phone', $phone)->orderByDesc('id')->first();
@@ -115,7 +116,7 @@ class UserController extends Controller
                 $data['password'] = $password;
                 break;
             }
-            $user_pass_update = DB::table("users")->where("phone",$phone)->update(['password' => $password]);
+            $user_pass_update = DB::table("users")->where("phone", $phone)->update(['password' => $password]);
 
             $data['status'] = $user->status;
             $data['id'] = $user->id;
@@ -125,7 +126,51 @@ class UserController extends Controller
 
         return response()->json($data);
     }
-    public function profileUser(Request $request){
+
+    public function editDataUser(Request $request)
+    {
+        $password = $request->input('password');
+        $name = $request->input('name');
+        $surname = $request->input('surname');
+        $id_city = $request->input('id_city');
+        $photo = $request->input('photo');
+        $type_transport = $request->input('type_transport');
+
+        $data['success'] = false;
+        do {
+            if (!$password) {
+                $data['message'] = 'Пользователь не найден';
+                break;
+            }
+            $user = DB::table('users')->where('password', $password)->orderByDesc('id')->first();
+
+            if (!$user) {
+                $data['message'] = 'Пользователь не найден';
+                break;
+            }
+
+            $user_data_update = DB::table("users")->where("password", $password)->update(['name' => $name, 'surname' => $surname, 'id_city' => $id_city, 'photo' => $photo, 'type_transport' => $type_transport]);
+            $data['success'] = true;
+
+        } while (false);
+        return response()->json($data);
+
+    }
+
+    public function editTokenUser(Request $request)
+    {
+        $password = $request->input('password');
+        $token = $request->input('token');
+        $data['success'] = false;
+        do {
+
+
+        } while (false);
+        return response()->json($data);
+    }
+
+    public function profileUser(Request $request)
+    {
         $phone = $request->input('phone');
         $password = $request->input('password');
 
