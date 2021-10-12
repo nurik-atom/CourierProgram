@@ -16,7 +16,6 @@ class AddNewToUsers extends Migration
         Schema::table('users', function (Blueprint $table) {
             $table->string("birthday")->after("id_city")->nullable();
             $table->string("photo")->after("birthday")->nullable();
-            $table->renameColumn("type", "type_transport");
         });
     }
 
@@ -30,7 +29,6 @@ class AddNewToUsers extends Migration
         Schema::table('users', function (Blueprint $table) {
             $table->dropColumn("birthday");
             $table->dropColumn("photo");
-            $table->renameColumn("type_transport", "type");
         });
     }
 }
