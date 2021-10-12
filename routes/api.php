@@ -29,5 +29,7 @@ Route::get('/testCourier',[OrderController::class,'testCourier']);
 Route::post('/signStepOne',[UserController::class,'signStepOne']);
 //checkSms
 Route::post('/signStepTwo',[UserController::class,'signStepTwo']);
+Route::post('/editDataUser',[UserController::class,'editDataUser']);
+
 Route::post('/checkSMS',[UserController::class,'inputSmsCode']);
 
