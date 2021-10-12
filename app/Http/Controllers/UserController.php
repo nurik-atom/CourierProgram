@@ -136,8 +136,8 @@ class UserController extends Controller
         $password = $request->input('password');
         $name = $request->input('name');
         $surname = $request->input('surname');
+        $birthday = $request->input('birthday');
         $id_city = $request->input('id_city');
-
         $type_transport = $request->input('type_transport');
 
         $data['success'] = false;
@@ -153,7 +153,7 @@ class UserController extends Controller
                 break;
             }
 
-            $user_data_update = DB::table("users")->where(["password" => $password, 'phone'=>$phone])->update(['name' => $name, 'surname' => $surname,'id_city'=>$id_city,  'type' => $type_transport]);
+            $user_data_update = DB::table("users")->where(["password" => $password, 'phone'=>$phone])->update(['name' => $name, 'surname' => $surname,'id_city'=>$id_city,'birthday'=>$birthday,  'type' => $type_transport]);
             $data['success'] = true;
 
         } while (false);
