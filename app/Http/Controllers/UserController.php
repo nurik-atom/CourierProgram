@@ -146,7 +146,7 @@ class UserController extends Controller
                 $data['message'] = 'Пользователь не найден';
                 break;
             }
-            $user = DB::table('users')->where(['password','=', $password],['phone', '=', $phone])->orderByDesc('id')->first();
+            $user = DB::table('users')->where([['password','=', $password],['phone', '=', $phone]])->orderByDesc('id')->first();
 
             if (!$user) {
                 $data['message'] = 'Пользователь не найден';
