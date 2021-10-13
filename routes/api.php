@@ -30,6 +30,9 @@ Route::post('/signStepOne',[UserController::class,'signStepOne']);
 //checkSms
 Route::post('/signStepTwo',[UserController::class,'signStepTwo']);
 Route::post('/editDataUser',[UserController::class,'editDataUser']);
+Route::post('/getStatusUser',[UserController::class,'getStatusUser']);
+
+
 
 Route::post('/checkSMS',[UserController::class,'inputSmsCode']);
 

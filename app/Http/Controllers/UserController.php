@@ -162,6 +162,19 @@ class UserController extends Controller
 
     }
 
+    function getStatusUser(Request $request){
+        $phone = $request->input('phone');
+        $user = DB::table('users')->where('phone',$phone)->orderByDesc('id')->first();
+        if($user){
+            $data['success'] = true;
+            $data['status'] = $user->status;
+        }else{
+            $data['success'] = false;
+            $data['message'] = 'Номер телефона не найден';
+        }
+        return response()->json($data);
+    }
+
     public function editTokenUser(Request $request)
     {
         $password = $request->input('password');
