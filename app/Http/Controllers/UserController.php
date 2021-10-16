@@ -142,6 +142,15 @@ class UserController extends Controller
 
         $data['success'] = false;
         do {
+
+            if ($request->hasFile('photo')){
+                $image = $request->photo->store('images');
+            }else{
+                $data['message'] = 'Ошибка загрузки Фото';
+                break;
+            }
+
+
             if (!$password) {
                 $data['message'] = 'Пользователь не найден';
                 break;
@@ -153,7 +162,9 @@ class UserController extends Controller
                 break;
             }
 
-            $user_data_update = DB::table("users")->where([["password" ,'=', $password], ['phone','=',$phone]])->update(['name' => $name, 'surname' => $surname,'id_city'=>$id_city,'birthday'=>$birthday,  'type' => $type_transport, 'status'=>'2']);
+            $user_data_update = DB::table("users")
+                ->where([["password" ,'=', $password], ['phone','=',$phone]])
+                ->update(['name' => $name, 'surname' => $surname,'id_city'=>$id_city,'birthday'=>$birthday,  'type' => $type_transport, 'status'=>'2', 'photo'=>$image]);
 
             if ($user_data_update)  $data['success'] = true;
 
