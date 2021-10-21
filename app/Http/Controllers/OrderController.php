@@ -24,12 +24,13 @@ class OrderController extends Controller
         $summ_order = $request->input('summ_order');
         $price_delivery = $request->input('price_delivery');
         $type = $request->input('type');
+        $distance = SearchController::getDistance($from_geo,$to_geo);
         $status = 1;
         $id_courier = 0;
-
         $result['success'] = false;
 
         do {
+            $result['distance'] = $distance;
 
             $order = DB::table("orders")->select("id")->where('id_allfood', $id_allfood)->first();
             if ($order) {
@@ -42,7 +43,7 @@ class OrderController extends Controller
                 break;
             }
 
-            $new_order = DB::table("orders")->insertGetId([
+            $new_order_id = DB::table("orders")->insertGetId([
                 'id_allfood' => $id_allfood,
                 'id_city' => $id_city,
                 'id_courier' => $id_courier,
@@ -59,12 +60,47 @@ class OrderController extends Controller
                 'summ_order' => $summ_order,
                 'price_delivery' => $price_delivery,
                 'type' => $type,
+                'distance'=>$distance,
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ]);
 
             $result['success'] = true;
+            $result['id'] = $new_order_id;
 
+
+
+        } while (false);
+        return response()->json($result);
+    }
+
+    public function cancelOrder(Request $request)
+    {
+        $pass = $request['pass'];
+        $id_order = $request['id_order'];
+        $result['success'] = false;
+        do {
+            if ($pass != 'ALLFOOD123'){
+                $result['message'] = 'Пароль неверный';
+                break;
+            }
+            $status = DB::table("orders")->where("id",$id_order)->pluck("status")->first();
+
+            if($status == 9){
+                $result['message'] = 'Заказ уже отменен';
+                break;
+            }
+
+            if(!$status){
+                $result['message'] = 'Заказ не найден';
+                break;
+            }
+
+            $cancelSql = DB::table("orders")->where('id',$id_order)->update(['status' =>9]);
+            if (!$cancelSql){
+                $result['message'] = 'Произошло ошибка';
+            }else
+                $result['success'] = true;
 
         } while (false);
         return response()->json($result);

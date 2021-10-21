@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+
 //use Illuminate\Support\Facades\Hash;
 //use Illuminate\Support\Str;
 
@@ -37,9 +38,9 @@ class UserController extends Controller
 
             $code = rand(1234, 9998);
 
-            $mess = "Ваш пароль: $code \n С уважением, ALLFOOD Courier\n".$signatureCode." ";
+            $mess = "Ваш пароль: $code \n С уважением, ALLFOOD Courier\n" . $signatureCode . " ";
             $array = array(
-                'login'    => 'allfood',
+                'login' => 'allfood',
                 'psw' => 'ceb183606831afdd536973f8523e51d3',
                 'phones' => $phone,
                 'mes' => $mess
@@ -56,7 +57,7 @@ class UserController extends Controller
             if (!$response) {
                 $data['message'] = 'Ошибка отправки смс';
                 break;
-            }else{
+            } else {
                 DB::beginTransaction();
 
                 $users_sms_id = DB::table('users_sms')->insertGetId([
@@ -147,27 +148,27 @@ class UserController extends Controller
                 $data['message'] = 'Пользователь не найден';
                 break;
             }
-            $user = DB::table('users')->where([['password','=', $password],['phone', '=', $phone]])->orderByDesc('id')->first();
+            $user = DB::table('users')->where([['password', '=', $password], ['phone', '=', $phone]])->orderByDesc('id')->first();
 
             if (!$user) {
                 $data['message'] = 'Пользователь не найден';
                 break;
             }
 
-            if ($request->hasFile('photo')){
+            if ($request->hasFile('photo')) {
                 $image = $request->photo->store('images');
-            }else{
+            } else {
                 $data['message'] = 'Ошибка загрузки Фото';
                 break;
             }
 
             $user_data_update = DB::table("users")
-                ->where([["password" ,'=', $password], ['phone','=',$phone]])
-                ->update(['name' => $name, 'surname' => $surname,'id_city'=>$id_city,'birthday'=>$birthday,  'type' => $type_transport, 'status'=>'2', 'photo'=>$image]);
+                ->where([["password", '=', $password], ['phone', '=', $phone]])
+                ->update(['name' => $name, 'surname' => $surname, 'id_city' => $id_city, 'birthday' => $birthday, 'type' => $type_transport, 'status' => '2', 'photo' => $image]);
 
-            if ($user_data_update)  {
+            if ($user_data_update) {
                 $data['success'] = true;
-                $data['image'] = 'https://courier.allfood.kz/storage/app/'.$image;
+                $data['image'] = 'https://courier.qala.kz/storage/app/' . $image;
             }
 
         } while (false);
@@ -175,20 +176,74 @@ class UserController extends Controller
 
     }
 
-
-
-    function getStatusUser(Request $request){
+    function getStatusUser(Request $request)
+    {
         $phone = $request->input('phone');
-        $user = DB::table('users')->where('phone',$phone)->orderByDesc('id')->first();
-        if($user){
+        $user = DB::table('users')->where('phone', $phone)->orderByDesc('id')->first();
+        if ($user) {
             $data['success'] = true;
             $data['status'] = $user->status;
-        }else{
+        } else {
             $data['success'] = false;
             $data['message'] = 'Номер телефона не найден';
         }
         return response()->json($data);
     }
+
+    function deleteUser(Request $request)
+    {
+        $phone = $request->input('phone');
+        $user = DB::table('users')->where('phone', $phone)->delete();
+        if ($user) {
+            $data['success'] = true;
+        } else {
+            $data['success'] = false;
+            $data['message'] = 'Номер телефона не найден';
+        }
+        return response()->json($data);
+    }
+
+    function setStatusUser(Request $request)
+    {
+        $phone = $request->input('phone');
+        $new_status = $request->input("new_status");
+        $user = DB::table('users')->where('phone', $phone)->update(["status"=>$new_status]);
+        if ($user) {
+            $data['success'] = true;
+        } else {
+            $data['success'] = false;
+            $data['message'] = 'Уже изменен или номер не найден';
+        }
+        return response()->json($data);
+    }
+
+
+
+    public function setUserGeoPosition(Request $request)
+    {
+        $password = $request->input("password");
+        $lan = $request->input("lan");
+        $lon = $request->input("lon");
+        $type = $request->input("type");
+
+        $result['success'] = false;
+
+        do {
+            $user = DB::table("users")->where("password", $password)->pluck("id")->first();
+            if (!$user){
+                $result['message'] = 'Пользователь не найден';
+                break;
+            }
+            $add_geo = DB::table("users_geo")->insert(["id_user"=>$user, "lan"=>$lan, "lon"=>$lon, "type"=>$type, "created_at"=>Carbon::now(), "updated_at"=>Carbon::now()]);
+            if(!$add_geo){
+                $result['message'] = 'Ошибка при добавление';
+            }
+            $result['success'] = true;
+        } while (false);
+
+        return response()->json($result);
+    }
+
 
     public function editTokenUser(Request $request)
     {
