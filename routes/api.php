@@ -36,6 +36,10 @@ Route::post('/signStepOne',[UserController::class,'signStepOne']);
 Route::post('/signStepTwo',[UserController::class,'signStepTwo']);
 Route::post('/editDataUser',[UserController::class,'editDataUser']);
 Route::post('/getStatusUser',[UserController::class,'getStatusUser']);
+Route::post('/insertStateUser',[UserController::class,'insertStateUser']);
+Route::post('/getStateUser',[UserController::class,'getStateUser']);
+Route::post('/getDataUser',[UserController::class,'getDataUser']);
+//TEST ROUTES
 Route::post('/setStatusUser',[UserController::class,'setStatusUser']);
 Route::post('/deleteUser',[UserController::class,'deleteUser']);
 
@@ -43,4 +47,5 @@ Route::post('/checkSMS',[UserController::class,'inputSmsCode']);
 Route::post('/setUserGeoPosition',[UserController::class,'setUserGeoPosition']);
 
 Route::get("/searchStart",[SearchController::class, 'searchNewOrder']);
+Route::get("/insertTestGeoPositon",[SearchController::class, 'insertTestGeoPositon']);
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -12,6 +13,26 @@ class SearchController extends Controller
     const MAX_MOPED_DRIVER = 5000;
     const MAX_AUTO_DRIVER = 50000;
 
+
+    function insertTestGeoPositon(){
+//        $test_user = DB::table("users")->where("phone", "77089222820")->first();
+        $coordinates = array();
+        $coordinates[] = array("lat"=>'43.336915', 'lon'=>'52.859859', 'type'=>1, "id_user" =>1);
+        $coordinates[] = array("lat"=>'43.333543', 'lon'=>'52.850418', 'type'=>2, "id_user" =>2);
+        $coordinates[] = array("lat"=>'43.340535', 'lon'=>'52.857799', 'type'=>3, "id_user" =>3);
+        $coordinates[] = array("lat"=>'43.340161', 'lon'=>'52.843723', 'type'=>4, "id_user" =>4);
+        foreach ($coordinates as $c) {
+            $insert = DB::table("users_geo")
+                ->insert(["id_user"=>$c['id_user'],
+                          "lan"=>$c['lat'],
+                          "lon"=>$c['lon'],
+                          "type"=>$c['type'],
+                          "created_at"=>Carbon::now(),
+                          "updated_at"=>Carbon::now()
+                    ]);
+        }
+
+    }
 
     public function searchNewOrder()
     {
@@ -26,6 +47,67 @@ class SearchController extends Controller
 
     public function searchCourier($order)
     {
+
+    $drivers = array();
+
+        do {
+            //Поиск пеших курьеров
+            if($order->distance < self::MAX_FOOT_DRIVER){
+                $c = $this->searchCourierSql("1", "1000", $order);
+                if ($c){
+                    $drivers[] = $c;
+                    $this->offerToCourier($c->id_user, $order->id);
+                    break;
+                }
+            }
+
+            //Поиск велосипедных курьеров
+            if($order->distance < self::MAX_VELO_DRIVER) {
+                $c = $this->searchCourierSql("2", "2000", $order);
+                if ($c){
+                    $drivers[] = $c;
+                    $this->offerToCourier($c->id_user, $order->id);
+                    break;
+                }
+            }
+            //Поиск мопедных курьеров
+            if($order->distance < self::MAX_MOPED_DRIVER) {
+                $c = $this->searchCourierSql("3", "4000", $order);
+                if ($c){
+                    $drivers[] = $c;
+                    $this->offerToCourier($c->id_user, $order->id);
+                    break;
+                }
+            }
+            //Поиск авто курьеров
+            if($order->distance < self::MAX_AUTO_DRIVER) {
+                $c = $this->searchCourierSql("4", "10000", $order);
+                if ($c){
+                    $drivers[] = $c;
+                    $this->offerToCourier($c->id_user, $order->id);
+                    break;
+                }
+            }
+
+        } while (false);
+
+        return $drivers;
+    }
+
+    function offerToCourier($id_user, $id_order){
+        //Заказ нужен для отправки пуш с данными
+        $order = DB::table("orders")->find($id_order);
+
+        $add_offer = DB::table("order_user")->insert(["id_user"=>$id_user, "id_order"=>$id_order, "status"=>1, "created_at"=>Carbon::now(), "updated_at"=>Carbon::now()]);
+        $update_state = DB::table("users")->where("id",$id_user)->update(["state"=>3]);
+        if ($add_offer)
+            return true;
+        else
+            return false;
+
+    }
+
+    function searchCourierSql($type, $distance, $order){
         $from_lat = explode("\n", $order->from_geo)[0];
         $from_lon = explode("\n", $order->from_geo)[1];
 
@@ -41,16 +123,16 @@ class SearchController extends Controller
                 )
                 AS distance";
 
+        return DB::table("users_geo")
+            ->selectRaw(" id_user, users_geo.type, users.state, ".$geo_sql)
+            ->join("users", "users_geo.id_user", "=","users.id")
+            ->where("users_geo.type",$type)
+            ->where("users_geo.updated_at",">", date("Y-m-d H:i:s",time()-3600))
+            ->where("users.state" ,2)
+            ->having("distance", "<",$distance)
+            ->orderByDesc("users.rating")
+            ->first();
 
-        do {
-            //Поиск пеших курьеров
-            if($order->distance < self::MAX_FOOT_DRIVER){
-                $drivers = DB::select("SELECT id_user, type, ".$geo_sql." FROM users_geo WHERE type=2 AND created_at>'".date("Y-m-d H:i:s",time()-120)."' HAVING distance < 5000 ");
-            }
-
-        } while (false);
-
-        return $drivers;
     }
 
     public static function getDistance($from, $to, $earthRadius = 6371000)

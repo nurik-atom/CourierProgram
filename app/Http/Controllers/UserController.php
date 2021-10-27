@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use http\Cookie;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -207,7 +208,7 @@ class UserController extends Controller
     {
         $phone = $request->input('phone');
         $new_status = $request->input("new_status");
-        $user = DB::table('users')->where('phone', $phone)->update(["status"=>$new_status]);
+        $user = DB::table('users')->where('phone', $phone)->update(["status" => $new_status]);
         if ($user) {
             $data['success'] = true;
         } else {
@@ -218,7 +219,6 @@ class UserController extends Controller
     }
 
 
-
     public function setUserGeoPosition(Request $request)
     {
         $password = $request->input("password");
@@ -226,24 +226,97 @@ class UserController extends Controller
         $lon = $request->input("lon");
         $type = $request->input("type");
 
-        $result['success'] = false;
-
         do {
             $user = DB::table("users")->where("password", $password)->pluck("id")->first();
-            if (!$user){
+            if (!$user) {
                 $result['message'] = 'Пользователь не найден';
                 break;
             }
-            $add_geo = DB::table("users_geo")->insert(["id_user"=>$user, "lan"=>$lan, "lon"=>$lon, "type"=>$type, "created_at"=>Carbon::now(), "updated_at"=>Carbon::now()]);
-            if(!$add_geo){
-                $result['message'] = 'Ошибка при добавление';
+
+            $select_geo = DB::table("users_geo")
+                ->where("created_at", ">", date("Y-m-d H:i:s", time() - 600))
+                ->pluck("id")->get();
+
+            if ($select_geo) {
+                $update_geo = DB::table("users_geo")
+                    ->where("id", $select_geo)
+                    ->update(["id_user" => $user, "lan" => $lan, "lon" => $lon, "type" => $type, "updated_at" => Carbon::now()]);
+            } else {
+                $add_geo = DB::table("users_geo")
+                    ->insert(["id_user" => $user, "lan" => $lan, "lon" => $lon, "type" => $type,
+                        "created_at" => Carbon::now(), "updated_at" => Carbon::now()]);
             }
+
             $result['success'] = true;
         } while (false);
 
         return response()->json($result);
     }
 
+    public function insertStateUser(Request $request)
+    {
+        $password = $request->input("password");
+        $state = $request->input("state");
+        $result['success'] = false;
+
+        do {
+            $user = DB::table("users")->where("password", $password)->pluck("id")->first();
+            if (!$user) {
+                $result['message'] = 'Пользователь не найден';
+                break;
+            }
+
+            $add_state = DB::table("users_state")->insert(["id_user" => $user, "state" => $state,
+                "created_at" => Carbon::now(), "updated_at" => Carbon::now()]);
+            $update_state = DB::table("users")->where("id", $user)->update(["state" => $state]);
+            if (!$add_state)
+                $result['message'] = 'Ошибка при добавление';
+            else
+                $result['success'] = true;
+
+        } while (false);
+        return response()->json($result);
+    }
+
+    public function getStateUser(Request $request)
+    {
+        $password = $request->input("password");
+        $result['success'] = false;
+
+        do {
+            $user = DB::table("users")->where("password", $password)->pluck("id")->first();
+            if (!$user) {
+                $result['message'] = 'Пользователь не найден';
+                break;
+            }
+            $state = DB::table("users_state")->where("id_user", $user)->first();
+
+            if (!$state) {
+                $add_state = DB::table("users_state")->insert(["id_user" => $user, "state" => 1,
+                    "created_at" => Carbon::now(), "updated_at" => Carbon::now()]);
+                $result['state'] = 1;
+            } else
+                $result['state'] = $state->state;
+
+            $result['success'] = true;
+
+        } while (false);
+        return response()->json($result);
+    }
+
+    public function getDataUser(Request $request)
+    {
+        $password = $request->input("password");
+        if ($user = DB::table("users")->where("password", $password)->first()) {
+            $result['user'] = $user;
+            $result["success"] = true;
+        } else {
+            $result['success'] = false;
+            $result['message'] = 'Пользователь не найден';
+        }
+        return response()->json($result);
+
+    }
 
     public function editTokenUser(Request $request)
     {
