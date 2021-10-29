@@ -39,6 +39,7 @@ Route::post('/getStatusUser',[UserController::class,'getStatusUser']);
 Route::post('/insertStateUser',[UserController::class,'insertStateUser']);
 Route::post('/getStateUser',[UserController::class,'getStateUser']);
 Route::post('/getDataUser',[UserController::class,'getDataUser']);
+Route::post('/editTokenUser',[UserController::class,'editTokenUser']);
 //TEST ROUTES
 Route::post('/setStatusUser',[UserController::class,'setStatusUser']);
 Route::post('/deleteUser',[UserController::class,'deleteUser']);

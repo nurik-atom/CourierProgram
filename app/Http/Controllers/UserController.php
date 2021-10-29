@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use http\Cookie;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -323,10 +322,15 @@ class UserController extends Controller
         $password = $request->input('password');
         $token = $request->input('token');
         $data['success'] = false;
-        do {
 
+        if ($user = DB::table("users")->where("password", $password)->first()) {
+            $update = DB::table("users")->where("id",$user->id)->update(["token"=>$token]);
+            $result["success"] = true;
+        } else {
+            $result['success'] = false;
+            $result['message'] = 'Пользователь не найден';
+        }
 
-        } while (false);
         return response()->json($data);
     }
 
