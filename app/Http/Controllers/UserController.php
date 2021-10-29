@@ -321,17 +321,17 @@ class UserController extends Controller
     {
         $password = $request->input('password');
         $token = $request->input('token');
-        $data['success'] = false;
+        $result['success'] = false;
 
         if ($user = DB::table("users")->where("password", $password)->first()) {
-            $update = DB::table("users")->where("id",$user->id)->update(["token"=>$token]);
             $result["success"] = true;
+            $update = DB::table("users")->where("id",$user->id)->update(["token"=>$token]);
         } else {
             $result['success'] = false;
             $result['message'] = 'Пользователь не найден';
         }
 
-        return response()->json($data);
+        return response()->json($result);
     }
 
     public function profileUser(Request $request)
