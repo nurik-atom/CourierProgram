@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\UserResource;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -104,7 +106,7 @@ class UserController extends Controller
             }
 
             $user = DB::table('users')->where('phone', $phone)->orderByDesc('id')->first();
-            $password = bcrypt("AllFood-" . rand(123456, 999999) . time());
+            $password = sha1("AllFood-" . rand(123456, 999999) . time(), 50);
 
             if (!$user) {
                 $users_sms_id = DB::table('users')->insertGetId([
@@ -156,7 +158,7 @@ class UserController extends Controller
             }
 
             if ($request->hasFile('photo')) {
-                $image = $request->photo->store('images');
+                $image = $request->photo->store('images', "public");
             } else {
                 $data['message'] = 'Ошибка загрузки Фото';
                 break;
@@ -306,8 +308,8 @@ class UserController extends Controller
     public function getDataUser(Request $request)
     {
         $password = $request->input("password");
-        if ($user = DB::table("users")->where("password", $password)->first()) {
-            $result['user'] = $user;
+        if ($user = User::where("password", $password)->first()) {
+            $result = new UserResource($user);
             $result["success"] = true;
         } else {
             $result['success'] = false;
