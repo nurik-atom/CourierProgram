@@ -107,7 +107,7 @@ class UserController extends Controller
             }
 
             $user = DB::table('users')->where('phone', $phone)->orderByDesc('id')->first();
-            $password = sha1("AllFood-" . rand(123456, 999999) . time(), true);
+            $password = sha1("AllFood-" . rand(123456, 999999) . time());
 
             if (!$user) {
                 $users_sms_id = DB::table('users')->insertGetId([
@@ -115,7 +115,7 @@ class UserController extends Controller
                     'status' => 1,
                     'password' => $password,
                     'created_at' => Carbon::now(),
-                    'updated_at' => Carbon::now(),
+                    'updated_at' => Carbon::now()
                 ]);
                 $data['id'] = $users_sms_id;
                 $data['status'] = 1;
