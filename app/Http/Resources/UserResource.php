@@ -22,7 +22,7 @@ class UserResource extends JsonResource
             'name'=>$this->name,
             'surname'=>$this->surname,
             'birthday'=>$this->birthday,
-            'photo'=>$this->photo ? $this->photo : null,
+            'photo'=>$this->photo ? Storage::url($this->photo) : null,
             'phone'=>"+".$this->phone,
             'status'=>$this->status,
             'type'=>$this->type,

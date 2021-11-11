@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\OrderResource;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -51,7 +52,7 @@ class UserController extends Controller
             curl_setopt($ch, CURLOPT_POST, 1);
             curl_setopt($ch, CURLOPT_POSTFIELDS, $array);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+//            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
             curl_setopt($ch, CURLOPT_HEADER, false);
             $response = curl_exec($ch);
             curl_close($ch);
@@ -106,7 +107,7 @@ class UserController extends Controller
             }
 
             $user = DB::table('users')->where('phone', $phone)->orderByDesc('id')->first();
-            $password = sha1("AllFood-" . rand(123456, 999999) . time(), 50);
+            $password = sha1("AllFood-" . rand(123456, 999999) . time(), true);
 
             if (!$user) {
                 $users_sms_id = DB::table('users')->insertGetId([
@@ -279,26 +280,38 @@ class UserController extends Controller
         return response()->json($result);
     }
 
+    public static function insertStateUserFunc($id_user, $state){
+        $add_state = DB::table("users_state")->insert(["id_user" => $id_user, "state" => $state,
+            "created_at" => Carbon::now(), "updated_at" => Carbon::now()]);
+        $update_state = DB::table("users")->where("id", $id_user)->update(["state" => $state]);
+
+        if($add_state && $update_state)
+            return true;
+        else
+            return false;
+    }
+
     public function getStateUser(Request $request)
     {
         $password = $request->input("password");
         $result['success'] = false;
 
         do {
-            $user = DB::table("users")->where("password", $password)->pluck("id")->first();
+            $user = DB::table("users")->select(["id", "state"])->where("password", $password)->first();
             if (!$user) {
                 $result['message'] = 'Пользователь не найден';
                 break;
             }
-            $state = DB::table("users_state")->where("id_user", $user)->first();
+            $result['state'] = $user->state;
 
-            if (!$state) {
-                $add_state = DB::table("users_state")->insert(["id_user" => $user, "state" => 1,
-                    "created_at" => Carbon::now(), "updated_at" => Carbon::now()]);
-                $result['state'] = 1;
-            } else
-                $result['state'] = $state->state;
+            if ($user->state == 2 || $user->state == 3 || $user->state == 4){
+                $id_order = DB::table("order_user")->where("id_user", $user->id)->orderByDesc("id")->pluck("id_order")->first();
 
+                if ($id_order){
+                    $order = DB::table("orders")->where("id",$id_order)->get();
+                    $result['order'] = OrderResource::collection($order)[0];
+                }
+            }
             $result['success'] = true;
 
         } while (false);

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -34,17 +35,21 @@ class SearchController extends Controller
 
     }
 
+    //* Поиск новых заказов Нулевой стадия
     public function searchNewOrder()
     {
         $result = array();
         $newOrders = DB::table("orders")->select("id", "id_city", "distance","from_geo")->where("status", 1)->get();
         foreach ($newOrders as $newOrder) {
-            $result[] = $this->searchCourier($newOrder);
+            $result['courier'][] = $this->searchCourier($newOrder);
+            $result['order'][] = $newOrder;
         }
 
         return response()->json($result);
     }
 
+
+    //! Поиск курьеров к заказу 1 стадия
     public function searchCourier($order)
     {
 
@@ -96,12 +101,27 @@ class SearchController extends Controller
 
     function offerToCourier($id_user, $id_order){
         //Заказ нужен для отправки пуш с данными
-        $order = DB::table("orders")->find($id_order);
+//        $order = DB::table("orders")->find($id_order);
 
-        $add_offer = DB::table("order_user")->insert(["id_user"=>$id_user, "id_order"=>$id_order, "status"=>1, "created_at"=>Carbon::now(), "updated_at"=>Carbon::now()]);
-        $update_state = DB::table("users")->where("id",$id_user)->update(["state"=>3]);
-        if ($add_offer)
+
+
+        $add_offer = DB::table("order_user")
+            ->insert([
+                "id_user"=>$id_user,
+                "id_order"=>$id_order,
+                "status"=>2,
+                "created_at"=>Carbon::now(),
+                "updated_at"=>Carbon::now()]);
+
+        if ($add_offer){
+            UserController::insertStateUserFunc($id_user, 2);
+
+            DB::table("orders")->where("id", $id_order)
+                ->update(['status'=>2, "updated_at"=>Carbon::now()]);
+            PushController::newOrderPush($id_user, $id_order);
+
             return true;
+        }
         else
             return false;
 

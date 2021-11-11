@@ -3,6 +3,7 @@
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\SearchController;
+use App\Http\Controllers\RatingController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -25,6 +26,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 Route::post('/newOrder', [OrderController::class, 'newOrder']);
 Route::get('/testCourier',[OrderController::class,'testCourier']);
 Route::post('/cancelOrder',[OrderController::class,'cancelOrder']);
+Route::post('/takeOrder',[OrderController::class,'takeOrder']);
 
 
 Route::post('/register', [UserController::class, 'register']);
@@ -49,4 +51,7 @@ Route::post('/setUserGeoPosition',[UserController::class,'setUserGeoPosition']);
 
 Route::get("/searchStart",[SearchController::class, 'searchNewOrder']);
 Route::get("/insertTestGeoPositon",[SearchController::class, 'insertTestGeoPositon']);
+
+Route::post("/addComment",[RatingController::class, "addComment"]);
+Route::post("/getRatingUser",[RatingController::class, "getRatingUser"]);
 
