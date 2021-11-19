@@ -4,6 +4,9 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\RatingController;
+use App\Http\Controllers\PushController;
+use App\Http\Controllers\MoneyController;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -22,11 +25,14 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
+Route::get("test_curl", [PushController::class, "testCurl"]);
+Route::get("test_money", [MoneyController::class, "test_money"]);
 
 Route::post('/newOrder', [OrderController::class, 'newOrder']);
 Route::get('/testCourier',[OrderController::class,'testCourier']);
 Route::post('/cancelOrder',[OrderController::class,'cancelOrder']);
 Route::post('/takeOrder',[OrderController::class,'takeOrder']);
+Route::post('/startDeliveryOrder',[OrderController::class,'startDeliveryOrder']);
 
 
 Route::post('/register', [UserController::class, 'register']);
@@ -42,6 +48,7 @@ Route::post('/insertStateUser',[UserController::class,'insertStateUser']);
 Route::post('/getStateUser',[UserController::class,'getStateUser']);
 Route::post('/getDataUser',[UserController::class,'getDataUser']);
 Route::post('/editTokenUser',[UserController::class,'editTokenUser']);
+Route::post('/changePhone',[UserController::class,'changePhone']);
 //TEST ROUTES
 Route::post('/setStatusUser',[UserController::class,'setStatusUser']);
 Route::post('/deleteUser',[UserController::class,'deleteUser']);

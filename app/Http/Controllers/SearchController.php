@@ -39,7 +39,11 @@ class SearchController extends Controller
     public function searchNewOrder()
     {
         $result = array();
-        $newOrders = DB::table("orders")->select("id", "id_city", "distance","from_geo")->where("status", 1)->get();
+        $newOrders = DB::table("orders")
+            ->select("id", "id_city", "distance","from_geo")
+            ->where("status", 1)
+            ->whereRaw("TIMESTAMPDIFF(MINUTE, NOW(), arrive_time) < 10")
+            ->get();
         foreach ($newOrders as $newOrder) {
             $result['courier'][] = $this->searchCourier($newOrder);
             $result['order'][] = $newOrder;
@@ -100,30 +104,12 @@ class SearchController extends Controller
     }
 
     function offerToCourier($id_user, $id_order){
-        //Заказ нужен для отправки пуш с данными
-//        $order = DB::table("orders")->find($id_order);
 
+        OrderController::changeOrderCourierStatus($id_order, $id_user, 2);
 
+        PushController::newOrderPush($id_user, $id_order);
 
-        $add_offer = DB::table("order_user")
-            ->insert([
-                "id_user"=>$id_user,
-                "id_order"=>$id_order,
-                "status"=>2,
-                "created_at"=>Carbon::now(),
-                "updated_at"=>Carbon::now()]);
-
-        if ($add_offer){
-            UserController::insertStateUserFunc($id_user, 2);
-
-            DB::table("orders")->where("id", $id_order)
-                ->update(['status'=>2, "updated_at"=>Carbon::now()]);
-            PushController::newOrderPush($id_user, $id_order);
-
-            return true;
-        }
-        else
-            return false;
+        return true;
 
     }
 
@@ -155,8 +141,9 @@ class SearchController extends Controller
 
     }
 
-    public static function getDistance($from, $to, $earthRadius = 6371000)
+    public static function getDistance($from, $to)
     {
+        $earthRadius = 6371000;
         // convert from degrees to radians
         $latFrom = deg2rad(explode("\n", $from)[0]);
         $lonFrom = deg2rad(explode("\n", $from)[1]);
@@ -170,6 +157,6 @@ class SearchController extends Controller
         $b = sin($latFrom) * sin($latTo) + cos($latFrom) * cos($latTo) * cos($lonDelta);
 
         $angle = atan2(sqrt($a), $b);
-        return intval($angle * $earthRadius);
+        return (int)($angle * $earthRadius);
     }
 }

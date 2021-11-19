@@ -280,12 +280,13 @@ class UserController extends Controller
         return response()->json($result);
     }
 
-    public static function insertStateUserFunc($id_user, $state){
+    public static function insertStateUserFunc($id_user, $state)
+    {
         $add_state = DB::table("users_state")->insert(["id_user" => $id_user, "state" => $state,
             "created_at" => Carbon::now(), "updated_at" => Carbon::now()]);
         $update_state = DB::table("users")->where("id", $id_user)->update(["state" => $state]);
 
-        if($add_state && $update_state)
+        if ($add_state && $update_state)
             return true;
         else
             return false;
@@ -304,11 +305,11 @@ class UserController extends Controller
             }
             $result['state'] = $user->state;
 
-            if ($user->state == 2 || $user->state == 3 || $user->state == 4){
+            if ($user->state == 2 || $user->state == 3 || $user->state == 4) {
                 $id_order = DB::table("order_user")->where("id_user", $user->id)->orderByDesc("id")->pluck("id_order")->first();
 
-                if ($id_order){
-                    $order = DB::table("orders")->where("id",$id_order)->get();
+                if ($id_order) {
+                    $order = DB::table("orders")->where("id", $id_order)->get();
                     $result['order'] = OrderResource::collection($order)[0];
                 }
             }
@@ -340,7 +341,7 @@ class UserController extends Controller
 
         if ($user = DB::table("users")->where("password", $password)->first()) {
             $result["success"] = true;
-            $update = DB::table("users")->where("id",$user->id)->update(["token"=>$token]);
+            $update = DB::table("users")->where("id", $user->id)->update(["token" => $token]);
         } else {
             $result['success'] = false;
             $result['message'] = 'Пользователь не найден';
@@ -356,6 +357,86 @@ class UserController extends Controller
 
     }
 
+    public function changePhone(Request $request)
+    {
+        $password = $request->input("password");
+        $new_number = $request->input("new_number");
+        $data['success'] = false;
+        do {
+
+            if (strlen($new_number) != 11){
+                $data['message'] = "Номер не правильно";
+                break;
+            }
+
+            $user = DB::table("users")->where("password", $password)->first();
+            if (!$user) {
+                $data['message'] = "Пользователь не найден";
+                break;
+            }
+            $new_number_user = DB::table("users")->where("phone",$new_number)->first();
+            if($new_number_user){
+                $data['message'] = "Пользователь с таким номером уже существует.";
+                break;
+            }
+
+            $update = DB::table("users")->where("password",$password)->update(["phone"=>$new_number]);
+
+            if (!$update){
+                $data['message'] = "Ошибка при изменение";
+                break;
+            }
+
+            $user_sms = DB::table('users_sms')->where('phone', $new_number)->orderByDesc('id')->first();
+
+            if (isset($user_sms) && (time() < (strtotime($user_sms->created_at) + 3600))) {
+                $data['message'] = 'Вам уже отправлено смс';
+                break;
+            }
+
+            $code = rand(1234, 9998);
+
+            $mess = "Ваш пароль: $code \n С уважением, ALLFOOD Courier";
+            $array = array(
+                'login' => 'allfood',
+                'psw' => 'ceb183606831afdd536973f8523e51d3',
+                'phones' => $new_number,
+                'mes' => $mess
+            );
+            $ch = curl_init('https://smsc.ru/sys/send.php');
+            curl_setopt($ch, CURLOPT_POST, 1);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $array);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+//            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_HEADER, false);
+            $response = curl_exec($ch);
+            curl_close($ch);
+
+            if (!$response) {
+                $data['message'] = 'Ошибка отправки смс';
+                break;
+            } else {
+                DB::beginTransaction();
+
+                $users_sms_id = DB::table('users_sms')->insertGetId([
+                    'phone' => $new_number,
+                    'code' => $code,
+                    'created_at' => Carbon::now(),
+                    'updated_at' => Carbon::now(),
+                ]);
+                if (!$users_sms_id) {
+                    DB::rollBack();
+                    $data['message'] = 'Попробуйте позже';
+                    break;
+                }
+                DB::commit();
+            }
+
+            $data['success'] = true;
+
+        }while(false);
+        return response()->json($data);
+    }
 
     public function test()
     {

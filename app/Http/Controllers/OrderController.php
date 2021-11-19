@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\UserController;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use App\Http\Controllers\UserController;
+//use App\Http\Controllers\UserController;
 
 class OrderController extends Controller
 {
@@ -43,6 +44,7 @@ class OrderController extends Controller
         $price_delivery = $request->input('price_delivery');
         $type = $request->input('type');
         $distance = SearchController::getDistance($from_geo, $to_geo);
+        $arrive_minute = $request->input("arrive_minute");
         $status = 1;
         $id_courier = 0;
         $result['success'] = false;
@@ -81,6 +83,7 @@ class OrderController extends Controller
                 'distance' => $distance,
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
+                'arrive_time'=>Carbon::now()->addMinute($arrive_minute)
             ]);
 
             $result['success'] = true;
@@ -89,6 +92,29 @@ class OrderController extends Controller
 
         } while (false);
         return response()->json($result);
+    }
+
+    public static function changeOrderCourierStatus($id_order,$id_courier, $status){
+        //Update "ORDERS" table
+        DB::table("orders")->where("id", $id_order)
+            ->update(['status' => $status, 'id_courier' => $id_courier]);
+
+        if ($status == 5)
+            $user_state = 1;
+        else
+            $user_state = $status;
+        //Update User State
+        UserController::insertStateUserFunc($id_courier, $user_state);
+
+        //ADD to ORDER_USER table
+        $add_offer = DB::table("order_user")
+            ->insert([
+                "id_user" => $id_courier,
+                "id_order" => $id_order,
+                "status" => $status,
+                "created_at" => Carbon::now(),
+                "updated_at" => Carbon::now()]);
+
     }
 
     public function takeOrder(Request $request)
@@ -100,40 +126,39 @@ class OrderController extends Controller
 
         do {
             $user = DB::table("users")->where("password", $password)->first();
-            if (!$user){
+            if (!$user) {
                 $result['message'] = 'user not found';
                 break;
             }
 
             $order = DB::table("orders")->find($id_order);
 
-            if(!$order){
+            if (!$order) {
                 $result['message'] = "Order Not Found";
                 break;
             }
-            if($order->status != 1 && $order->status != 2){
+            if ($order->status != 1 && $order->status != 2) {
                 $result['message'] = 'Курьер уже назначен или заказ отменен';
                 break;
             }
 
-            //Update "ORDERS" table
-            DB::table("orders")->where("id",$id_order)
-                ->update(['status'=>3, 'id_courier'=>$user->id]);
-
-            //Update User State
-            UserController::insertStateUserFunc($user->id, 3);
-
-            //ADD to ORDER_USER table
-            $add_offer = DB::table("order_user")
-                ->insert([
-                    "id_user"=>$user->id,
-                    "id_order"=>$id_order,
-                    "status"=>3,
-                    "created_at"=>Carbon::now(),
-                    "updated_at"=>Carbon::now()]);
 
 
+
+            self::changeOrderCourierStatus($order->id, $user->id, 3);
+
+            //Update needed_time and distance_matrix
+            $matrix = PushController::getDistanceDurationGoogle($order->from_geo, $order->to_geo,$user->type);
+            DB::table("orders")->where("id", $id_order)
+                ->update([
+                    "needed_sec"=>$matrix['time_value'],
+                    "distance_matrix"=>$matrix['dist_value'],
+                    "mode"=>$user->type]);
+
+            $result['matrix'] = $matrix;
             //Curl to allfood kz
+            $result['allfood'] = PushController::takedOrderAllfood($order->id, $user->id, "5");
+
 
             $result['success'] = true;
 
@@ -142,14 +167,86 @@ class OrderController extends Controller
         return response()->json($result);
     }
 
-    public function deliveredOrder(Request $request){}
+    public function startDeliveryOrder(Request $request)
+    {
+        $password = $request->input("password");
+        $id_order = $request->input('id_order');
+        $lat = $request->input("lat");
+        $lon = $request->input("lon");
+
+        do {
+            $user = DB::table("users")->where("password", $password)->first();
+            if (!$user) {
+                $result['message'] = 'user not found';
+                break;
+            }
+
+            $order = DB::table("orders")->find($id_order);
+
+            if (!$order) {
+                $result['message'] = "Order Not Found";
+                break;
+            }
+
+            if ($order->status == 4){
+                $result['message'] = 'Заказ уже на доставке';
+                break;
+            }
+
+            $distance_to_cafe = SearchController::getDistance($order->from_geo, $lat."\n".$lon);
+
+            if ($distance_to_cafe > 100){
+                $result['message'] = 'Вы слишком далеко находитесь от кафе';
+                break;
+            }
+
+            self::changeOrderCourierStatus($order->id, $user->id, 4);
+            //Curl to allfood kz
+            $result['allfood'] = PushController::startDeliveryOrder($order->id, $user->id, $order->needed_sec);
+
+        } while (false);
+
+    }
+
+    public function deliveredOrder(Request $request)
+    {
+        $password = $request->input("password");
+        $id_order = $request->input('id_order');
+        do {
+            $user = DB::table("users")->where("password", $password)->first();
+            if (!$user) {
+                $result['message'] = 'user not found';
+                break;
+            }
+
+            $order = DB::table("orders")->find($id_order);
+
+            if (!$order) {
+                $result['message'] = "Order Not Found";
+                break;
+            }
+
+            if ($order->status == 5){
+                $result['message'] = 'Заказ уже доставлен';
+                break;
+            }
+
+            self::changeOrderCourierStatus($order->id, $user->id, 5);
+            //Curl to allfood kz
+            $result['allfood'] = PushController::endDeliveryOrder($order->id, $user->id);
+
+        } while (false);
+    }
 
     public function cancelOrder(Request $request)
     {
         $pass = $request['pass'];
         $id_order = $request['id_order'];
+        $cause = $request["prichina"];
         $result['success'] = false;
         do {
+            $user = DB::table("users")->where("password", $pass);
+
             if ($pass != 'ALLFOOD123') {
                 $result['message'] = 'Пароль неверный';
                 break;
@@ -166,7 +263,11 @@ class OrderController extends Controller
                 break;
             }
 
+            $this->addCauseToCancelled($id_order,$user->id, 1, $cause);
+
             $cancelSql = DB::table("orders")->where('id', $id_order)->update(['status' => 9]);
+            UserController::insertStateUserFunc($user->id, 1);
+
             if (!$cancelSql) {
                 $result['message'] = 'Произошло ошибка';
             } else
@@ -174,6 +275,29 @@ class OrderController extends Controller
 
         } while (false);
         return response()->json($result);
+    }
+
+    public function addCauseToCancelled($id_order, $id_who = null, $who, $cause){
+        // WHO
+//        1. Курьер
+//        2. Кафе
+//        3. Клиент
+//        4. Оператор
+//        5. Программа
+
+
+        $add = DB::table("orders_cancelled")->insert([
+            "id_order"=>$id_order,
+            "id_who"=>$id_who,
+            "who"=>$who,
+            "cause"=>$cause
+        ]);
+
+        if ($add)
+            return true;
+        else
+            return false;
+
     }
 
 }

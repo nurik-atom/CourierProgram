@@ -103,9 +103,9 @@ class RatingController extends Controller
 
         $mes['title'] = 'Nursik Push Barsa ait';
         $mes['body'] = "body";
-//        $resposce = PushController::sendDataPush($id_courier, '22', $mes);
+//        $resposce = PushController::sendDataPush($id_courier, '', $mes);
 
-//        $result['responce'] = $resposce;
+         $result['responce'] = $resposce;
         $update = DB::table("users")
             ->where("id", $id_courier)
             ->update(["rating"=>round($avg_star,1), "sort_rating"=>$sort_rating]);

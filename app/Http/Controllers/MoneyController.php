@@ -1,0 +1,77 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
+class MoneyController extends Controller
+{
+    public function test_money(){
+        $t = self::minusAmount(10,5,600,"Test Amount");
+        if ($t) return true;
+    }
+
+
+    public function costDelivery($distance, $type){
+        // Вернем ДВА значение стоимость для Кафе и для Курьера
+        // Должен быть минимальные ставки для курьеров разного типа,
+        // Если авто минимум 500, если мото 400, пешком 300
+        // Можем взять Данные чтобы уменьшить запрос а не ID. надо подумать
+
+
+    }
+
+    public static function addAmount($id_user, $id_order, $amount, $description){
+        $add = DB::table("balance_history")->insert([
+            "id_user"=>$id_user,
+            "id_order"=>$id_order,
+            "amount"=>$amount,
+            "description"=>$description,
+            "created_at"=>Carbon::now(),
+            "updated_at"=>Carbon::now()
+        ]);
+
+        if ($add){
+            self::calculateBalance($id_user);
+            return true;
+        }
+    }
+
+    public static function minusAmount($id_user, $id_order, $amount, $description){
+        $add = DB::table("balance_history")->insert([
+            "id_user"=>$id_user,
+            "id_order"=>$id_order,
+            "amount"=>-1*$amount,
+            "description"=>$description,
+            "created_at"=>Carbon::now(),
+            "updated_at"=>Carbon::now()
+        ]);
+
+        if ($add){
+            self::calculateBalance($id_user);
+            return true;
+        }
+    }
+
+    public static function calculateBalance($id_user){
+        $summ = DB::table("balance_history")->where("id_user", $id_user)->sum("amount");
+        $balance = DB::table("balance")->where("id_user", $id_user)->first();
+
+        if ($balance){
+            DB::table("balance")->where("id_user",$id_user)
+                ->update([
+                "amount"=>$summ,
+                "updated_at"=>Carbon::now()
+            ]);
+        }else{
+            DB::table("balance")->insert([
+                "id_user"=>$id_user,
+                "amount"=>$summ,
+                "created_at"=>Carbon::now(),
+                "updated_at"=>Carbon::now()
+            ]);
+        }
+    }
+}
