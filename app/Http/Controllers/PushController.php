@@ -165,7 +165,7 @@ class PushController extends Controller
 
         $url = "https://allfood.kz/need_courier/".$url;
         $post['key'] = md5("ALL".date("Ymd")."FOOD");
-
+ 
         $post_str = http_build_query($post);
 
         $ch = curl_init();
