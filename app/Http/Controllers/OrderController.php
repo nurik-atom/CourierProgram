@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\UserController;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+
 //use App\Http\Controllers\UserController;
 
 class OrderController extends Controller
@@ -15,8 +15,9 @@ class OrderController extends Controller
 //1. новый
 //2. назначается курьер
 //3. назначен курьер
-//4. на доставке
-//5 доставлен
+//4. Курьер в Кафе
+//5. на доставке
+//6 доставлен
 //8 отмена курьер
 //9 отмена
 
@@ -41,7 +42,7 @@ class OrderController extends Controller
         $to_geo = $request->input('to_geo');
         $to_address = $request->input('to_address');
         $summ_order = $request->input('summ_order');
-        $price_delivery = $request->input('price_delivery');
+        $price_delivery = 0;
         $type = $request->input('type');
         $distance = SearchController::getDistance($from_geo, $to_geo);
         $arrive_minute = $request->input("arrive_minute");
@@ -58,7 +59,7 @@ class OrderController extends Controller
                 break;
             }
 
-            if (!$id_allfood || !$id_city || !$phone || !$name || !$blob || !$id_cafe || !$cafe_name || !$from_geo || !$from_address || !$to_geo || !$to_address || !$summ_order || !$price_delivery || !$type) {
+            if (!$id_allfood || !$id_city || !$phone || !$name || !$blob || !$id_cafe || !$cafe_name || !$from_geo || !$from_address || !$to_geo || !$to_address || !$summ_order || !$type) {
                 $result['message'] = 'Данные не полные. Заказ не добавлен';
                 break;
             }
@@ -71,6 +72,7 @@ class OrderController extends Controller
                 'name' => $name,
                 'blob' => $blob,
                 'status' => $status,
+                'price_delivery' => $price_delivery,
                 'id_cafe' => $id_cafe,
                 'cafe_name' => $cafe_name,
                 'from_geo' => $from_geo,
@@ -78,12 +80,11 @@ class OrderController extends Controller
                 'to_geo' => $to_geo,
                 'to_address' => $to_address,
                 'summ_order' => $summ_order,
-                'price_delivery' => $price_delivery,
                 'type' => $type,
                 'distance' => $distance,
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
-                'arrive_time'=>Carbon::now()->addMinute($arrive_minute)
+                'arrive_time' => Carbon::now()->addMinute($arrive_minute)
             ]);
 
             $result['success'] = true;
@@ -94,7 +95,8 @@ class OrderController extends Controller
         return response()->json($result);
     }
 
-    public static function changeOrderCourierStatus($id_order,$id_courier, $status){
+    public static function changeOrderCourierStatus($id_order, $id_courier, $status)
+    {
         //Update "ORDERS" table
         DB::table("orders")->where("id", $id_order)
             ->update(['status' => $status, 'id_courier' => $id_courier]);
@@ -107,7 +109,7 @@ class OrderController extends Controller
         UserController::insertStateUserFunc($id_courier, $user_state);
 
         //ADD to ORDER_USER table
-        $add_offer = DB::table("order_user")
+        DB::table("order_user")
             ->insert([
                 "id_user" => $id_courier,
                 "id_order" => $id_order,
@@ -142,18 +144,19 @@ class OrderController extends Controller
                 break;
             }
 
-
-
-
             self::changeOrderCourierStatus($order->id, $user->id, 3);
 
+            $price_delivery = MoneyController::costDelivery($order->distance, $user->type);
+
             //Update needed_time and distance_matrix
-            $matrix = PushController::getDistanceDurationGoogle($order->from_geo, $order->to_geo,$user->type);
+            $matrix = PushController::getDistanceDurationGoogle($order->from_geo, $order->to_geo, $user->type);
             DB::table("orders")->where("id", $id_order)
                 ->update([
-                    "needed_sec"=>$matrix['time_value'],
-                    "distance_matrix"=>$matrix['dist_value'],
-                    "mode"=>$user->type]);
+                    "needed_sec" => $matrix['time_value'],
+                    "distance_matrix" => $matrix['dist_value'],
+                    "mode" => $user->type,
+                    "price_delivery" => $price_delivery
+                ]);
 
             $result['matrix'] = $matrix;
             //Curl to allfood kz
@@ -164,6 +167,46 @@ class OrderController extends Controller
 
         } while (false);
 
+        return response()->json($result);
+    }
+
+    public function courierInCafe(Request $request)
+    {
+        $password = $request->input("password");
+        $id_order = $request->input("id_order");
+        $lat = $request->input("lat");
+        $lon = $request->input("lon");
+        $result['success'] = false;
+        do {
+            $user = UserController::getUser($password);
+            if (!$user){
+                $result['message'] = 'Пользователь не найден';
+                break;
+            }
+            $order = DB::table("orders")->find($id_order);
+
+            if (!$order) {
+                $result['message'] = "Order Not Found";
+                break;
+            }
+
+            if ($order->status == 4) {
+                $result['message'] = 'Статус уже 4';
+                break;
+            }
+
+            $distance_to_cafe = SearchController::getDistance($order->from_geo, $lat . "\n" . $lon);
+
+            if ($distance_to_cafe > 100) {
+                $result['message'] = 'Вы слишком далеко находитесь от кафе';
+                break;
+            }
+
+            self::changeOrderCourierStatus($order->id, $user->id, 4);
+            //Curl to allfood kz
+            $result['allfood'] = PushController::courierInCafe($order->id, $user->id);
+
+        } while (false);
         return response()->json($result);
     }
 
@@ -188,24 +231,25 @@ class OrderController extends Controller
                 break;
             }
 
-            if ($order->status == 4){
+            if ($order->status == 5) {
                 $result['message'] = 'Заказ уже на доставке';
                 break;
             }
 
-            $distance_to_cafe = SearchController::getDistance($order->from_geo, $lat."\n".$lon);
+            $distance_to_cafe = SearchController::getDistance($order->from_geo, $lat . "\n" . $lon);
 
-            if ($distance_to_cafe > 100){
+            if ($distance_to_cafe > 100) {
                 $result['message'] = 'Вы слишком далеко находитесь от кафе';
                 break;
             }
 
-            self::changeOrderCourierStatus($order->id, $user->id, 4);
+            self::changeOrderCourierStatus($order->id, $user->id, 5);
             //Curl to allfood kz
             $result['allfood'] = PushController::startDeliveryOrder($order->id, $user->id, $order->needed_sec);
 
         } while (false);
 
+        return response()->json($result);
     }
 
     public function deliveredOrder(Request $request)
@@ -226,16 +270,31 @@ class OrderController extends Controller
                 break;
             }
 
-            if ($order->status == 5){
+            if ($order->status == 6) {
                 $result['message'] = 'Заказ уже доставлен';
                 break;
             }
 
-            self::changeOrderCourierStatus($order->id, $user->id, 5);
+            $start_time = DB::table("order_user")
+                ->where("id_user", $user->id)->where("id_order", $order->id)
+                ->where("status", 4)
+                ->pluck("created_at")->first();
+
+            $duration_sec = time() - strtotime($start_time);
+            //Insert Duration Second
+            DB::table("orders")->where('id', $order->id)
+                ->update(['duration_sec' => $duration_sec]);
+
+            self::changeOrderCourierStatus($order->id, $user->id, 6);
+
+            $description = "Заказ №" . $order->id;
+            MoneyController::addAmount($user->id, $order->id, $order->price_delivery, $description);
+
             //Curl to allfood kz
             $result['allfood'] = PushController::endDeliveryOrder($order->id, $user->id);
 
         } while (false);
+        return response()->json($result);
     }
 
     public function cancelOrder(Request $request)
@@ -245,12 +304,8 @@ class OrderController extends Controller
         $cause = $request["prichina"];
         $result['success'] = false;
         do {
-            $user = DB::table("users")->where("password", $pass);
+            $user = UserController::getUser($pass);
 
-            if ($pass != 'ALLFOOD123') {
-                $result['message'] = 'Пароль неверный';
-                break;
-            }
             $status = DB::table("orders")->where("id", $id_order)->pluck("status")->first();
 
             if ($status == 9) {
@@ -263,9 +318,11 @@ class OrderController extends Controller
                 break;
             }
 
-            $this->addCauseToCancelled($id_order,$user->id, 1, $cause);
+            $this->addCauseToCancelled($id_order, $user->id, 1, $cause);
 
-            $cancelSql = DB::table("orders")->where('id', $id_order)->update(['status' => 9]);
+            $cancelSql = DB::table("orders")->where('id', $id_order)
+                ->update(['status' => 9, "price_delivery" => "0"]);
+
             UserController::insertStateUserFunc($user->id, 1);
 
             if (!$cancelSql) {
@@ -277,7 +334,8 @@ class OrderController extends Controller
         return response()->json($result);
     }
 
-    public function addCauseToCancelled($id_order, $id_who = null, $who, $cause){
+    public function addCauseToCancelled($id_order, $id_who, $who, $cause)
+    {
         // WHO
 //        1. Курьер
 //        2. Кафе
@@ -287,10 +345,10 @@ class OrderController extends Controller
 
 
         $add = DB::table("orders_cancelled")->insert([
-            "id_order"=>$id_order,
-            "id_who"=>$id_who,
-            "who"=>$who,
-            "cause"=>$cause
+            "id_order" => $id_order,
+            "id_who" => $id_who,
+            "who" => $who,
+            "cause" => $cause
         ]);
 
         if ($add)
@@ -298,6 +356,23 @@ class OrderController extends Controller
         else
             return false;
 
+    }
+
+    public function prichinyOtmeny()
+    {
+        $result = array();
+        $result[] = 'Расстояние слишком большое';
+        $result[] = 'Магазин не в моей отправной точке';
+        $result[] = 'Я не хочу делать заказ';
+        $result[] = 'Я не хочу идти в этот магазин';
+        $result[] = 'У меня слишком много заказов';
+        $result[] = 'У меня проблемы с телефоном или приложением';
+        $result[] = 'Моя смена скоро закончится';
+        $result[] = 'Мне нужен перерыв';
+        $result[] = 'У меня чрезвычайная ситуация';
+        $result[] = 'Магазин закрыт';
+
+        return response()->json($result);
     }
 
 }

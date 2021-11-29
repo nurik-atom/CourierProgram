@@ -8,19 +8,52 @@ use Illuminate\Support\Facades\DB;
 
 class MoneyController extends Controller
 {
-    public function test_money(){
-        $t = self::minusAmount(10,5,600,"Test Amount");
-        if ($t) return true;
+    const MIN_AMOUNT = array(
+        1 => 300, // Walking Courier
+        2 => 350, // Velo Courier
+        3 => 400, // Moto Courier
+        4 => 500  // Car  Courier
+    );
+
+    const POLTORA_KM = 300;
+
+    public function test_money(Request $request){
+//        $t = self::minusAmount(10,5,600,"Test Amount");
+//        if ($t) return true;
+
+        $distance = $request->input("distance");
+        $type = $request->input("type");
+        return $this->costDelivery($distance, $type);
     }
 
-
-    public function costDelivery($distance, $type){
+    public static function costDelivery($distance, $type){
         // Вернем ДВА значение стоимость для Кафе и для Курьера
         // Должен быть минимальные ставки для курьеров разного типа,
         // Если авто минимум 500, если мото 400, пешком 300
         // Можем взять Данные чтобы уменьшить запрос а не ID. надо подумать
 
+        $summa = 0;
 
+        if ($distance < 3000) $metr_500 = 50;
+        if ($distance > 3000) $metr_500 = 45;
+        if ($distance > 5000) $metr_500 = 40;
+        if ($distance > 6000) $metr_500 = 35;
+        if ($distance > 7000) $metr_500 = 30;
+
+        $count_500 = ($distance - 1500)/500;
+        if ($count_500 < 0)
+            $summa = self::POLTORA_KM;
+        else
+            $summa = self::POLTORA_KM + ($count_500 * $metr_500);
+
+        if ($summa < self::MIN_AMOUNT[$type])
+            $summa = self::MIN_AMOUNT[$type];
+
+//        $res['$count_500'] = $count_500;
+//        $res['$metr_500'] = $metr_500;
+//        $res['summa'] = ;
+
+        return ceil($summa);
     }
 
     public static function addAmount($id_user, $id_order, $amount, $description){

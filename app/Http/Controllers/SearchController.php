@@ -42,7 +42,7 @@ class SearchController extends Controller
         $newOrders = DB::table("orders")
             ->select("id", "id_city", "distance","from_geo")
             ->where("status", 1)
-            ->whereRaw("TIMESTAMPDIFF(MINUTE, NOW(), arrive_time) < 10")
+            ->whereRaw("TIMESTAMPDIFF(MINUTE, NOW(), arrive_time) < 15")
             ->get();
         foreach ($newOrders as $newOrder) {
             $result['courier'][] = $this->searchCourier($newOrder);
@@ -51,7 +51,6 @@ class SearchController extends Controller
 
         return response()->json($result);
     }
-
 
     //! Поиск курьеров к заказу 1 стадия
     public function searchCourier($order)
@@ -134,7 +133,7 @@ class SearchController extends Controller
             ->join("users", "users_geo.id_user", "=","users.id")
             ->where("users_geo.type",$type)
             ->where("users_geo.updated_at",">", date("Y-m-d H:i:s",time()-3600))
-            ->where("users.state" ,2)
+            ->where("users.state" ,1)
             ->having("distance", "<",$distance)
             ->orderByDesc("users.rating")
             ->first();

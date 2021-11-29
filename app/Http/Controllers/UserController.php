@@ -14,6 +14,15 @@ use Carbon\Carbon;
 
 class UserController extends Controller
 {
+    public static function getUser($password){
+        $user = DB::table("users")->where("password", $password)->first();
+
+        if ($user)
+            return $user;
+        else
+            return false;
+    }
+
     public function signStepOne(Request $request)
     {
         $phone = $request->input('phone');
@@ -186,6 +195,7 @@ class UserController extends Controller
         if ($user) {
             $data['success'] = true;
             $data['status'] = $user->status;
+            $data['password'] = $user->password;
         } else {
             $data['success'] = false;
             $data['message'] = 'Номер телефона не найден';
@@ -219,7 +229,6 @@ class UserController extends Controller
         }
         return response()->json($data);
     }
-
 
     public function setUserGeoPosition(Request $request)
     {
@@ -365,7 +374,7 @@ class UserController extends Controller
         do {
 
             if (strlen($new_number) != 11){
-                $data['message'] = "Номер не правильно";
+                $data['message'] = "Номер не правильно\n".$new_number;
                 break;
             }
 
@@ -380,7 +389,7 @@ class UserController extends Controller
                 break;
             }
 
-            $update = DB::table("users")->where("password",$password)->update(["phone"=>$new_number]);
+            $update = DB::table("users")->where("password",$password)->update(["phone"=>$new_number, "password"=>"inUpdateState"]);
 
             if (!$update){
                 $data['message'] = "Ошибка при изменение";
@@ -435,6 +444,47 @@ class UserController extends Controller
             $data['success'] = true;
 
         }while(false);
+        return response()->json($data);
+    }
+
+    public function changeType(Request $request){
+        $password = $request->input("password");
+        $new_type = $request->input("new_type");
+
+        $user = DB::table("users")->where("password", $password)->first();
+
+        if (!$user){
+            $data['message'] = "Пользователь не найден";
+            $data['success'] = false;
+        }else{
+            DB::table("users")->where("password", $password)->update(["type"=>$new_type]);
+            $data['success'] = true;
+        }
+
+        return response()->json($data);
+    }
+
+    public function changeNames(Request $request){
+        $password = $request->input("password");
+        $name = $request->input("name");
+        $surname = $request->input("surname");
+        $birthday = $request->input("birthday");
+
+
+        $user = DB::table("users")->where("password", $password)->first();
+
+        if (!$user){
+            $data['message'] = "Пользователь не найден";
+            $data['success'] = false;
+        }else{
+            DB::table("users")->where("password", $password)->update([
+                "name"=>$name,
+                "surname"=>$surname,
+                "birthday"=>$birthday
+            ]);
+            $data['success'] = true;
+        }
+
         return response()->json($data);
     }
 

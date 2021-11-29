@@ -28,11 +28,15 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 Route::get("test_curl", [PushController::class, "testCurl"]);
 Route::get("test_money", [MoneyController::class, "test_money"]);
 
-Route::post('/newOrder', [OrderController::class, 'newOrder']);
 Route::get('/testCourier',[OrderController::class,'testCourier']);
-Route::post('/cancelOrder',[OrderController::class,'cancelOrder']);
+Route::get('/prichinyOtmeny',[OrderController::class,'prichinyOtmeny']);
+
+Route::post('/newOrder', [OrderController::class, 'newOrder']);
 Route::post('/takeOrder',[OrderController::class,'takeOrder']);
+Route::post('/courierInCafe',[OrderController::class,'courierInCafe']);
 Route::post('/startDeliveryOrder',[OrderController::class,'startDeliveryOrder']);
+Route::post('/deliveredOrder',[OrderController::class,'deliveredOrder']);
+Route::post('/cancelOrder',[OrderController::class,'cancelOrder']);
 
 
 Route::post('/register', [UserController::class, 'register']);
@@ -49,6 +53,8 @@ Route::post('/getStateUser',[UserController::class,'getStateUser']);
 Route::post('/getDataUser',[UserController::class,'getDataUser']);
 Route::post('/editTokenUser',[UserController::class,'editTokenUser']);
 Route::post('/changePhone',[UserController::class,'changePhone']);
+Route::post('/changeType',[UserController::class,'changeType']);
+Route::post('/changeNames',[UserController::class,'changeNames']);
 //TEST ROUTES
 Route::post('/setStatusUser',[UserController::class,'setStatusUser']);
 Route::post('/deleteUser',[UserController::class,'deleteUser']);

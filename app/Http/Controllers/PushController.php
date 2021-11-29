@@ -42,7 +42,7 @@ class PushController extends Controller
 
         curl_setopt($ch, CURLOPT_HTTPHEADER, array(
             "Accept: application/json, application/geo+json, application/gpx+xml, img/png; charset=utf-8",
-            "Authorization: 5b3ce3597851110001cf62482bf5f940ccf9489184c1b72e2442c43d",
+            "Authorization: ".env("OPEN_ROUTE_SERVICE"),
             "Content-Type: application/json; charset=utf-8"
         ));
 
@@ -64,7 +64,7 @@ class PushController extends Controller
         $from = explode("\n", $from);
         $to   = explode("\n", $to);
 
-        $url = "https://maps.googleapis.com/maps/api/distancematrix/json?origins=".$from[0].",".$from[1]."&destinations=".$to[0].",".$to[1]."&mode=".$modes[$mode]."&language=ru&key=AIzaSyB7dnRjptRqD01JLK8juAXCjhc0X-sDRUE";
+        $url = "https://maps.googleapis.com/maps/api/distancematrix/json?origins=".$from[0].",".$from[1]."&destinations=".$to[0].",".$to[1]."&mode=".$modes[$mode]."&language=ru&key=".env("GOOGLE_MATRIX");
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -83,7 +83,6 @@ class PushController extends Controller
         return $res;
     }
 
-
     public static function newOrderPush($user,$id_order){
 
         $order = DB::table("orders")->where("id", $id_order)->get();
@@ -94,8 +93,6 @@ class PushController extends Controller
 
         self::sendDataPush($user, $data, $message);
     }
-
-
 
     public static function sendDataPush($user, $data, $message){
         if (is_numeric($user)){
@@ -115,7 +112,7 @@ class PushController extends Controller
         }
 
         $headers = array(
-            'Authorization: key=AAAAzWwVpDc:APA91bEXi0RjPE9kOhrwOJw1lQxVfX57fbXmyAjjEaf1po-Ev4Mkc-tntkJitiW-7QpfpeEq7hLxslSMX1LaBbI2121ZKhgC2Jaabo0eXUABru64NzA-OQGfLPypvb4WfdtkXFPuHSPb',
+            'Authorization: '.env("FIREBASE_AUTH"),
             'Content-Type: application/json'
         );
         $url = "https://fcm.googleapis.com/fcm/send";
@@ -136,7 +133,6 @@ class PushController extends Controller
         return $result;
     }
 
-
     public static function takedOrderAllfood($id_order, $id_courier, $time){
         $req['id_order']    = $id_order;
         $req['id_courier']  = $id_courier;
@@ -145,6 +141,12 @@ class PushController extends Controller
         return self::sendReqToAllfood("taked_order", $req);
     }
 
+    public static function courierInCafe($id_order, $id_courier){
+        $req['id_order']    = $id_order;
+        $req['id_courier']  = $id_courier;
+
+        return self::sendReqToAllfood("courierInCafe", $req);
+    }
 
     public static function startDeliveryOrder($id_order, $id_courier, $time){
         $req['id_order']    = $id_order;
@@ -165,7 +167,7 @@ class PushController extends Controller
 
         $url = "https://allfood.kz/need_courier/".$url;
         $post['key'] = md5("ALL".date("Ymd")."FOOD");
- 
+
         $post_str = http_build_query($post);
 
         $ch = curl_init();
