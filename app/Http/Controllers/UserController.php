@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\OrderMiniResource;
 use App\Http\Resources\OrderResource;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
@@ -14,7 +16,12 @@ use Carbon\Carbon;
 
 class UserController extends Controller
 {
-    public static function getUser($password){
+    public $active_state = [
+      2,3,4,5,6
+    ];
+
+    public static function getUser($password)
+    {
         $user = DB::table("users")->where("password", $password)->first();
 
         if ($user)
@@ -314,7 +321,7 @@ class UserController extends Controller
             }
             $result['state'] = $user->state;
 
-            if ($user->state == 2 || $user->state == 3 || $user->state == 4) {
+            if (in_array($user->state,$this->active_state,false)) {
                 $id_order = DB::table("order_user")->where("id_user", $user->id)->orderByDesc("id")->pluck("id_order")->first();
 
                 if ($id_order) {
@@ -373,8 +380,8 @@ class UserController extends Controller
         $data['success'] = false;
         do {
 
-            if (strlen($new_number) != 11){
-                $data['message'] = "Номер не правильно\n".$new_number;
+            if (strlen($new_number) != 11) {
+                $data['message'] = "Номер не правильно\n" . $new_number;
                 break;
             }
 
@@ -383,15 +390,15 @@ class UserController extends Controller
                 $data['message'] = "Пользователь не найден";
                 break;
             }
-            $new_number_user = DB::table("users")->where("phone",$new_number)->first();
-            if($new_number_user){
+            $new_number_user = DB::table("users")->where("phone", $new_number)->first();
+            if ($new_number_user) {
                 $data['message'] = "Пользователь с таким номером уже существует.";
                 break;
             }
 
-            $update = DB::table("users")->where("password",$password)->update(["phone"=>$new_number, "password"=>"inUpdateState"]);
+            $update = DB::table("users")->where("password", $password)->update(["phone" => $new_number, "password" => "inUpdateState"]);
 
-            if (!$update){
+            if (!$update) {
                 $data['message'] = "Ошибка при изменение";
                 break;
             }
@@ -443,49 +450,125 @@ class UserController extends Controller
 
             $data['success'] = true;
 
-        }while(false);
+        } while (false);
         return response()->json($data);
     }
 
-    public function changeType(Request $request){
+    public function changeType(Request $request)
+    {
         $password = $request->input("password");
         $new_type = $request->input("new_type");
 
         $user = DB::table("users")->where("password", $password)->first();
 
-        if (!$user){
+        if (!$user) {
             $data['message'] = "Пользователь не найден";
             $data['success'] = false;
-        }else{
-            DB::table("users")->where("password", $password)->update(["type"=>$new_type]);
+        } else {
+            DB::table("users")->where("password", $password)->update(["type" => $new_type]);
             $data['success'] = true;
         }
 
         return response()->json($data);
     }
 
-    public function changeNames(Request $request){
+    public function changeNames(Request $request)
+    {
         $password = $request->input("password");
         $name = $request->input("name");
         $surname = $request->input("surname");
         $birthday = $request->input("birthday");
+        $array = [];
+        $result['success'] = false;
+        $message = 'Не передан параметр';
+        do{
+            $array[] = $password;
+            $array[] = $name;
+            $array[] = $surname;
+            $array[] = $birthday;
+            $array = array_filter($array);
+            $checkOne = RatingController::returnMessage($array,$message,4);
+            if (!$checkOne){
+                $result['message'] = $message;
+                break;
+            }
 
-
-        $user = DB::table("users")->where("password", $password)->first();
-
-        if (!$user){
-            $data['message'] = "Пользователь не найден";
-            $data['success'] = false;
-        }else{
+            $user = DB::table("users")->where("password", $password)->first();
+            $user_message = 'Пользователь не найден';
+            $user_array = (array) $user;
+            if (!RatingController::returnMessage($user_array,$message,1)){
+                $result['message'] = $user_message;
+                break;
+            }
             DB::table("users")->where("password", $password)->update([
-                "name"=>$name,
-                "surname"=>$surname,
-                "birthday"=>$birthday
+                "name" => $name,
+                "surname" => $surname,
+                "birthday" => $birthday
             ]);
-            $data['success'] = true;
-        }
+            $result['success'] = true;
+        }while(false);
 
-        return response()->json($data);
+        return response()->json($result);
+    }
+
+    public function getMoneyAndOrdersUser(Request $request)
+    {
+        $password = $request->input("password");
+        $result['success'] = false;
+        do {
+            $user = self::getUser($password);
+            if(!$user){
+                $request['message'] = "Пользователь не найден";
+                break;
+            }
+            //WEEK
+            $weekStartDate = Carbon::now()->startOfWeek()->format('Y-m-d H:i:s');
+            $this_week = DB::table("balance_history")
+                ->where("id_user", $user->id)
+                ->where("id_order", "!=", 0)
+                ->where("created_at", ">=", $weekStartDate)
+                ->sum("amount");
+
+            if (!$this_week)
+                $result['this_week'] = 0;
+            else
+                $result['this_week'] = $this_week;
+
+            //TODAY
+            $startToday = date("Y-m-d")." 00:00:00";
+            $today =  DB::table("balance_history")
+                ->where("id_user", $user->id)
+                ->where("id_order", "!=", 0)
+                ->where("created_at", ">=", $startToday)
+                ->sum("amount");
+
+            if (!$today)
+                $result['today'] = 0;
+            else
+                $result['today'] = $today;
+
+            //BALANCE
+            $balance = DB::table("balance")->where("id_user", $user->id)
+                ->pluck("amount")->first();
+
+            if (!$balance)
+                $result['balance'] = 0;
+            else
+                $result['balance'] = $balance;
+
+            $result['orders'] = array();
+
+            $orders = DB::table("orders")
+                ->select("id", "created_at", "price_delivery")
+                ->where("id_courier", $user->id)
+                ->orderByDesc("id")
+                ->limit(20)->get();
+            $result['orders'] = OrderMiniResource::collection($orders);
+
+            $result['date'] = Carbon::now()->startOfWeek()->diffForHumans();
+            $result['success'] = true;
+        } while (false);
+        return response()->json($result);
     }
 
     public function test()

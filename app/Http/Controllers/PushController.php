@@ -156,7 +156,14 @@ class PushController extends Controller
         return self::sendReqToAllfood("start_delivery", $req);
     }
 
-    public static function endDeliveryOrder($id_order, $id_courier){
+    public static function courierAtTheClient($id_order, $id_courier){
+        $req['id_order']    = $id_order;
+        $req['id_courier']  = $id_courier;
+
+        return self::sendReqToAllfood("end_delivery", $req);
+    }
+
+    public static function finishDeliveryOrder($id_order, $id_courier){
         $req['id_order']    = $id_order;
         $req['id_courier']  = $id_courier;
 

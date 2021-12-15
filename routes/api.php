@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\HelpController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\SearchController;
@@ -30,18 +31,22 @@ Route::get("test_money", [MoneyController::class, "test_money"]);
 
 Route::get('/testCourier',[OrderController::class,'testCourier']);
 Route::get('/prichinyOtmeny',[OrderController::class,'prichinyOtmeny']);
+Route::get('/getAllHelpPages',[HelpController::class,'getAllHelpPages']);
 
+Route::post('/getStatusTimeOrder', [OrderController::class, 'getStatusTimeOrder']);
 Route::post('/newOrder', [OrderController::class, 'newOrder']);
 Route::post('/takeOrder',[OrderController::class,'takeOrder']);
 Route::post('/courierInCafe',[OrderController::class,'courierInCafe']);
 Route::post('/startDeliveryOrder',[OrderController::class,'startDeliveryOrder']);
-Route::post('/deliveredOrder',[OrderController::class,'deliveredOrder']);
+Route::post('/courierAtTheClient',[OrderController::class,'courierAtTheClient']);
+Route::post('/finishDeliveryOrder',[OrderController::class,'finishDeliveryOrder']);
 Route::post('/cancelOrder',[OrderController::class,'cancelOrder']);
 
 
 Route::post('/register', [UserController::class, 'register']);
 Route::post('/signIn', [UserController::class, 'signIn']);
 Route::post('/profile', [UserController::class, 'profile']);
+Route::post('/getMoneyAndOrdersUser', [UserController::class, 'getMoneyAndOrdersUser']);
 //sendSms
 Route::post('/signStepOne',[UserController::class,'signStepOne']);
 //checkSms

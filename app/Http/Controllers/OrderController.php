@@ -28,6 +28,43 @@ class OrderController extends Controller
 //9. Курьер отменил
 
 
+    public function getStatusTimeOrder(Request $request)
+    {
+        $password = $request->input("password");
+        $id_order = $request->input("id_order");
+        $result['success'] = false;
+        do {
+            $user = UserController::getUser($password);
+
+            if (!$user) {
+                $result['message'] = 'Пользователь не найден';
+                break;
+            }
+
+            $order = DB::table("orders")->find($id_order);
+            if (!$order) {
+                $result['message'] = 'Заказ не найден';
+                break;
+            }
+
+            $result['status'] = $order->status;
+            if ($order->status === 3) {
+                $result['time_to_cafe'] = strtotime($order->arrive_time) - time();
+            }
+
+            if ($order->status === 5) {
+                $time_status = DB::table("order_user")
+                    ->where("id_user", $user->id)
+                    ->where("id_order", $id_order)
+                    ->where("status", 5)->pluck("created_at")->last();
+                $result['time_to_client'] = strtotime($time_status) + $order->needed_sec - time();
+            }
+            $result['success'] = true;
+        } while (false);
+
+        return response()->json($result);
+    }
+
     public function newOrder(Request $request)
     {
         $id_allfood = $request->input('id_allfood');
@@ -101,7 +138,7 @@ class OrderController extends Controller
         DB::table("orders")->where("id", $id_order)
             ->update(['status' => $status, 'id_courier' => $id_courier]);
 
-        if ($status == 5)
+        if ($status == 7)
             $user_state = 1;
         else
             $user_state = $status;
@@ -127,22 +164,14 @@ class OrderController extends Controller
         $result['success'] = false;
 
         do {
-            $user = DB::table("users")->where("password", $password)->first();
-            if (!$user) {
-                $result['message'] = 'user not found';
-                break;
-            }
+            $checkedDataResult = $this->checkUserAndOrder($password, $id_order, 2);
 
-            $order = DB::table("orders")->find($id_order);
-
-            if (!$order) {
-                $result['message'] = "Order Not Found";
+            if (!$checkedDataResult['success']){
+                $result['message'] = $checkedDataResult['message'];
                 break;
             }
-            if ($order->status != 1 && $order->status != 2) {
-                $result['message'] = 'Курьер уже назначен или заказ отменен';
-                break;
-            }
+            $user = $checkedDataResult['user'];
+            $order = $checkedDataResult['order'];
 
             self::changeOrderCourierStatus($order->id, $user->id, 3);
 
@@ -178,22 +207,14 @@ class OrderController extends Controller
         $lon = $request->input("lon");
         $result['success'] = false;
         do {
-            $user = UserController::getUser($password);
-            if (!$user){
-                $result['message'] = 'Пользователь не найден';
-                break;
-            }
-            $order = DB::table("orders")->find($id_order);
+            $checkedDataResult = $this->checkUserAndOrder($password, $id_order, 3);
 
-            if (!$order) {
-                $result['message'] = "Order Not Found";
+            if (!$checkedDataResult['success']){
+                $result['message'] = $checkedDataResult['message'];
                 break;
             }
-
-            if ($order->status == 4) {
-                $result['message'] = 'Статус уже 4';
-                break;
-            }
+            $user = $checkedDataResult['user'];
+            $order = $checkedDataResult['order'];
 
             $distance_to_cafe = SearchController::getDistance($order->from_geo, $lat . "\n" . $lon);
 
@@ -218,23 +239,14 @@ class OrderController extends Controller
         $lon = $request->input("lon");
 
         do {
-            $user = DB::table("users")->where("password", $password)->first();
-            if (!$user) {
-                $result['message'] = 'user not found';
+            $checkedDataResult = $this->checkUserAndOrder($password, $id_order,4);
+
+            if (!$checkedDataResult['success']){
+                $result['message'] = $checkedDataResult['message'];
                 break;
             }
-
-            $order = DB::table("orders")->find($id_order);
-
-            if (!$order) {
-                $result['message'] = "Order Not Found";
-                break;
-            }
-
-            if ($order->status == 5) {
-                $result['message'] = 'Заказ уже на доставке';
-                break;
-            }
+            $user = $checkedDataResult['user'];
+            $order = $checkedDataResult['order'];
 
             $distance_to_cafe = SearchController::getDistance($order->from_geo, $lat . "\n" . $lon);
 
@@ -252,28 +264,19 @@ class OrderController extends Controller
         return response()->json($result);
     }
 
-    public function deliveredOrder(Request $request)
+    public function courierAtTheClient(Request $request)
     {
         $password = $request->input("password");
         $id_order = $request->input('id_order');
         do {
-            $user = DB::table("users")->where("password", $password)->first();
-            if (!$user) {
-                $result['message'] = 'user not found';
+            $checkedDataResult = $this->checkUserAndOrder($password, $id_order,5);
+
+            if (!$checkedDataResult['success']){
+                $result['message'] = $checkedDataResult['message'];
                 break;
             }
-
-            $order = DB::table("orders")->find($id_order);
-
-            if (!$order) {
-                $result['message'] = "Order Not Found";
-                break;
-            }
-
-            if ($order->status == 6) {
-                $result['message'] = 'Заказ уже доставлен';
-                break;
-            }
+            $user = $checkedDataResult['user'];
+            $order = $checkedDataResult['order'];
 
             $start_time = DB::table("order_user")
                 ->where("id_user", $user->id)->where("id_order", $order->id)
@@ -287,13 +290,39 @@ class OrderController extends Controller
 
             self::changeOrderCourierStatus($order->id, $user->id, 6);
 
+            //Curl to allfood kz
+            $result['allfood'] = PushController::courierAtTheClient($order->id, $user->id);
+
+        } while (false);
+        return response()->json($result);
+    }
+
+    public function finishDeliveryOrder(Request $request)
+    {
+        $password = $request->input("password");
+        $id_order = $request->input("id_order");
+        $result['success'] = false;
+        do{
+            $checkedDataResult = $this->checkUserAndOrder($password, $id_order,6);
+
+            if (!$checkedDataResult['success']){
+                $result['message'] = $checkedDataResult['message'];
+                break;
+            }
+            $user = $checkedDataResult['user'];
+            $order = $checkedDataResult['order'];
+
             $description = "Заказ №" . $order->id;
             MoneyController::addAmount($user->id, $order->id, $order->price_delivery, $description);
 
-            //Curl to allfood kz
-            $result['allfood'] = PushController::endDeliveryOrder($order->id, $user->id);
+            $result['price'] = $order->price_delivery;
+            self::changeOrderCourierStatus($order->id, $user->id,7);
 
-        } while (false);
+            //Curl to allfood kz
+            $result['allfood'] = PushController::finishDeliveryOrder($order->id, $user->id);
+
+            $result['success'] = true;
+        }while(false);
         return response()->json($result);
     }
 
@@ -356,6 +385,48 @@ class OrderController extends Controller
         else
             return false;
 
+    }
+
+    public function checkUserAndOrder($password, $id_order, $status)
+    {
+        do {
+            $result['success'] = false;
+
+            if (!$password){
+                $result['message'] = 'Пароль нет';
+                break;
+            }
+
+            if (!$id_order){
+                $result['message'] = 'id заказа нет';
+                break;
+            }
+
+            $user = DB::table("users")->where("password", $password)->first();
+            if (!$user){
+              $result['message'] = 'Пользователь не найден';
+              break;
+            }
+
+            $order = DB::table("orders")->where("id",$id_order)->first();
+
+            if (!$order){
+                $result['message'] = 'Заказ не найден';
+                break;
+            }
+
+            if ($status !== $order->status){
+                $result['message'] = 'Неправильный статус';
+                break;
+            }
+
+            $result['order'] = $order;
+            $result['user'] = $user;
+
+            $result['success'] = true;
+        } while (false);
+
+        return $result;
     }
 
     public function prichinyOtmeny()

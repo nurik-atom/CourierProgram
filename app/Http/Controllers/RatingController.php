@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -48,15 +49,30 @@ class RatingController extends Controller
     public function getRatingUser(Request $request)
     {
         $password = $request->input("password");
-        $user = DB::table("users")->where("password", $password)->first();
+        $message = 'Не передан параметр';
+        $array = [];
 
-        if (!$user) {
+        do{
+            $array[] = $password;
+            if (!$this->returnMessage($array, $message,1)){
+                $result['message'] = $message;
+                break;
+            }
+            $user = DB::table("users")->where("password", $password)->first();
+            if (!$user){
+                $result['message'] = $message;
+                break;
+            }
+            $result['success'] = true;
+            $result['calculate_Rate'] = self::calculateRating($user->id);
+        }while(false);
+        /*if (!$user) {
             $result['message'] = 'Пользователь не найден';
             $result['success'] = false;
         } else {
             $result['success'] = true;
             $result['calculate_Rate'] = self::calculateRating($user->id);
-        }
+        }*/
         return response()->json($result);
     }
 
@@ -105,13 +121,17 @@ class RatingController extends Controller
         $mes['body'] = "body";
 //        $resposce = PushController::sendDataPush($id_courier, '', $mes);
 
-         $result['responce'] = $resposce;
-        $update = DB::table("users")
+//         $result['responce'] = $resposce;
+        DB::table("users")
             ->where("id", $id_courier)
             ->update(["rating"=>round($avg_star,1), "sort_rating"=>$sort_rating]);
 
         return $result;
 
+    }
+
+    public static function returnMessage($array,$message,$count){
+        return !(count($array) !== $count);
     }
 
 

@@ -36,7 +36,7 @@ class SearchController extends Controller
     }
 
     //* Поиск новых заказов Нулевой стадия
-    public function searchNewOrder()
+    public static function searchNewOrder()
     {
         $result = array();
         $newOrders = DB::table("orders")
@@ -45,15 +45,15 @@ class SearchController extends Controller
             ->whereRaw("TIMESTAMPDIFF(MINUTE, NOW(), arrive_time) < 15")
             ->get();
         foreach ($newOrders as $newOrder) {
-            $result['courier'][] = $this->searchCourier($newOrder);
+            $result['courier'][] = self::searchCourier($newOrder);
             $result['order'][] = $newOrder;
         }
-
+        DB::table("orders")->where("id",6)->update(["updated_at"=>Carbon::now()]);
         return response()->json($result);
     }
 
     //! Поиск курьеров к заказу 1 стадия
-    public function searchCourier($order)
+    public static function searchCourier($order)
     {
 
     $drivers = array();
@@ -61,38 +61,38 @@ class SearchController extends Controller
         do {
             //Поиск пеших курьеров
             if($order->distance < self::MAX_FOOT_DRIVER){
-                $c = $this->searchCourierSql("1", "1000", $order);
+                $c = self::searchCourierSql("1", "1000", $order);
                 if ($c){
                     $drivers[] = $c;
-                    $this->offerToCourier($c->id_user, $order->id);
+                    self::offerToCourier($c->id_user, $order->id);
                     break;
                 }
             }
 
             //Поиск велосипедных курьеров
             if($order->distance < self::MAX_VELO_DRIVER) {
-                $c = $this->searchCourierSql("2", "2000", $order);
+                $c = self::searchCourierSql("2", "2000", $order);
                 if ($c){
                     $drivers[] = $c;
-                    $this->offerToCourier($c->id_user, $order->id);
+                    self::offerToCourier($c->id_user, $order->id);
                     break;
                 }
             }
             //Поиск мопедных курьеров
             if($order->distance < self::MAX_MOPED_DRIVER) {
-                $c = $this->searchCourierSql("3", "4000", $order);
+                $c = self::searchCourierSql("3", "4000", $order);
                 if ($c){
                     $drivers[] = $c;
-                    $this->offerToCourier($c->id_user, $order->id);
+                    self::offerToCourier($c->id_user, $order->id);
                     break;
                 }
             }
             //Поиск авто курьеров
             if($order->distance < self::MAX_AUTO_DRIVER) {
-                $c = $this->searchCourierSql("4", "10000", $order);
+                $c = self::searchCourierSql("4", "10000", $order);
                 if ($c){
                     $drivers[] = $c;
-                    $this->offerToCourier($c->id_user, $order->id);
+                    self::offerToCourier($c->id_user, $order->id);
                     break;
                 }
             }
@@ -102,7 +102,7 @@ class SearchController extends Controller
         return $drivers;
     }
 
-    function offerToCourier($id_user, $id_order){
+    public static function offerToCourier($id_user, $id_order){
 
         OrderController::changeOrderCourierStatus($id_order, $id_user, 2);
 
@@ -112,7 +112,7 @@ class SearchController extends Controller
 
     }
 
-    function searchCourierSql($type, $distance, $order){
+    public static function searchCourierSql($type, $distance, $order){
         $from_lat = explode("\n", $order->from_geo)[0];
         $from_lon = explode("\n", $order->from_geo)[1];
 
