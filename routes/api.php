@@ -35,6 +35,8 @@ Route::get('/getAllHelpPages',[HelpController::class,'getAllHelpPages']);
 
 Route::post('/getStatusTimeOrder', [OrderController::class, 'getStatusTimeOrder']);
 Route::post('/newOrder', [OrderController::class, 'newOrder']);
+
+Route::post('/imReady',[UserController::class,'imReady']);
 Route::post('/takeOrder',[OrderController::class,'takeOrder']);
 Route::post('/courierInCafe',[OrderController::class,'courierInCafe']);
 Route::post('/startDeliveryOrder',[OrderController::class,'startDeliveryOrder']);

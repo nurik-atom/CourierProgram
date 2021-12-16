@@ -226,7 +226,7 @@ class OrderController extends Controller
             self::changeOrderCourierStatus($order->id, $user->id, 4);
             //Curl to allfood kz
             $result['allfood'] = PushController::courierInCafe($order->id, $user->id);
-
+            $result['success'] = true;
         } while (false);
         return response()->json($result);
     }
@@ -237,7 +237,7 @@ class OrderController extends Controller
         $id_order = $request->input('id_order');
         $lat = $request->input("lat");
         $lon = $request->input("lon");
-
+        $result['success'] = false;
         do {
             $checkedDataResult = $this->checkUserAndOrder($password, $id_order,4);
 
@@ -258,7 +258,7 @@ class OrderController extends Controller
             self::changeOrderCourierStatus($order->id, $user->id, 5);
             //Curl to allfood kz
             $result['allfood'] = PushController::startDeliveryOrder($order->id, $user->id, $order->needed_sec);
-
+            $result['success'] = true;
         } while (false);
 
         return response()->json($result);
@@ -268,6 +268,7 @@ class OrderController extends Controller
     {
         $password = $request->input("password");
         $id_order = $request->input('id_order');
+        $result['success'] = false;
         do {
             $checkedDataResult = $this->checkUserAndOrder($password, $id_order,5);
 
@@ -292,7 +293,7 @@ class OrderController extends Controller
 
             //Curl to allfood kz
             $result['allfood'] = PushController::courierAtTheClient($order->id, $user->id);
-
+            $result['success'] = true;
         } while (false);
         return response()->json($result);
     }

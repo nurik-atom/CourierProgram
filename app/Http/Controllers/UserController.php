@@ -20,14 +20,33 @@ class UserController extends Controller
       2,3,4,5,6
     ];
 
+    public function imReady(Request $request){
+        $password = $request->input("password");
+        $state = $request->input("state");
+        $result['success'] = false;
+
+        if ($user = self::getUser($password)){
+            $add_state = DB::table("users_state")->insert(["id_user" => $user->id, "state" => $state,
+                "created_at" => Carbon::now(), "updated_at" => Carbon::now()]);
+            $update_state = DB::table("users")->where("id", $user->id)->update(["state" => $state ]);
+            $result['success'] = true;
+        }
+
+        return response()->json($result);
+    }
+
     public static function getUser($password)
     {
+        if (!$password) {
+            return false;
+        }
         $user = DB::table("users")->where("password", $password)->first();
 
-        if ($user)
+        if ($user) {
             return $user;
-        else
-            return false;
+        }
+
+        return false;
     }
 
     public function signStepOne(Request $request)
