@@ -93,6 +93,8 @@ class PushController extends Controller
         $message['body'] = "Заказ на сумму ".$order->price_delivery.' тенге';
 
         self::sendDataPush($user, $data, $message);
+        $mes['mess'] = 'Новый заказ '. $order->id.' Courier #'.$user;
+        self::sendReqToAllfood("test_search", $mes);
     }
 
     public static function sendDataPush($user, $data, $message){
