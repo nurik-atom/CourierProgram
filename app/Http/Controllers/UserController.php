@@ -497,26 +497,11 @@ class UserController extends Controller
         $name = $request->input("name");
         $surname = $request->input("surname");
         $birthday = $request->input("birthday");
-        $array = [];
         $result['success'] = false;
-        $message = 'Не передан параметр';
         do{
-            $array[] = $password;
-            $array[] = $name;
-            $array[] = $surname;
-            $array[] = $birthday;
-            $array = array_filter($array);
-            $checkOne = RatingController::returnMessage($array,$message,4);
-            if (!$checkOne){
-                $result['message'] = $message;
-                break;
-            }
-
-            $user = DB::table("users")->where("password", $password)->first();
-            $user_message = 'Пользователь не найден';
-            $user_array = (array) $user;
-            if (!RatingController::returnMessage($user_array,$message,1)){
-                $result['message'] = $user_message;
+            $user = self::getUser($password);
+            if (!$user){
+                $result['message'] = 'Пользователь не найден';
                 break;
             }
             DB::table("users")->where("password", $password)->update([
