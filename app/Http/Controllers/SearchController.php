@@ -49,8 +49,8 @@ class SearchController extends Controller
             $result['order'][] = $newOrder;
         }
 
-        $mes['mess'] = 'Поиск';
-        PushController::sendReqToAllfood("test_search", $mes);
+//        $mes['mess'] = 'Поиск';
+//        PushController::sendReqToAllfood("test_search", $mes);
 
 //        DB::table("orders")->where("id",6)->update(["updated_at"=>Carbon::now()]);
         return response()->json($result);
