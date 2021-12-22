@@ -80,7 +80,7 @@ class OrderController extends Controller
             $result['user_state'] = $user->state;
             $order_user = DB::table("order_user")->where("id_user", $user->id)->orderByDesc("id")->first();
             $order = DB::table("orders")
-                ->where("id_order", $order_user->id_order)
+                ->where("id", $order_user->id_order)
                 ->where("status", "<", 7)
                 ->orderByDesc("id")
                 ->get();
