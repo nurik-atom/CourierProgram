@@ -79,11 +79,17 @@ class OrderController extends Controller
             }
             $result['user_state'] = $user->state;
             $order_user = DB::table("order_user")->where("id_user", $user->id)->orderByDesc("id")->first();
+           if (!$order_user) {
+               break;
+           }
+
+
             $order = DB::table("orders")
                 ->where("id", $order_user->id_order)
                 ->where("status", "<", 7)
                 ->orderByDesc("id")
                 ->get();
+
             if ($order){
                 $result['have_order'] = true;
                 $result['order'] = OrderResource::collection($order)[0];
