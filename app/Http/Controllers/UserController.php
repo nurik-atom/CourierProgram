@@ -284,7 +284,7 @@ class UserController extends Controller
 
             $select_geo = DB::table("users_geo")
                 ->where("created_at", ">", date("Y-m-d H:i:s", time() - 600))
-                ->pluck("id")->get();
+                ->pluck("id")->first();
 
             if ($select_geo) {
                 $update_geo = DB::table("users_geo")
