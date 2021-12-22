@@ -78,8 +78,9 @@ class OrderController extends Controller
                 break;
             }
             $result['user_state'] = $user->state;
+            $order_user = DB::table("order_user")->where("id_user", $user->id)->last();
             $order = DB::table("orders")
-                ->where("id_courier", $user->id)
+                ->where("id_order", $order_user->id_order)
                 ->where("status", "<", 7)
                 ->orderByDesc("id")
                 ->get();
