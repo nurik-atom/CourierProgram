@@ -271,7 +271,7 @@ class UserController extends Controller
     public function setUserGeoPosition(Request $request)
     {
         $password = $request->input("password");
-        $lan = $request->input("lan");
+        $lat = $request->input("lat");
         $lon = $request->input("lon");
         $type = $request->input("type");
 
@@ -289,10 +289,10 @@ class UserController extends Controller
             if ($select_geo) {
                 $update_geo = DB::table("users_geo")
                     ->where("id", $select_geo)
-                    ->update(["id_user" => $user, "lan" => $lan, "lon" => $lon, "type" => $type, "updated_at" => Carbon::now()]);
+                    ->update(["id_user" => $user, "lan" => $lat, "lon" => $lon, "type" => $type, "updated_at" => Carbon::now()]);
             } else {
                 $add_geo = DB::table("users_geo")
-                    ->insert(["id_user" => $user, "lan" => $lan, "lon" => $lon, "type" => $type,
+                    ->insert(["id_user" => $user, "lan" => $lat, "lon" => $lon, "type" => $type,
                         "created_at" => Carbon::now(), "updated_at" => Carbon::now()]);
             }
 
