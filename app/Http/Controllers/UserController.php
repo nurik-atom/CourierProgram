@@ -169,6 +169,18 @@ class UserController extends Controller
         return response()->json($data);
     }
 
+    public function checkUser(Request $request){
+        $password = $request->input("password");
+        $result['success'] = false;
+        $user = self::getUser($password);
+        if ($user !== false){
+            $result['success'] = true;
+            $result['status'] = $user->status;
+        }
+
+        return response()->json($result);
+    }
+
     public function editDataUser(Request $request)
     {
         $phone = $request->input('phone');

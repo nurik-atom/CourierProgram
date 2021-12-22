@@ -53,7 +53,12 @@ Route::post('/getMoneyAndOrdersUser', [UserController::class, 'getMoneyAndOrders
 Route::post('/signStepOne',[UserController::class,'signStepOne']);
 //checkSms
 Route::post('/signStepTwo',[UserController::class,'signStepTwo']);
+Route::post('/checkUser',[UserController::class,'checkUser']);
+Route::post('/checkOrderUser',[OrderController::class,'checkOrderUser']);
+
+
 Route::post('/editDataUser',[UserController::class,'editDataUser']);
+
 Route::post('/getStatusUser',[UserController::class,'getStatusUser']);
 Route::post('/insertStateUser',[UserController::class,'insertStateUser']);
 Route::post('/getStateUser',[UserController::class,'getStateUser']);

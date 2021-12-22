@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\OrderResource;
 use Carbon\Carbon;
+use http\Client\Curl\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -63,6 +65,32 @@ class OrderController extends Controller
         } while (false);
 
         return response()->json($result);
+    }
+
+    public function checkOrderUser(Request $request){
+        $password = $request->input("password");
+        $user = UserController::getUser($password);
+        $result['success'] = false;
+        $result['have_order'] = false;
+        do{
+            if (!$user){
+                $result['message'] = 'Пользователь не нвйден';
+                break;
+            }
+            $result['user_state'] = $user->state;
+            $order = DB::table("orders")
+                ->where("id_courier", $user->id)
+                ->where("status", "<", 7)
+                ->orderByDesc("id")
+                ->get();
+            if ($order){
+                $result['have_order'] = true;
+                $result['order'] = OrderResource::collection($order)[0];
+            }
+            $result['success'] = true;
+        }while(false);
+        return response()->json($result);
+
     }
 
     public function newOrder(Request $request)
