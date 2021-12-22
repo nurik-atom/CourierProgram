@@ -20,9 +20,9 @@ class OrderResource extends JsonResource
         $result = array();
         foreach ($blob as $key => $b) {
             $f = explode("$$", $b);
-            $result[$key]["count"] = $f[0];
-            $result[$key]["name"] = $f[1];
-            $result[$key]["price"] = $f[2];
+            $result[$key]["count"] = @$f[0];
+            $result[$key]["name"] = @$f[1];
+            $result[$key]["price"] = @$f[2];
         }
         return $result;
 
