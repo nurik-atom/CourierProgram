@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\HelpController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\SearchController;
@@ -32,6 +33,9 @@ Route::get("test_money", [MoneyController::class, "test_money"]);
 Route::get('/testCourier',[OrderController::class,'testCourier']);
 Route::get('/prichinyOtmeny',[OrderController::class,'prichinyOtmeny']);
 Route::get('/getAllHelpPages',[HelpController::class,'getAllHelpPages']);
+Route::post('/getNotifications',[NotificationController::class,'getNotifications']);
+Route::post('/getCountNewNotifs',[NotificationController::class,'getCountNewNotifs']);
+Route::post('/openNotification',[NotificationController::class,'openNotification']);
 
 Route::post('/getStatusTimeOrder', [OrderController::class, 'getStatusTimeOrder']);
 Route::post('/newOrder', [OrderController::class, 'newOrder']);
