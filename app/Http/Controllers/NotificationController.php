@@ -91,23 +91,72 @@ class NotificationController extends Controller
             }
             $notif = DB::table("notifications")->find($id_notif);
 
-            if (!$notif){
+            if (!$notif) {
                 $result['message'] = 'Уведомление не найдено';
                 break;
             }
 
-            $new_count = $notif->howmany_open+1;
-            DB::table("notifications")->where("id", $id_notif)->update(["howmany_open"=>$new_count]);
+            $new_count = $notif->howmany_open + 1;
+            DB::table("notifications")->where("id", $id_notif)->update(["howmany_open" => $new_count]);
 
             DB::table("notif_open")->insert([
-                "id_user"=>$user->id,
-                "id_notif"=>$notif->id,
-                "created_at"=>Carbon::now(),
-                "updated_at"=>Carbon::now()
+                "id_user" => $user->id,
+                "id_notif" => $notif->id,
+                "created_at" => Carbon::now(),
+                "updated_at" => Carbon::now()
             ]);
 
 
             $result['notif'] = NotifResource::collection([$notif])[0];
+            $result['success'] = true;
+        } while (false);
+        return response()->json($result);
+    }
+
+    public function sendNotification(Request $request)
+    {
+        $key = $request->input("key");
+        $id_city = $request->input("id_city");
+        $id_user = $request->input("id_user");
+        $name = $request->input("name");
+        $short_text = $request->input("short_text");
+        $full_text = $request->input("full_text");
+        $actual_day = $request->input("actual_day");
+
+        $result['success'] = false;
+        do {
+            if ($key != env("ALLFOOD_KEY")) {
+                $result['message'] = 'Ключ не правильный';
+                break;
+            }
+            if (!$name || !$short_text || !$full_text || !$actual_day) {
+                $result['message'] = 'Данные не полные';
+                break;
+            }
+
+            DB::table("notifications")->insert([
+                "id_user" => $id_user,
+                "id_city" => $id_city,
+                "name" => $name,
+                "short_text" => $short_text,
+                "full_text" => $full_text,
+                "actual_time" => Carbon::now()->addDay($actual_day),
+                "created_at"=>Carbon::now(),
+                "updated_at"=>Carbon::now()
+            ]);
+
+            if (!$id_city && !$id_user){
+                $type = 2;
+                $to = "/topics/all";
+            }elseif ($id_user == null){
+                $type = 1;
+                $to = DB::table("users")->where("id_city", $id_city)->pluck("token");
+            }else{
+                $type = 1;
+                $to = DB::table("users")->where("id", $id_user)->pluck("token");
+            }
+
+            $result['pusk4h'] = PushController::sendNotification($type, $to, $name, $short_text);
             $result['success'] = true;
         } while (false);
         return response()->json($result);

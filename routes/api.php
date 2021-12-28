@@ -36,6 +36,7 @@ Route::get('/getAllHelpPages',[HelpController::class,'getAllHelpPages']);
 Route::post('/getNotifications',[NotificationController::class,'getNotifications']);
 Route::post('/getCountNewNotifs',[NotificationController::class,'getCountNewNotifs']);
 Route::post('/openNotification',[NotificationController::class,'openNotification']);
+Route::post('/sendNotification',[NotificationController::class,'sendNotification']);
 
 Route::post('/getStatusTimeOrder', [OrderController::class, 'getStatusTimeOrder']);
 Route::post('/newOrder', [OrderController::class, 'newOrder']);

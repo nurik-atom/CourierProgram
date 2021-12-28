@@ -192,4 +192,42 @@ class PushController extends Controller
         return $result;
 
     }
+
+    public static function sendNotification($type, $to, $title, $body){
+        $data_notif = [
+            "notification"=>[
+                "title"=>$title,
+                "body"=>$body
+            ],
+            "data"=>[
+                "type"=>'notification'
+            ]
+        ];
+
+        if ($type == 1){
+            $data_notif['registration_ids'] = $to;
+        }elseif ($type == 2){
+            $data_notif['to'] = $to;
+        }
+
+
+
+        $headers = array(
+            'Authorization: '.env("FIREBASE_AUTH"),
+            'Content-Type: application/json'
+        );
+        $url = "https://fcm.googleapis.com/fcm/send";
+
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data_notif));
+        $result = curl_exec($ch);
+        curl_close($ch);
+        return $result;
+    }
 }
