@@ -173,6 +173,13 @@ class PushController extends Controller
         return self::sendReqToAllfood("end_delivery", $req);
     }
 
+    public static function cancelFromCafeClient($id_order, $id_user, $prichina){
+        $data['type']  = 'cancelOrder';
+        $mess['title'] = 'Заказ №'.$id_order. 'отменен';
+        $mess['body']  = 'Причина: '.$prichina;
+        self::sendDataPush($id_user, $data, $mess);
+    }
+
     public static function sendReqToAllfood($url, $post){
 
         $url = "https://allfood.kz/need_courier/".$url;
@@ -210,14 +217,11 @@ class PushController extends Controller
             $data_notif['to'] = $to;
         }
 
-
-
         $headers = array(
             'Authorization: '.env("FIREBASE_AUTH"),
             'Content-Type: application/json'
         );
         $url = "https://fcm.googleapis.com/fcm/send";
-
 
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);

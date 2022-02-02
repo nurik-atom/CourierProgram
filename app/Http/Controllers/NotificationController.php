@@ -66,7 +66,8 @@ class NotificationController extends Controller
                 ->where(function ($query) use ($user) {
                     $query->where("id_city", $user->id_city)
                         ->orWhereNull("id_city");
-                })->get();
+                })->orderByDesc("id")->get();
+
 
             if ($notifications) {
                 $result['notifs'] = NotifShortResource::collection($notifications);

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AllfoodController;
 use App\Http\Controllers\HelpController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OrderController;
@@ -33,13 +34,18 @@ Route::get("test_money", [MoneyController::class, "test_money"]);
 Route::get('/testCourier',[OrderController::class,'testCourier']);
 Route::get('/prichinyOtmeny',[OrderController::class,'prichinyOtmeny']);
 Route::get('/getAllHelpPages',[HelpController::class,'getAllHelpPages']);
+
 Route::post('/getNotifications',[NotificationController::class,'getNotifications']);
 Route::post('/getCountNewNotifs',[NotificationController::class,'getCountNewNotifs']);
 Route::post('/openNotification',[NotificationController::class,'openNotification']);
 Route::post('/sendNotification',[NotificationController::class,'sendNotification']);
 
 Route::post('/getStatusTimeOrder', [OrderController::class, 'getStatusTimeOrder']);
-Route::post('/newOrder', [OrderController::class, 'newOrder']);
+Route::post('/newOrder', [AllfoodController::class, 'newOrder']);
+
+Route::post("/allfood/cancelOrder", [AllfoodController::class, 'cancelOrder']);
+Route::post("/allfood/getStatusOrder", [AllfoodController::class, 'getStatusOrder']);
+
 
 Route::post('/imReady',[UserController::class,'imReady']);
 Route::post('/takeOrder',[OrderController::class,'takeOrder']);
@@ -48,7 +54,6 @@ Route::post('/startDeliveryOrder',[OrderController::class,'startDeliveryOrder'])
 Route::post('/courierAtTheClient',[OrderController::class,'courierAtTheClient']);
 Route::post('/finishDeliveryOrder',[OrderController::class,'finishDeliveryOrder']);
 Route::post('/cancelOrder',[OrderController::class,'cancelOrder']);
-
 
 Route::post('/register', [UserController::class, 'register']);
 Route::post('/signIn', [UserController::class, 'signIn']);

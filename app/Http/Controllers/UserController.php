@@ -79,7 +79,7 @@ class UserController extends Controller
             $mess = "Ваш пароль: $code \n С уважением, ALLFOOD Courier\n" . $signatureCode . " ";
             $array = array(
                 'login' => 'allfood',
-                'psw' => 'ceb183606831afdd536973f8523e51d3',
+                'psw' => env("SMS_PASSWORD"),
                 'phones' => $phone,
                 'mes' => $mess
             );
@@ -325,6 +325,7 @@ class UserController extends Controller
 
         } while (false);
         return response()->json($result);
+
     }
 
     public static function insertStateUserFunc($id_user, $state)
@@ -446,7 +447,7 @@ class UserController extends Controller
             $mess = "Ваш пароль: $code \n С уважением, ALLFOOD Courier";
             $array = array(
                 'login' => 'allfood',
-                'psw' => 'ceb183606831afdd536973f8523e51d3',
+                'psw' => env("sms_password"),
                 'phones' => $new_number,
                 'mes' => $mess
             );
