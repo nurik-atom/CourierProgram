@@ -99,12 +99,10 @@ class OrderController extends Controller
 
             $order = DB::table("orders")
                 ->where("id", $order_user->id_order)
-                ->where("status", "<", 7)
                 ->orderByDesc("id")
                 ->get();
 
-           if(!$order){
-               $result['message'] = 'Заказ не найден';
+           if($order[0]->status > 6){
                break;
            }
 
