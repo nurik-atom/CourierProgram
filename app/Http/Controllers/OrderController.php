@@ -103,6 +103,11 @@ class OrderController extends Controller
                 ->orderByDesc("id")
                 ->get();
 
+           if(!$order){
+               $result['message'] = 'Заказ не найден';
+               break;
+           }
+
             if ($order){
                 $result['have_order'] = true;
 
