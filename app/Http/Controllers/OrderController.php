@@ -331,6 +331,11 @@ class OrderController extends Controller
         do {
             $user = UserController::getUser($pass);
 
+            if (!$user){
+                $result['message'] = 'Пользователь не найден';
+                break;
+            }
+
             $status = DB::table("orders")->where("id", $id_order)->pluck("status")->first();
 
             if (!$status) {
