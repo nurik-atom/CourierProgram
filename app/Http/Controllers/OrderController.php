@@ -336,13 +336,21 @@ class OrderController extends Controller
                 break;
             }
 
-            $status = DB::table("orders")->where("id", $id_order)->pluck("status")->first();
+            $order = DB::table("orders")->where("id", $id_order)->select("status","id_courier")->first();
 
-            if (!$status) {
+
+
+            if (!$order->status) {
                 $result['message'] = 'Заказ не найден';
                 break;
             }
-            if ($status == 9) {
+
+            if($user->id != $order->id_courier){
+                $result['message']= 'Заказ не принадлежит Вам';
+                break;
+            }
+            
+            if ($order->status == 9) {
                 $result['message'] = 'Заказ уже отменен';
                 break;
             }
