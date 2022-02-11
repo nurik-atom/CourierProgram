@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\NewOrderRequest;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class AllfoodController extends Controller
 {
-    public function newOrder(Request $request)
+    public function newOrder(Request $request): \Illuminate\Http\JsonResponse
     {
         $key = $request->input("key");
 

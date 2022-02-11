@@ -75,8 +75,8 @@ class PushController extends Controller
         curl_close($ch);
         $response_a = json_decode($response, true);
 
-        $res['dist'] = $response_a['rows'][0]['elements'][0]['distance']['text'];
-        $res['time'] = $response_a['rows'][0]['elements'][0]['duration']['text'];
+        $res['dist'] = @$response_a['rows'][0]['elements'][0]['distance']['text'];
+        $res['time'] = @$response_a['rows'][0]['elements'][0]['duration']['text'];
         $res['dist_value'] = $response_a['rows'][0]['elements'][0]['distance']['value'];
         $res['time_value'] = $response_a['rows'][0]['elements'][0]['duration']['value'];
 

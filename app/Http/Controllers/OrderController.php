@@ -324,7 +324,7 @@ class OrderController extends Controller
 
     public function cancelOrder(Request $request)
     {
-        $pass = $request['pass'];
+        $pass = $request['password'];
         $id_order = $request['id_order'];
         $cause = $request["prichina"];
         $result['success'] = false;
@@ -349,7 +349,7 @@ class OrderController extends Controller
                 $result['message']= 'Заказ не принадлежит Вам';
                 break;
             }
-            
+
             if ($order->status == 9) {
                 $result['message'] = 'Заказ уже отменен';
                 break;
