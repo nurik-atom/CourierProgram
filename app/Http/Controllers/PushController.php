@@ -77,8 +77,8 @@ class PushController extends Controller
 
         $res['dist'] = @$response_a['rows'][0]['elements'][0]['distance']['text'];
         $res['time'] = @$response_a['rows'][0]['elements'][0]['duration']['text'];
-        $res['dist_value'] = $response_a['rows'][0]['elements'][0]['distance']['value'];
-        $res['time_value'] = $response_a['rows'][0]['elements'][0]['duration']['value'];
+        $res['dist_value'] = @$response_a['rows'][0]['elements'][0]['distance']['value'];
+        $res['time_value'] = @$response_a['rows'][0]['elements'][0]['duration']['value'];
 
         return $res;
     }

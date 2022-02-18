@@ -109,14 +109,14 @@ class OrderController extends Controller
             if ($order){
                 $result['have_order'] = true;
 
-                if ($order[0]->status == 3){
+                if ($order[0]->status <= 3){
                     $result['seconds'] = strtotime($order[0]->arrive_time)-time();
                 }
 
                 if ($order[0]->status == 5){
                     $start_time = DB::table("order_user")->where("id_order",$order[0]->id)->where("status",5)->pluck("created_at");
 
-                    $result['seconds'] = strtotime($start_time)-time();
+                    $result['seconds'] = strtotime($start_time) + $order[0]->needed_sec - time();
                 }
 
                 $result['order'] = OrderResource::collection($order)[0];
