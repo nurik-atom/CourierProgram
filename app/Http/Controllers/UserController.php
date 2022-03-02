@@ -226,6 +226,20 @@ class UserController extends Controller
 
     }
 
+    public function successRegistration(Request $request){
+        $id_user = $request->input("id_user");
+        $key = $request->input("key");
+        $data['success'] = false;
+        if ($key !== env("ALLFOOD_KEY")){
+            exit("Error Key");
+        }
+        if (DB::table("users")->find($id_user)->update(['status' => 4])){
+            PushController::successRegistrationPush($id_user);
+            $data['success'] = true;
+        }
+        return response()->json($data);
+    }
+
     function getStatusUser(Request $request)
     {
         $phone = $request->input('phone');

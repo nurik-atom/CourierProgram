@@ -9,8 +9,10 @@ use Illuminate\Support\Facades\DB;
 
 class AllfoodController extends Controller
 {
-    public function newOrder(Request $request): \Illuminate\Http\JsonResponse
+    public function newOrder(NewOrderRequest $request): \Illuminate\Http\JsonResponse
     {
+//        $request = $request->validated();
+
         $key = $request->input("key");
 
         if (!$key || $key != env("ALLFOOD_KEY")) exit("Error key");

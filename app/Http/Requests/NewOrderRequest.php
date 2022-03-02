@@ -26,20 +26,22 @@ class NewOrderRequest extends FormRequest
         return [
             'id_allfood'    =>'required|integer',
             'id_cafe'       =>'required|integer',
-            'cafe_name'     =>'required',
-            'phone'         =>'required',
-            'name'          =>'required',
-            'blob'          =>'required',
-            'from_geo'      =>'required|numeric',
-            'from_address'  =>'required',
-            'to_geo'        =>'required|numeric',
-            'to_address'    =>'required',
+            'cafe_name'     =>'required|string',
+            'phone'         =>'required|string',
+            'name'          =>'required|string',
+            'blob'          =>'required|string',
+            'from_geo'      =>'required|string',
+            'from_address'  =>'required|string',
+            'to_geo'        =>'required|string',
+            'to_address'    =>'required|string',
             'summ_order'    =>'required|numeric',
             'price_delivery'=>'required|numeric',
             'type'          =>'required|integer',
             'id_city'       =>'required|integer',
             'arrive_minute' =>'required|integer',
-            'key'           =>'required|integer'
+            'key'           =>'required|string'
         ];
+
+
     }
 }

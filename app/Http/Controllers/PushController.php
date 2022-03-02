@@ -83,12 +83,22 @@ class PushController extends Controller
         return $res;
     }
 
+    public static function successRegistrationPush($user){
+        $data['type'] = 'user';
+        $data['status'] = 'success_reg';
+        $message['title'] = 'Ура! Вы прошли проверку.';
+        $message['body'] = 'Теперь Вы можете приступить к доставке!';
+
+        self::sendDataPush($user, $data, $message);
+    }
+
     public static function newOrderPush($user,$id_order){
 
         $order = DB::table("orders")->where("id", $id_order)->select("id", "price_delivery")->first();
         $data = array();
 //        $data['order'] = OrderResource::collection($order);
-        $data['type'] = 'newOrder';
+        $data['type'] = 'order';
+        $data['status'] = 'new_order';
         $message['title'] = "Новый заказ";
         $message['body'] = "Заказ на сумму ".$order->price_delivery.' тенге';
 
@@ -174,7 +184,8 @@ class PushController extends Controller
     }
 
     public static function cancelFromCafeClient($id_order, $id_user, $prichina){
-        $data['type']  = 'cancelOrder';
+        $data['type']  = 'order';
+        $data['status']  = 'cancel_order';
         $mess['title'] = 'Заказ №'.$id_order. 'отменен';
         $mess['body']  = 'Причина: '.$prichina;
         self::sendDataPush($id_user, $data, $mess);

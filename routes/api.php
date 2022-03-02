@@ -63,6 +63,7 @@ Route::post('/getMoneyAndOrdersUser', [UserController::class, 'getMoneyAndOrders
 Route::post('/signStepOne',[UserController::class,'signStepOne']);
 //checkSms
 Route::post('/signStepTwo',[UserController::class,'signStepTwo']);
+Route::post('/successRegistration',[UserController::class,'successRegistration']);
 Route::post('/checkUser',[UserController::class,'checkUser']);
 Route::post('/checkOrderUser',[OrderController::class,'checkOrderUser']);
 

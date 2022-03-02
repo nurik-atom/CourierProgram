@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\checkOrderUserRequest;
 use App\Http\Resources\OrderResource;
 use Carbon\Carbon;
 use http\Client\Curl\User;
@@ -80,7 +81,7 @@ class OrderController extends Controller
         return response()->json($result);
     }
 
-    public function checkOrderUser(Request $request){
+    public function checkOrderUser(checkOrderUserRequest $request){
         $password = $request->input("password");
         $user = UserController::getUser($password);
         $result['success'] = false;
@@ -114,9 +115,9 @@ class OrderController extends Controller
                 }
 
                 if ($order[0]->status == 5){
-                    $start_time = DB::table("order_user")->where("id_order",$order[0]->id)->where("status",5)->pluck("created_at");
+                    $start_time = DB::table("order_user")->where("id_order",$order[0]->id)->where("status",5)->select("created_at")->first();
 
-                    $result['seconds'] = strtotime($start_time) + $order[0]->needed_sec - time();
+                    $result['seconds'] =  $order[0]->needed_sec + strtotime($start_time->created_at) - time();
                 }
 
                 $result['order'] = OrderResource::collection($order)[0];
@@ -356,7 +357,7 @@ class OrderController extends Controller
             }
 
             $cancelSql = DB::table("orders")->where('id', $id_order)
-                ->update(['status' => 9, "price_delivery" => "0"]);
+                ->update(['status' => 9]);
             self::addCauseToCancelled($id_order, $user->id, 1, $cause);
 
             UserController::insertStateUserFunc($user->id, 1);
