@@ -186,6 +186,8 @@ class PushController extends Controller
     public static function cancelFromCafeClient($id_order, $id_user, $prichina){
         $data['type']  = 'order';
         $data['status']  = 'cancel_order';
+        $data['message']  = $prichina;
+
         $mess['title'] = 'Заказ №'.$id_order. 'отменен';
         $mess['body']  = 'Причина: '.$prichina;
         self::sendDataPush($id_user, $data, $mess);
