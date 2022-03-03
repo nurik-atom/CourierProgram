@@ -69,6 +69,7 @@ Route::post('/checkOrderUser',[OrderController::class,'checkOrderUser']);
 
 
 Route::post('/editDataUser',[UserController::class,'editDataUser']);
+Route::post('/citiesForReg',[UserController::class,'citiesForReg']);
 
 Route::post('/getStatusUser',[UserController::class,'getStatusUser']);
 Route::post('/insertStateUser',[UserController::class,'insertStateUser']);

@@ -161,7 +161,7 @@ class AllfoodController extends Controller
 
             $order = DB::table("orders")
                 ->where("id_allfood", $id_allfood)
-                ->where("type", "$type")->first();
+                ->where("type", $type)->first();
 
             if (!$order){
                 $result['message'] = 'Заказ не найден';

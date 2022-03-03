@@ -181,6 +181,15 @@ class UserController extends Controller
         return response()->json($result);
     }
 
+    public function citiesForReg(){
+        $cities = array(
+            array('id'=>1, 'name'=>'Жанаозен'),
+            array('id'=>2, 'name'=>'Актау'),
+            array('id'=>6, 'name'=>'Семей')
+        );
+        return response()->json($cities);
+    }
+
     public function editDataUser(Request $request)
     {
         $phone = $request->input('phone');
