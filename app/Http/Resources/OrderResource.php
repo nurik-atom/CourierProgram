@@ -47,8 +47,8 @@ class OrderResource extends JsonResource
             "to_address" => $this->to_address,
             "summ_order" => $this->summ_order,
             "price_delivery" => $this->price_delivery,
-            "type" => $this->type,
             "distance" => $this->distance,
+            "routing_points" => $this->routing_points,
          //   "add_time" => Carbon::createFromFormat('Y-m-d H:i:s', $this->created_at)->timezone("Asia/Almaty")
             "add_time" =>Carbon::createFromFormat('Y-m-d H:i:s',$this->created_at),
         ];

@@ -175,4 +175,14 @@ class AllfoodController extends Controller
         return $result;
     }
 
+    public function test_graphhopper (Request $request){
+        $mode = $request->input("mode");
+
+        $order = DB::table("orders")->first();
+
+        $result = PushController::getPointsRoutinAndTime($order->from_geo, $order->to_geo, $mode);
+
+        return response()->json($result);
+    }
+
 }

@@ -67,6 +67,9 @@ Route::post('/successRegistration',[UserController::class,'successRegistration']
 Route::post('/checkUser',[UserController::class,'checkUser']);
 Route::post('/checkOrderUser',[OrderController::class,'checkOrderUser']);
 
+Route::post('/test_graphhopper',[AllfoodController::class,'test_graphhopper']);
+
+
 
 Route::post('/editDataUser',[UserController::class,'editDataUser']);
 Route::post('/citiesForReg',[UserController::class,'citiesForReg']);
