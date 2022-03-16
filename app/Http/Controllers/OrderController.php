@@ -171,26 +171,8 @@ class OrderController extends Controller
 
             self::changeOrderCourierStatus($order->id, $user->id, 3);
 
-            $price_delivery = MoneyController::costDelivery($order->distance, $user->type);
-
-            //Update needed_time and distance_matrix
-//            $matrix = PushController::getDistanceDurationGoogle($order->from_geo, $order->to_geo, $user->type);
-            $matrix = PushController::getPointsRoutinAndTime($order->from_geo, $order->to_geo, $user->type);
-
-            DB::table("orders")->where("id", $id_order)
-                ->update([
-                    "needed_sec" => $matrix['time'],
-                    "distance_matrix" => $matrix['distance'],
-                    "routing_points" => $matrix['routing_points'],
-                    "mode" => $user->type,
-                    "price_delivery" => $price_delivery
-                ]);
-
-            $result['matrix'] = $matrix;
             //Curl to allfood kz
             $result['allfood'] = PushController::takedOrderAllfood($order->id, $user->id, "5");
-
-
             $result['success'] = true;
 
         } while (false);

@@ -30,14 +30,21 @@ class OrderResource extends JsonResource
 
     public function toArray($request)
     {
+        // Comment ADD
+        // Cafe Phone
+        // price_delivery tekseru kerek
+
+
         $date =  Carbon::parse($this->created_at,'Asia/Aqtau');
         return [
             "id" => $this->id,
             "id_city" => $this->id_city,
             "id_allfood" => $this->id_allfood,
+            "type" => $this->type,
             "cafe_name" => $this->cafe_name,
-            "phone" => $this->phone,
-            "name" => $this->name,
+            "cafe_phone" => $this->cafe_phone,
+            "user_phone" => $this->phone,
+            "user_name" => $this->name,
             "blob" => ($this->type == 1 ? $this->blobToArray($this->blob) : ""),
             "status" => $this->status,
             "created_at" => $this->created_at,

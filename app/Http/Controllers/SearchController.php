@@ -67,7 +67,7 @@ class SearchController extends Controller
                 $c = self::searchCourierSql("1", "1000", $order);
                 if ($c){
                     $drivers[] = $c;
-                    self::offerToCourier($c->id_user, $order->id);
+                    self::offerToCourier($c, $order);
                     break;
                 }
             }
@@ -77,7 +77,7 @@ class SearchController extends Controller
                 $c = self::searchCourierSql("2", "2000", $order);
                 if ($c){
                     $drivers[] = $c;
-                    self::offerToCourier($c->id_user, $order->id);
+                    self::offerToCourier($c, $order);
                     break;
                 }
             }
@@ -86,7 +86,7 @@ class SearchController extends Controller
                 $c = self::searchCourierSql("3", "4000", $order);
                 if ($c){
                     $drivers[] = $c;
-                    self::offerToCourier($c->id_user, $order->id);
+                    self::offerToCourier($c, $order);
                     break;
                 }
             }
@@ -95,7 +95,7 @@ class SearchController extends Controller
                 $c = self::searchCourierSql("4", "10000", $order);
                 if ($c){
                     $drivers[] = $c;
-                    self::offerToCourier($c->id_user, $order->id);
+                    self::offerToCourier($c, $order);
                     break;
                 }
             }
@@ -105,11 +105,24 @@ class SearchController extends Controller
         return $drivers;
     }
 
-    public static function offerToCourier($id_user, $id_order){
+    public static function offerToCourier($user, $order){
 
-        OrderController::changeOrderCourierStatus($id_order, $id_user, 2);
+        $price_delivery = MoneyController::costDelivery($order->distance, $user->type);
 
-        PushController::newOrderPush($id_user, $id_order);
+        $matrix = PushController::getPointsRoutinAndTime($order->from_geo, $order->to_geo, $user->type);
+
+        DB::table("orders")->where("id", $order->id)
+            ->update([
+                "needed_sec" => $matrix['time'],
+                "distance_matrix" => $matrix['distance'],
+                "routing_points" => $matrix['route_points'],
+                "mode" => $user->type,
+                "price_delivery" => $price_delivery
+            ]);
+
+        OrderController::changeOrderCourierStatus($order->id, $user->id, 2);
+
+        PushController::newOrderPush($user->id, $order->id);
 
         return true;
 
