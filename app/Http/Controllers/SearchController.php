@@ -40,7 +40,7 @@ class SearchController extends Controller
     {
         $result = array();
         $newOrders = DB::table("orders")
-            ->select("id", "id_city", "distance","from_geo, to_geo")
+            ->select("id", "id_city", "distance","from_geo", "to_geo")
             ->where("status", 1)
             ->whereRaw("TIMESTAMPDIFF(MINUTE, NOW(), arrive_time) < 15")
             ->get();
