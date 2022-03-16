@@ -24,6 +24,8 @@ class AllfoodController extends Controller
         $blob = $request->input('blob');
         $id_cafe = $request->input('id_cafe');
         $cafe_name = $request->input('cafe_name');
+        $cafe_phone = $request->input('cafe_phone');
+        $comments = $request->input('comments');
         $from_geo = $request->input('from_geo');
         $from_address = $request->input('from_address');
         $to_geo = $request->input('to_geo');
@@ -63,6 +65,8 @@ class AllfoodController extends Controller
                 'price_delivery' => $price_delivery,
                 'id_cafe' => $id_cafe,
                 'cafe_name' => $cafe_name,
+                'cafe_phone' => $cafe_phone,
+                'comments' => $comments,
                 'from_geo' => $from_geo,
                 'from_address' => $from_address,
                 'to_geo' => $to_geo,

@@ -47,6 +47,7 @@ class OrderResource extends JsonResource
             "user_name" => $this->name,
             "blob" => ($this->type == 1 ? $this->blobToArray($this->blob) : ""),
             "status" => $this->status,
+            "comments" => $this->comments,
             "created_at" => $this->created_at,
             "from_geo" => $this->from_geo,
             "from_address" => $this->from_address,
