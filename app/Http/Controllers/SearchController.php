@@ -145,7 +145,7 @@ class SearchController extends Controller
                 AS distance";
 
         return DB::table("users_geo")
-            ->selectRaw(" id_user, users_geo.type, users.state, ".$geo_sql)
+            ->selectRaw("users.id as id, id_user, users_geo.type, users.state, ".$geo_sql)
             ->join("users", "users_geo.id_user", "=","users.id")
             ->where("users_geo.type",$type)
             ->where("users_geo.updated_at",">", date("Y-m-d H:i:s",time()-3600))
