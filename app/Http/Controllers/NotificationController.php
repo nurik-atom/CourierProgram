@@ -68,6 +68,14 @@ class NotificationController extends Controller
                         ->orWhereNull("id_city");
                 })->orderByDesc("id")->get();
 
+            $ids_notif = $notifications->pluck("id")->toArray();
+
+            $notif_opens_ids = DB::table("notif_open")->where("id_user",$user->id)->whereIn("id_notif",$ids_notif)->groupBy('id_notif')->pluck("id_notif")->toArray();
+
+            foreach ($notifications as $key => $n){
+                $id = $n->id;
+                $notifications[$key]->new = !in_array($id, $notif_opens_ids);
+            }
 
             if ($notifications) {
                 $result['notifs'] = NotifShortResource::collection($notifications);
