@@ -59,6 +59,7 @@ Route::post('/register', [UserController::class, 'register']);
 Route::post('/signIn', [UserController::class, 'signIn']);
 Route::post('/profile', [UserController::class, 'profile']);
 Route::post('/getMoneyAndOrdersUser', [UserController::class, 'getMoneyAndOrdersUser']);
+Route::post('/getHelpBalancePage', [HelpController::class, 'getHelpBalancePage']);
 //sendSms
 Route::post('/signStepOne',[UserController::class,'signStepOne']);
 //checkSms

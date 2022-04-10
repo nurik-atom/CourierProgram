@@ -13,4 +13,14 @@ class HelpController extends Controller
         $result['pages'] = DB::table("help_pages")->orderBy("sort")->get();
         return response()->json($result);
     }
+
+    public function getHelpBalancePage(Request $request){
+        $id = $request->input("id");
+
+        $result = DB::table("help_balance_pages")
+            ->select("id", "name", "icon", "type", "big_text")
+            ->where("id", $id)
+            ->first();
+        return response()->json($result);
+    }
 }

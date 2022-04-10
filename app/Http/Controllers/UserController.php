@@ -596,6 +596,17 @@ class UserController extends Controller
             else
                 $result['balance'] = $balance;
 
+            $result['help_balance_pages'] = array();
+
+            $help_balance_pages = DB::table("help_balance_pages")
+                ->select("id", "name", "icon", "type")
+                ->orderBy("sort")
+                ->get();
+
+            if ($help_balance_pages) {
+                $result['help_balance_pages'] = $help_balance_pages;
+            }
+
             $result['orders'] = array();
 
             $orders = DB::table("orders")
