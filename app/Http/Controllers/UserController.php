@@ -622,6 +622,69 @@ class UserController extends Controller
         return response()->json($result);
     }
 
+    public function getDateRangeOrders(Request $request){
+        $password = $request->input("password");
+        $from = $request->input("from");
+        $to = $request->input("to");
+
+        $result['success'] = false;
+
+        do{
+            $user = self::getUser($password);
+            if (!$user){
+                $result['message'] = 'Пользователь не найден';
+                break;
+            }
+            $result['orders']= array();
+
+            $orders = DB::table("orders")
+                ->select("id", "created_at","price_delivery")
+                ->where("id_courier", $user->id)
+                ->where("created_at",">=" ,$from)
+                ->where("created_at","<=" ,$to)
+                ->get();
+
+            if ($orders) {
+                $result['orders'] = OrderMiniResource::collection($orders);
+            }
+            $result['success'] = true;
+
+        }while(false);
+
+        return response()->json($result);
+    }
+
+    public function getFullDetailsOrder(Request $request){
+        $password = $request->input("password");
+        $id_order = $request->input("id_order");
+
+        $result['success'] = false;
+
+        do{
+            $user = self::getUser($password);
+            if (!$user){
+                $result['message'] = 'Пользователь не найден';
+                break;
+            }
+            $result['order']= array();
+
+            $order = DB::table("orders")
+//                ->where("id_courier", $user->id)
+                ->where("id", $id_order)
+                ->get();
+
+            if ($order) {
+                $result['order'] = OrderResource::collection($order)[0];
+            }else{
+                $result['message'] = 'Заказ не найден';
+            }
+            $result['success'] = true;
+
+        }while(false);
+
+        return response()->json($result);
+    }
+
     public function test()
     {
         echo "something";
