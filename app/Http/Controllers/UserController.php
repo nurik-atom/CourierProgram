@@ -669,7 +669,7 @@ class UserController extends Controller
             $result['order']= array();
 
             $order = DB::table("orders")
-//                ->where("id_courier", $user->id)
+                ->where("id_courier", $user->id)
                 ->where("id", $id_order)
                 ->get();
 
