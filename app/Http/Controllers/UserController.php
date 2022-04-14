@@ -562,7 +562,7 @@ class UserController extends Controller
                 break;
             }
             //WEEK
-            $weekStartDate = Carbon::now()->startOfWeek()->format('Y-m-d H:i:s');
+            $weekStartDate = Carbon::now()->startOfMonth()->format('Y-m-d H:i:s');
             $this_week = DB::table("balance_history")
                 ->where("id_user", $user->id)
                 ->where("id_order", "!=", 0)
@@ -607,16 +607,16 @@ class UserController extends Controller
                 $result['help_balance_pages'] = $help_balance_pages;
             }
 
-            $result['orders'] = array();
+//            $result['orders'] = array();
+//
+//            $orders = DB::table("orders")
+//                ->select("id", "created_at", "price_delivery")
+//                ->where("id_courier", $user->id)
+//                ->orderByDesc("id")
+//                ->limit(20)->get();
+//            $result['orders'] = OrderMiniResource::collection($orders);
 
-            $orders = DB::table("orders")
-                ->select("id", "created_at", "price_delivery")
-                ->where("id_courier", $user->id)
-                ->orderByDesc("id")
-                ->limit(20)->get();
-            $result['orders'] = OrderMiniResource::collection($orders);
-
-            $result['date'] = Carbon::now()->startOfWeek()->diffForHumans();
+            $result['date'] = Carbon::now()->startOfMonth()->diffForHumans();
             $result['success'] = true;
         } while (false);
         return response()->json($result);
@@ -636,12 +636,23 @@ class UserController extends Controller
                 break;
             }
             $result['orders']= array();
-
-            $orders = DB::table("orders")
-                ->select("id", "created_at","price_delivery")
+            $sumCount = DB::table("orders")
+                ->selectRaw("IFNULL(SUM(price_delivery),0) as summa, COUNT(id) as kol")
                 ->where("id_courier", $user->id)
                 ->where("created_at",">=" ,$from)
                 ->where("created_at","<=" ,$to)
+                ->where("status",7)
+                ->first();
+
+            $result['summ'] = (int) $sumCount->summa;
+            $result['count'] = $sumCount->kol;
+
+            $orders = DB::table("orders")
+                ->select("id","cafe_name", "created_at","price_delivery")
+                ->where("id_courier", $user->id)
+                ->where("created_at",">=" ,$from)
+                ->where("created_at","<=" ,$to)
+                ->orderByDesc("id")
                 ->get();
 
             if ($orders) {
