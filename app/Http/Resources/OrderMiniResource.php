@@ -18,7 +18,8 @@ class OrderMiniResource extends JsonResource
         return [
             "id"=>$this->id,
             "cafe_name"=>$this->cafe_name,
-            "date"=>Carbon::parse($this->created_at)->locale("ru_RU")->isoFormat('LLT'),
+            "date"=>Carbon::parse($this->created_at)->locale("ru_RU")->isoFormat('LLL'),
+            "status"=>$this->status,
             "price_delivery"=>$this->price_delivery
         ];
     }

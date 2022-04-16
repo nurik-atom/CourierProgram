@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use Carbon\Carbon;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\DB;
 
 class OrderResource extends JsonResource
 {
@@ -26,6 +27,18 @@ class OrderResource extends JsonResource
         }
         return $result;
 
+    }
+
+    public function prichinaOtmeny($id_order){
+        $pricina = DB::table("orders_cancelled")->select("cause")
+            ->where("id_order", $id_order)->orderByDesc("id")->first();
+
+        if ($pricina) {
+            return $pricina->cause;
+        }
+        else {
+            return "";
+        }
     }
 
     public function toArray($request)
@@ -56,6 +69,7 @@ class OrderResource extends JsonResource
             "from_geo" => $this->from_geo,
             "from_address" => $this->from_address,
             "to_geo" => $this->to_geo,
+            "prichina_otmeny" => ($this->status == 9 ? $this->prichinaOtmeny($this->id) : ""),
             "to_address" => $this->to_address,
             "summ_order" => $this->summ_order,
             "price_delivery" => $this->price_delivery,

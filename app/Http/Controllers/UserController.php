@@ -648,7 +648,7 @@ class UserController extends Controller
             $result['count'] = $sumCount->kol;
 
             $orders = DB::table("orders")
-                ->select("id","cafe_name", "created_at","price_delivery")
+                ->select("id","cafe_name", "created_at","price_delivery", "status")
                 ->where("id_courier", $user->id)
                 ->where("created_at",">=" ,$from)
                 ->where("created_at","<=" ,$to)
