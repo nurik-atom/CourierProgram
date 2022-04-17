@@ -98,8 +98,9 @@ class OrderController extends Controller
             if (!$order_user) {
                 break;
             }
-
-
+            if ($order_user->status > 7) {
+                break;
+            }
             $order = DB::table("orders")
                 ->where("id", $order_user->id_order)
                 ->orderByDesc("id")
