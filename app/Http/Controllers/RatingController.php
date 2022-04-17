@@ -117,11 +117,6 @@ class RatingController extends Controller
         $result['$sort_rating'] = $sort_rating;
         $result['env'] = env("FIREBASE_AUTH");
 
-        $mes['title'] = 'Nursik Push Barsa ait';
-        $mes['body'] = "body";
-//        $resposce = PushController::sendDataPush($id_courier, '', $mes);
-
-//         $result['responce'] = $resposce;
         DB::table("users")
             ->where("id", $id_courier)
             ->update(["rating"=>round($avg_star,1), "sort_rating"=>$sort_rating]);

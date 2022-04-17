@@ -53,6 +53,7 @@ Route::post('/courierInCafe',[OrderController::class,'courierInCafe']);
 Route::post('/startDeliveryOrder',[OrderController::class,'startDeliveryOrder']);
 Route::post('/courierAtTheClient',[OrderController::class,'courierAtTheClient']);
 Route::post('/finishDeliveryOrder',[OrderController::class,'finishDeliveryOrder']);
+Route::post('/refusingOrderReq',[OrderController::class,'refusingOrderReq']);
 Route::post('/cancelOrder',[OrderController::class,'cancelOrder']);
 
 Route::post('/register', [UserController::class, 'register']);
@@ -93,6 +94,7 @@ Route::post('/checkSMS',[UserController::class,'inputSmsCode']);
 Route::post('/setUserGeoPosition',[UserController::class,'setUserGeoPosition']);
 
 Route::get("/searchStart",[SearchController::class, 'searchNewOrder']);
+Route::get("/fallBehindOrders",[SearchController::class, 'fallBehindOrders']);
 Route::get("/insertTestGeoPositon",[SearchController::class, 'insertTestGeoPositon']);
 
 Route::post("/addComment",[RatingController::class, "addComment"]);

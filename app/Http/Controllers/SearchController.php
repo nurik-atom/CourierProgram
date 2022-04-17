@@ -9,10 +9,10 @@ use Illuminate\Support\Facades\DB;
 
 class SearchController extends Controller
 {
-    const MAX_FOOT_DRIVER = 1500;
-    const MAX_VELO_DRIVER = 3000;
+    const MAX_FOOT_DRIVER  = 1500;
+    const MAX_VELO_DRIVER  = 3000;
     const MAX_MOPED_DRIVER = 5000;
-    const MAX_AUTO_DRIVER = 50000;
+    const MAX_AUTO_DRIVER  = 50000;
 
 
     function insertTestGeoPositon(){
@@ -42,24 +42,43 @@ class SearchController extends Controller
         $newOrders = DB::table("orders")
             ->select("id", "id_city", "distance","from_geo", "to_geo")
             ->where("status", 1)
-            ->whereRaw("TIMESTAMPDIFF(MINUTE, NOW(), arrive_time) < 15")
+//            ->whereRaw("TIMESTAMPDIFF(MINUTE, NOW(), arrive_time) < 15")
             ->get();
         foreach ($newOrders as $newOrder) {
             $result['courier'][] = self::searchCourier($newOrder);
             $result['order'][] = $newOrder;
         }
 
-//        $mes['mess'] = 'Поиск';
-//        PushController::sendReqToAllfood("test_search", $mes);
+        return response()->json($result);
+    }
 
-//        DB::table("orders")->where("id",6)->update(["updated_at"=>Carbon::now()]);
+    public static function fallBehindOrders(){
+        $result = array();
+        $fallBehindOrders = DB::table("orders")
+            ->select("id", "id_courier", "id_city", "distance","from_geo", "to_geo")
+            ->where("status", 2)
+            ->whereRaw("TIMESTAMPDIFF(SECOND, created_at, NOW()) > 50")
+            ->get();
+
+        foreach ($fallBehindOrders as $o) {
+            OrderController::refusingOrder($o->id_courier, $o->id, 11, null);
+            UserController::insertStateUserFunc($o->id, 1);
+            UserController::insertStateUserFunc($o->id, 1);
+            PushController::refusingFallBehindOrder($o->id,$o->id_courier);
+
+            DB::table("orders")->where("id", $o->id)
+                ->update(['status' => 1, 'id_courier' => 0]);
+
+            $result['courier'][] = self::searchCourier($o);
+            $result['order'][] = $o;
+        }
+
         return response()->json($result);
     }
 
     //! Поиск курьеров к заказу 1 стадия
     public static function searchCourier($order)
     {
-
     $drivers = array();
         do {
             //Поиск пеших курьеров
@@ -132,6 +151,11 @@ class SearchController extends Controller
         $from_lat = explode("\n", $order->from_geo)[0];
         $from_lon = explode("\n", $order->from_geo)[1];
 
+        $not_users_id = DB::table("order_user")
+            ->where("id_order", $order->id)
+            ->pluck("id")
+            ->toArray();
+
         $geo_sql = "( 6371000 *
                     ACOS(
                         COS( RADIANS( {$from_lat} ) ) *
@@ -150,6 +174,7 @@ class SearchController extends Controller
             ->where("users_geo.type",$type)
             ->where("users_geo.updated_at",">", date("Y-m-d H:i:s",time()-3600))
             ->where("users.state" ,1)
+            ->whereNotIn("users.id" ,$not_users_id)
             ->having("distance", "<",$distance)
             ->orderByDesc("users.rating")
             ->first();

@@ -202,6 +202,15 @@ class PushController extends Controller
         return self::sendReqToAllfood("end_delivery", $req);
     }
 
+    public static function refusingFallBehindOrder($id_order, $id_user){
+        $data['type']  = 'order';
+        $data['status']  = 'cancel_order';
+        $data['message']  = 'Вы не успели принять заказ';
+
+        $mess['title'] = 'Заказ №'.$id_order. ' отменен для Вас';
+        $mess['body']  = 'Вы не успели принять заказ';
+        self::sendDataPush($id_user, $data, $mess);
+    }
     public static function cancelFromCafeClient($id_order, $id_user, $prichina){
         $data['type']  = 'order';
         $data['status']  = 'cancel_order';
