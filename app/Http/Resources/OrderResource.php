@@ -64,7 +64,7 @@ class OrderResource extends JsonResource
             "date"=>Carbon::parse($this->created_at)->locale("ru_RU")->isoFormat('LLLL'),
             "date_short"=>Carbon::parse($this->created_at)->locale("ru_RU")->isoFormat('LL'),
             "time"=>Carbon::parse($this->created_at)->locale("ru_RU")->isoFormat('LT'),
-            "arrive_time"=>Carbon::parse($this->arrive)->locale("ru_RU")->isoFormat('LT'),
+            "arrive_time"=>Carbon::parse($this->arrive_time)->locale("ru_RU")->isoFormat('LT'),
             "datetime"=>Carbon::parse($this->created_at)->locale("ru_RU")->isoFormat('LLL'),
             "created_at" => $this->created_at,
             "from_geo" => $this->from_geo,
