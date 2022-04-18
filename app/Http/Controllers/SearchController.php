@@ -66,7 +66,7 @@ class SearchController extends Controller
             DB::table("orders")->where("id", $o->id)
                 ->update(['status' => 1, 'id_courier' => 0]);
 
-            UserController::insertStateUserFunc($o->id, 1);
+            UserController::insertStateUserFunc($o->id_courier, 1);
             $result['courier'][] = self::searchCourier($o);
             $result['order'][] = $o;
         }
