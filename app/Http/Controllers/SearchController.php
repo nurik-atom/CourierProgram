@@ -67,6 +67,7 @@ class SearchController extends Controller
                 ->update(['status' => 1, 'id_courier' => 0]);
 
             UserController::insertStateUserFunc($o->id_courier, 1);
+
             $result['courier'][] = self::searchCourier($o);
             $result['order'][] = $o;
         }
@@ -151,7 +152,7 @@ class SearchController extends Controller
 
         $not_users_id = DB::table("order_user")
             ->where("id_order", $order->id)
-            ->pluck("id")
+            ->pluck("id_user")
             ->toArray();
 
         $geo_sql = "( 6371000 *
