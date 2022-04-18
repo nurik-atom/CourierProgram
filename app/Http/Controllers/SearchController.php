@@ -62,12 +62,11 @@ class SearchController extends Controller
 
         foreach ($fallBehindOrders as $o) {
             OrderController::refusingOrder($o->id_courier, $o->id, 11, null);
-            UserController::insertStateUserFunc($o->id, 1);
             PushController::refusingFallBehindOrder($o->id,$o->id_courier);
-
             DB::table("orders")->where("id", $o->id)
                 ->update(['status' => 1, 'id_courier' => 0]);
 
+            UserController::insertStateUserFunc($o->id, 1);
             $result['courier'][] = self::searchCourier($o);
             $result['order'][] = $o;
         }

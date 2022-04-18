@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
 
 class AllfoodController extends Controller
 {
-    public function newOrder(NewOrderRequest $request): \Illuminate\Http\JsonResponse
+    public function newOrder(Request $request): \Illuminate\Http\JsonResponse
     {
 //        $request = $request->validated();
 

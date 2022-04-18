@@ -64,7 +64,7 @@ class RatingController extends Controller
                 break;
             }
             $result['success'] = true;
-            $result['calculate_Rate'] = self::calculateRating($user->id);
+            $result['rating_info'] = self::calculateRating($user->id);
         }while(false);
         /*if (!$user) {
             $result['message'] = 'Пользователь не найден';
@@ -83,43 +83,55 @@ class RatingController extends Controller
             ->where("created_at", ">", Carbon::now()->subDays(15))
             ->avg("star");
 
-        $count_agree = DB::table("order_user")
+
+        $count_all_offer = DB::table("order_user")
             ->where("id_user", $id_courier)
             ->where("created_at", ">", Carbon::now()->subDays(15))
-            ->where("status", 2)
+            ->groupBy("id_order")
             ->count();
 
         $count_propusk = DB::table("order_user")
             ->where("id_user", $id_courier)
             ->where("created_at", ">", Carbon::now()->subDays(15))
-            ->where("status", "!=", 2)->count();
+            ->whereIn("status", [11,12])
+            ->count();
+
+        $count_orders = DB::table("orders")
+            ->where("id_courier", $id_courier)
+            ->where("created_at", ">", Carbon::now()->subDays(15))
+            ->count();
+
+        $count_during_orders = DB::table("orders")
+            ->where("id_courier", $id_courier)
+            ->where("needed_sec", ">=", "duration_sec")
+            ->where("created_at", ">", Carbon::now()->subDays(15))
+            ->count();
 
         $count_today = DB::table("order_user")
             ->where("id_user", $id_courier)
             ->where("created_at", ">", Carbon::now()->subHour(5))
-            ->where("status", "=", 2)->count();
+            ->where("status", "=", 7)->count();
 
 
-        if($count_agree)
-            $percent_propusk = $count_propusk / $count_agree;
-        else
-            $percent_propusk = 0;
+        $percent_success = 1 - $count_propusk/ ($count_all_offer ?: 1);
+        $percent_during  = $count_during_orders / ($count_orders ?: 1);
 
-        $sort_rating = ($avg_star*10)-$percent_propusk-$count_today;
+        $rating = $avg_star * $percent_success * $percent_during;
+
+        $sort_rating = ($rating * 10) - $count_today;
 
         if ($sort_rating == 0) $sort_rating = 50;
 
 
-        $result['percent_propusk'] = $percent_propusk;
-        $result['$count_propusk'] = $count_propusk;
-        $result['$count_agree'] = $count_agree;
-        $result['$avg_star'] = round($avg_star,1);
-        $result['$sort_rating'] = $sort_rating;
-        $result['env'] = env("FIREBASE_AUTH");
+        $result['rating'] = round($rating, 1);
+        $result['percent_success'] = (int) 100 * $percent_success;
+        $result['percent_during_orders'] = (int) 100 * $percent_during;
+        $result['all_orders'] =  $count_orders;
+        $result['days'] =  '15 дней';
 
         DB::table("users")
             ->where("id", $id_courier)
-            ->update(["rating"=>round($avg_star,1), "sort_rating"=>$sort_rating]);
+            ->update(["rating"=>round($rating,1), "sort_rating"=>$sort_rating]);
 
         return $result;
 
