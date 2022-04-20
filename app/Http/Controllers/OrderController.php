@@ -124,7 +124,12 @@ class OrderController extends Controller
                 $result['have_order'] = true;
 
                 if ($order[0]->status == 2){
-                    $result['seconds'] = time() - strtotime($order_user->created_at);
+                    $time_offer = DB::table("order_user")
+                        ->where("id_order", $order[0]->id)
+                        ->where("status", 2)
+                        ->pluck("created_at")
+                        ->last();
+                    $result['seconds'] = time() - strtotime($time_offer);
                 }
 
                 if ($order[0]->status <= 3) {

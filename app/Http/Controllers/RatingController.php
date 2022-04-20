@@ -86,8 +86,8 @@ class RatingController extends Controller
 
         $count_all_offer = DB::table("order_user")
             ->where("id_user", $id_courier)
+            ->where("status", 2)
             ->where("created_at", ">", Carbon::now()->subDays(15))
-            ->groupBy("id_order")
             ->count();
 
         $count_propusk = DB::table("order_user")
