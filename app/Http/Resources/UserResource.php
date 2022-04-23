@@ -19,10 +19,12 @@ class UserResource extends JsonResource
         $types = array(1=>'Пешый курьер', 2=>'Вело курьер', 3=>'Мото курьер', 4=>'Авто курьер');
         return [
             'id'=>$this->id,
+            'id_city'=>$this->id_city,
             'name'=>$this->name,
             'surname'=>$this->surname,
             'birthday'=>$this->birthday,
-            'photo'=>$this->photo ? Storage::url($this->photo) : null,
+            'mini_photo'=>$this->photo ? 'https://courier.qala.kz'.Storage::url($this->photo) : null,
+            'photo'=>$this->photo ? 'https://courier.qala.kz'.Storage::url($this->photo) : null,
             'phone'=>"+".$this->phone,
             'status'=>$this->status,
             'type'=>$this->type,

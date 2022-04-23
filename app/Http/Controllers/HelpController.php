@@ -8,8 +8,8 @@ use Illuminate\Support\Facades\DB;
 class HelpController extends Controller
 {
     public function getAllHelpPages(Request $request){
-        $result['whatsapp'] = 'https://wa.me/77089222820';
-        $result['zvonok'] = '+77089222820';
+        $result['whatsapp'] = '77089222820';
+        $result['zvonok'] = '77081139347';
         $result['pages'] = DB::table("help_pages")->orderBy("sort")->get();
         return response()->json($result);
     }
