@@ -50,6 +50,7 @@ class RatingController extends Controller
     {
         $password = $request->input("password");
         $message = 'Не передан параметр';
+        $result['success'] = false;
         $array = [];
 
         do{

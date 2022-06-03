@@ -84,7 +84,7 @@ class AllfoodController extends Controller
 
 
         } while (false);
-        return response()->json($result);
+        return response()->getPointsRoutinAndTime($result);
     }
 
     public function cancelOrder(Request $request)
