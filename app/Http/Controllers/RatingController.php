@@ -127,7 +127,7 @@ class RatingController extends Controller
         $result['rating'] = round($rating, 1);
         $result['percent_success'] = (int) 100 * $percent_success;
         $result['percent_during_orders'] = (int) 100 * $percent_during;
-        $result['all_orders'] =  $count_orders;
+        $result['all_orders'] =  (int) $count_orders;
         $result['days'] =  '15 дней';
 
         DB::table("users")
