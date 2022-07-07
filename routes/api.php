@@ -44,6 +44,7 @@ Route::post('/getStatusTimeOrder', [OrderController::class, 'getStatusTimeOrder'
 Route::post('/newOrder', [AllfoodController::class, 'newOrder']);
 
 Route::post("/allfood/cancelOrder", [AllfoodController::class, 'cancelOrder']);
+Route::post("/allfood/cancelTelOrderFromAllfood", [AllfoodController::class, 'cancelTelOrderFromAllfood']);
 Route::post("/allfood/getStatusOrder", [AllfoodController::class, 'getStatusOrder']);
 
 

@@ -43,13 +43,13 @@ class AllfoodController extends Controller
 
             $result['distance'] = $distance;
 
-            $order = DB::table("orders")->select("id")->where('id_allfood', $id_allfood)->first();
+            $order = DB::table("orders")->select("id")->where('id_allfood', $id_allfood)->where("type", $type)->first();
             if ($order) {
                 $result['message'] = 'Заказ уже добавлен';
                 break;
             }
 
-            if (!$id_allfood || !$id_city || !$phone || !$name || !$blob || !$id_cafe || !$cafe_name || !$from_geo || !$from_address || !$to_geo || !$to_address || !$summ_order || !$type) {
+            if (!$id_allfood || !$id_city || !$phone || !$id_cafe || !$from_geo || !$from_address || !$to_geo || !$to_address || !$type) {
                 $result['message'] = 'Данные не полные. Заказ не добавлен';
                 break;
             }
@@ -84,7 +84,47 @@ class AllfoodController extends Controller
 
 
         } while (false);
+
         return response()->json($result);
+    }
+
+    public function cancelTelOrderFromAllfood(Request $request){
+        $id = $request->input("id");
+        $id_allfood = $request->input("id_allfood");
+        $who = $request->input("who");
+        $key = $request->input("key");
+        $prichina = $request->input("prichina");
+
+        $result['success'] = false;
+
+        if (!$key || $key != env("ALLFOOD_KEY")) exit("Error key");
+
+        do{
+            $check = $this->checkOrderType($id_allfood, 2);
+            if (!$check['success']){
+                $result['message'] = $check['message'];
+                break;
+            }
+
+            $order = $check['order'];
+
+            $cancelSql = DB::table("orders")->where('id', $order->id)
+                ->update(['status' => 9, "price_delivery" => "0"]);
+            if (!$cancelSql) {
+                $result['message'] = 'Ошибка при отмене';
+                break;
+            }
+            OrderController::addCauseToCancelled($order->id, 0, $who, $prichina);
+
+            if ($order->id_courier) {
+                UserController::insertStateUserFunc($order->id_courier, 1);
+                PushController::cancelFromCafeClient($order->id, $order->id_courier, $prichina);
+            }
+            $result['success'] = true;
+        }while(false);
+
+        return response()->json($result);
+
     }
 
     public function cancelOrder(Request $request)
@@ -120,7 +160,7 @@ class AllfoodController extends Controller
                 PushController::cancelFromCafeClient($order->id, $order->id_courier, $prichina);
             }
 
-            $result['message'] = true;
+            $result['success'] = true;
         } while (false);
         return response()->json($result);
     }
