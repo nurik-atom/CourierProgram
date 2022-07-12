@@ -223,7 +223,7 @@ class OrderController extends Controller
 
             self::changeOrderCourierStatus($order->id, $user->id, 4);
             //Curl to allfood kz
-            $result['allfood'] = PushController::courierInCafe($order->id, $user->id);
+            $result['allfood'] = PushController::courierInCafe($order, $user);
             $result['success'] = true;
         } while (false);
         return response()->json($result);
