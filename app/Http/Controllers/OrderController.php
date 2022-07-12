@@ -189,7 +189,7 @@ class OrderController extends Controller
             self::changeOrderCourierStatus($order->id, $user->id, 3);
 
             //Curl to allfood kz
-            $result['allfood'] = PushController::takedOrderAllfood($order->id, $user->id, "5");
+            $result['allfood'] = PushController::takedOrderAllfood($order, $user, "5");
             $result['success'] = true;
 
         } while (false);
