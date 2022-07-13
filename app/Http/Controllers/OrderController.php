@@ -255,7 +255,7 @@ class OrderController extends Controller
 
             self::changeOrderCourierStatus($order->id, $user->id, 5);
             //Curl to allfood kz
-            $result['allfood'] = PushController::startDeliveryOrder($order->id, $user->id, $order->needed_sec);
+            $result['allfood'] = PushController::startDeliveryOrder($order, $user, $order->needed_sec);
             $result['success'] = true;
         } while (false);
 
@@ -290,7 +290,7 @@ class OrderController extends Controller
             self::changeOrderCourierStatus($order->id, $user->id, 6);
 
             //Curl to allfood kz
-            $result['allfood'] = PushController::courierAtTheClient($order->id, $user->id);
+            $result['allfood'] = PushController::courierAtTheClient($order, $user);
             $result['success'] = true;
         } while (false);
         return response()->json($result);
@@ -318,7 +318,7 @@ class OrderController extends Controller
             self::changeOrderCourierStatus($order->id, $user->id, 7);
 
             //Curl to allfood kz
-            $result['allfood'] = PushController::finishDeliveryOrder($order->id, $user->id);
+            $result['allfood'] = PushController::finishDeliveryOrder($order, $user);
 
             $result['success'] = true;
         } while (false);

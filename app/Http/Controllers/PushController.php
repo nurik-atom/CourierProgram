@@ -182,32 +182,35 @@ class PushController extends Controller
         $req['order_id']    = $order->id_allfood;
         $req['order_type']  = $order->type;
         $req['driver_id']   = $driver->id;
-        $req['driver_name'] = $driver->name;
-        $req['driver_photo']= $driver->photo;
-        $req['driver_phone']= $driver->phone;
-        $req['driver_type'] = $driver->type;
+//        $req['driver_name'] = $driver->name;
+//        $req['driver_photo']= $driver->photo;
+//        $req['driver_phone']= $driver->phone;
+//        $req['driver_type'] = $driver->type;
 
         return self::sendReqToAllfood("courierInCafe", $req);
     }
 
-    public static function startDeliveryOrder($id_order, $id_courier, $time){
-        $req['id_order']    = $id_order;
-        $req['id_courier']  = $id_courier;
+    public static function startDeliveryOrder($order, $driver, $time){
+        $req['order_id']    = $order->id_allfood;
+        $req['order_type']  = $order->type;
+        $req['driver_id']   = $driver->id;
         $req['time']        = $time;
 
         return self::sendReqToAllfood("start_delivery", $req);
     }
 
-    public static function courierAtTheClient($id_order, $id_courier){
-        $req['id_order']    = $id_order;
-        $req['id_courier']  = $id_courier;
+    public static function courierAtTheClient($order, $driver){
+        $req['order_id']    = $order->id_allfood;
+        $req['order_type']  = $order->type;
+        $req['driver_id']   = $driver->id;
 
-        return self::sendReqToAllfood("end_delivery", $req);
+        return self::sendReqToAllfood("courier_at_the_client", $req);
     }
 
-    public static function finishDeliveryOrder($id_order, $id_courier){
-        $req['id_order']    = $id_order;
-        $req['id_courier']  = $id_courier;
+    public static function finishDeliveryOrder($order, $driver){
+        $req['order_id']    = $order->id_allfood;
+        $req['order_type']  = $order->type;
+        $req['driver_id']   = $driver->id;
 
         return self::sendReqToAllfood("end_delivery", $req);
     }
