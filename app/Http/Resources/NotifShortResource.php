@@ -19,7 +19,7 @@ class NotifShortResource extends JsonResource
             "id"=>$this->id,
             "name"=>$this->name,
             "short_text"=>$this->short_text,
-            "new"=>$this->new,
+            "is_new"=>$this->new,
             "date"=>Carbon::parse($this->created_at)->locale("ru_RU")->diffForHumans()
         ];
     }
