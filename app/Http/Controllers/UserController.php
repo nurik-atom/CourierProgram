@@ -470,7 +470,7 @@ class UserController extends Controller
             $mess = "Ваш пароль: $code \n С уважением, ALLFOOD Courier";
             $array = array(
                 'login' => 'allfood',
-                'psw' => env("sms_password"),
+                'psw' => env("SMS_PASSWORD"),
                 'phones' => $new_number,
                 'mes' => $mess
             );
