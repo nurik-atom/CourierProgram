@@ -520,15 +520,15 @@ class UserController extends Controller
         do{
             $user = DB::table("users")->where("password", $password)->first();
             if (!$user) {
-                $data['message'] = "Пользователь не найден";
-                $data['success'] = false;
+                $result['message'] = "Пользователь не найден";
+                $result['success'] = false;
                 break;
             }
 
             $sms_check = DB::table("users_sms")->where('phone', $new_number)->where('update_user', $user->id)->where('code', $sms_code)->first();
             if (!$sms_check){
-                $data['message'] = "Смс код неправильно";
-                $data['success'] = false;
+                $result['message'] = "Смс код неправильно";
+                $result['success'] = false;
                 break;
             }
 
