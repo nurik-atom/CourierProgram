@@ -85,6 +85,7 @@ Route::post('/getStateUser',[UserController::class,'getStateUser']);
 Route::post('/getDataUser',[UserController::class,'getDataUser']);
 Route::post('/editTokenUser',[UserController::class,'editTokenUser']);
 Route::post('/changePhone',[UserController::class,'changePhone']);
+Route::post('/changePhoneStepTwo',[UserController::class,'changePhoneStepTwo']);
 Route::post('/changeType',[UserController::class,'changeType']);
 Route::post('/changeNames',[UserController::class,'changeNames']);
 //TEST ROUTES

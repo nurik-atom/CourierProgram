@@ -450,13 +450,13 @@ class UserController extends Controller
                 $data['message'] = "Пользователь с таким номером уже существует.";
                 break;
             }
+//TODO ОИШБКА БЛЕАТЬ
+//            $update = DB::table("users")->where("password", $password)->update(["phone" => $new_number, "password" => "inUpdateState"]);
 
-            $update = DB::table("users")->where("password", $password)->update(["phone" => $new_number, "password" => "inUpdateState"]);
-
-            if (!$update) {
-                $data['message'] = "Ошибка при изменение";
-                break;
-            }
+//            if (!$update) {
+//                $data['message'] = "Ошибка при изменение";
+//                break;
+//            }
 
             $user_sms = DB::table('users_sms')->where('phone', $new_number)->orderByDesc('id')->first();
 
@@ -492,6 +492,7 @@ class UserController extends Controller
                 $users_sms_id = DB::table('users_sms')->insertGetId([
                     'phone' => $new_number,
                     'code' => $code,
+                    'update_user' => $user->id,
                     'created_at' => Carbon::now(),
                     'updated_at' => Carbon::now(),
                 ]);
@@ -507,6 +508,42 @@ class UserController extends Controller
 
         } while (false);
         return response()->json($data);
+    }
+
+    public function changePhoneStepTwo(Request $request){
+        $password   = $request->input("password");
+        $new_number = $request->input("new_number");
+        $sms_code   = $request->input("sms_code");
+
+        $result['success'] = false;
+
+        do{
+            $user = DB::table("users")->where("password", $password)->first();
+            if (!$user) {
+                $data['message'] = "Пользователь не найден";
+                $data['success'] = false;
+                break;
+            }
+
+            $sms_check = DB::table("users_sms")->where('phone', $new_number)->where('update_user', $user->id)->where('code', $sms_code)->first();
+            if (!$sms_check){
+                $data['message'] = "Смс код неправильно";
+                $data['success'] = false;
+                break;
+            }
+
+            $password = sha1("AllFood-" . rand(123456, 999999) . time());
+            $update = DB::table('users')->update(['phone'=>$new_number, 'password'=>$password])
+                ->where('id',$user->id);
+
+            $result['status']       = $user->status;
+            $result['id']           = $user->id;
+            $result['new_number']   = $new_number;
+            $result['success']      = true;
+            $result['password']     = $password;
+
+        }while(false);
+        return response()->json($result);
     }
 
     public function changeType(Request $request)
