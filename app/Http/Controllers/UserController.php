@@ -533,8 +533,8 @@ class UserController extends Controller
             }
 
             $password = sha1("AllFood-" . rand(123456, 999999) . time());
-            $update = DB::table('users')->update(['phone'=>$new_number, 'password'=>$password])
-                ->where('id',$user->id);
+            $update = DB::table('users')->where('id',$user->id)->update(['phone'=>$new_number, 'password'=>$password])
+                ;
 
             $result['status']       = $user->status;
             $result['id']           = $user->id;
