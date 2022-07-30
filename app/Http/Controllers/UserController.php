@@ -577,11 +577,22 @@ class UserController extends Controller
                 $result['message'] = 'Пользователь не найден';
                 break;
             }
+
             DB::table("users")->where("password", $password)->update([
                 "name" => $name,
                 "surname" => $surname,
                 "birthday" => $birthday
             ]);
+
+            if ($request->hasFile('photo')) {
+                $image = $request->photo->store('images', "public");
+                if ($image){
+                    DB::table("users")->where("password", $password)->update([
+                        "photo" => $image
+                    ]);
+                }
+            }
+
             $result['success'] = true;
         }while(false);
 
