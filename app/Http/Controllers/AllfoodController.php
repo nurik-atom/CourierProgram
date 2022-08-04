@@ -219,6 +219,33 @@ class AllfoodController extends Controller
         return $result;
     }
 
+    public function getOrderDriverPosition(Request $request){
+
+        $id_allfood = $request->input("id_allfood");
+        $type       = $request->input("id_allfood");
+        $result['success'] = false;
+        do{
+            $order = DB::table('orders')->where('id_allfood', $id_allfood)->where('type', $type)->first();
+            if(!$order){
+                $result['message'] = 'Заказ не найден';
+                break;
+            }
+            if(!$order->id_courier){
+                $result['message'] = 'Курьер не определен';
+                break;
+            }
+            $user_geo = DB::table('users_geo')->where('id_user', $order->id_courier)->orderByDesc('id')->first();
+
+            $result['lat']      = $user_geo->lan;
+            $result['lon']      = $user_geo->lon;
+            $result['type']     = $user_geo->type;
+            $result['date']     = $user_geo->created_at;
+            $result['seconds']  = time()-strtotime($user_geo->created_at);
+            $result['success'] = true;
+        }while(false);
+        return response()->json($result);
+    }
+
     public function test_graphhopper (Request $request){
         $mode = $request->input("mode");
 
