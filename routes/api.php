@@ -73,6 +73,7 @@ Route::post('/checkUser',[UserController::class,'checkUser']);
 Route::post('/checkOrderUser',[OrderController::class,'checkOrderUser']);
 
 Route::post('/test_graphhopper',[AllfoodController::class,'test_graphhopper']);
+Route::post('/getOrderDriverPosition',[AllfoodController::class,'getOrderDriverPosition']);
 
 
 
