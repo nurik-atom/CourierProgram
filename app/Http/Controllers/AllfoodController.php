@@ -221,8 +221,8 @@ class AllfoodController extends Controller
 
     public function getOrderDriverPosition(Request $request){
 
-        $id_allfood = $request->input("id_allfood");
-        $type       = $request->input("id_allfood");
+        $id_allfood = $request->input("id_order");
+        $type       = $request->input("type");
         $result['success'] = false;
         do{
             $order = DB::table('orders')->where('id_allfood', $id_allfood)->where('type', $type)->first();
