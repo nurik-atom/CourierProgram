@@ -9,6 +9,7 @@ use App\Http\Controllers\SearchController;
 use App\Http\Controllers\RatingController;
 use App\Http\Controllers\PushController;
 use App\Http\Controllers\MoneyController;
+use App\Http\Controllers\SzpController;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -102,4 +103,6 @@ Route::get("/insertTestGeoPositon",[SearchController::class, 'insertTestGeoPosit
 
 Route::post("/addComment",[RatingController::class, "addComment"]);
 Route::post("/getRatingUser",[RatingController::class, "getRatingUser"]);
+
+Route::post("/szp/getAllDrivers",[SzpController::class, "getAllDrivers"]);
 

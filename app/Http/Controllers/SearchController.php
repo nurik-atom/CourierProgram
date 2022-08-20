@@ -54,23 +54,23 @@ class SearchController extends Controller
 
     public static function fallBehindOrders(){
         $result = array();
-        $fallBehindOrders = DB::table("orders")
-            ->select("id", "id_courier", "id_city", "distance","from_geo", "to_geo")
-            ->where("status", 2)
-            ->whereRaw("TIMESTAMPDIFF(SECOND, created_at, NOW()) > 50")
-            ->get();
-
-        foreach ($fallBehindOrders as $o) {
-            OrderController::refusingOrder($o->id_courier, $o->id, 11, null);
-            PushController::refusingFallBehindOrder($o->id,$o->id_courier);
-            DB::table("orders")->where("id", $o->id)
-                ->update(['status' => 1, 'id_courier' => 0]);
-
-            UserController::insertStateUserFunc($o->id_courier, 1);
-
-            $result['courier'][] = self::searchCourier($o);
-            $result['order'][] = $o;
-        }
+//        $fallBehindOrders = DB::table("orders")
+//            ->select("id", "id_courier", "id_city", "distance","from_geo", "to_geo")
+//            ->where("status", 2)
+//            ->whereRaw("TIMESTAMPDIFF(SECOND, created_at, NOW()) > 50")
+//            ->get();
+//
+//        foreach ($fallBehindOrders as $o) {
+//            OrderController::refusingOrder($o->id_courier, $o->id, 11, null);
+//            PushController::refusingFallBehindOrder($o->id,$o->id_courier);
+//            DB::table("orders")->where("id", $o->id)
+//                ->update(['status' => 1, 'id_courier' => 0]);
+//
+//            UserController::insertStateUserFunc($o->id_courier, 1);
+//
+//            $result['courier'][] = self::searchCourier($o);
+//            $result['order'][] = $o;
+//        }
 
         return response()->json($result);
     }

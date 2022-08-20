@@ -100,7 +100,7 @@ class OrderController extends Controller
         $result['have_order'] = false;
         do {
             if (!$user) {
-                $result['message'] = 'Пользователь не нвйден';
+                $result['message'] = 'Пользователь не найден';
                 break;
             }
             $result['user_state'] = $user->state;
