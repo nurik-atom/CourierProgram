@@ -17,7 +17,7 @@ use Carbon\Carbon;
 class UserController extends Controller
 {
     public $active_state = [
-      2,3,4,5,6
+        2,3,4,5,6
     ];
 
     public function imReady(Request $request){
@@ -57,26 +57,26 @@ class UserController extends Controller
         do {
 
             //Тестовые номера пароль по умолчанию 4321
-            if ($phone == '77089222820') {
-                $data['success'] = true;
-                break;
-            }
+            //if ($phone == '77089222820') {
+            //    $data['success'] = true;
+            //    break;
+            //}
 
             if (strlen($phone) != 11) {
                 $data['message'] = 'Номер телефона неправильно введен!';
                 break;
             }
 
-            $user_sms = DB::table('users_sms')->where('phone', $phone)->orderByDesc('id')->first();
+            /*       $user_sms = DB::table('users_sms')->where('phone', $phone)->orderByDesc('id')->first();
 
-            if (isset($user_sms) && (time() < (strtotime($user_sms->created_at) + 3600))) {
-                $data['message'] = 'Вам уже отправлено смс';
-                break;
-            }
-
+                   if (isset($user_sms) && (time() < (strtotime($user_sms->created_at) + 3600))) {
+                       $data['message'] = 'Вам уже отправлено смс';
+                       break;
+                   }
+       */
             $code = rand(1234, 9998);
 
-            $mess = "Ваш пароль: $code \n С уважением, ALLFOOD Courier\n" . $signatureCode . " ";
+            $mess = "<#>Ваш пароль: $code \nALLFOOD Driver\n" . $signatureCode . " ";
             $array = array(
                 'login' => 'allfood',
                 'psw' => env("SMS_PASSWORD"),
@@ -534,7 +534,7 @@ class UserController extends Controller
 
             $password = sha1("AllFood-" . rand(123456, 999999) . time());
             $update = DB::table('users')->where('id',$user->id)->update(['phone'=>$new_number, 'password'=>$password])
-                ;
+            ;
 
             $result['status']       = $user->status;
             $result['id']           = $user->id;

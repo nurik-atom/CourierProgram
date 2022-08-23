@@ -105,4 +105,7 @@ Route::post("/addComment",[RatingController::class, "addComment"]);
 Route::post("/getRatingUser",[RatingController::class, "getRatingUser"]);
 
 Route::post("/szp/getAllDrivers",[SzpController::class, "getAllDrivers"]);
+Route::post("/szp/getOneDriverDetails",[SzpController::class, "getOneDriverDetails"]);
+Route::post("/szp/changeDriverStatusSzp",[SzpController::class, "changeDriverStatusSzp"]);
+Route::post("/szp/getDriversGeo",[SzpController::class, "getDriversGeo"]);
 

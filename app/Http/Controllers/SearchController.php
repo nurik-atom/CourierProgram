@@ -25,12 +25,12 @@ class SearchController extends Controller
         foreach ($coordinates as $c) {
             $insert = DB::table("users_geo")
                 ->insert(["id_user"=>$c['id_user'],
-                          "lan"=>$c['lat'],
-                          "lon"=>$c['lon'],
-                          "type"=>$c['type'],
-                          "created_at"=>Carbon::now(),
-                          "updated_at"=>Carbon::now()
-                    ]);
+                    "lan"=>$c['lat'],
+                    "lon"=>$c['lon'],
+                    "type"=>$c['type'],
+                    "created_at"=>Carbon::now(),
+                    "updated_at"=>Carbon::now()
+                ]);
         }
 
     }
@@ -78,7 +78,7 @@ class SearchController extends Controller
     //! Поиск курьеров к заказу 1 стадия
     public static function searchCourier($order)
     {
-    $drivers = array();
+        $drivers = array();
         do {
             //Поиск пеших курьеров
             if($order->distance < self::MAX_FOOT_DRIVER){
