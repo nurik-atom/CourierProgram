@@ -108,4 +108,14 @@ Route::post("/szp/getAllDrivers",[SzpController::class, "getAllDrivers"]);
 Route::post("/szp/getOneDriverDetails",[SzpController::class, "getOneDriverDetails"]);
 Route::post("/szp/changeDriverStatusSzp",[SzpController::class, "changeDriverStatusSzp"]);
 Route::post("/szp/getDriversGeo",[SzpController::class, "getDriversGeo"]);
+Route::post("/szp/getOneDriverGeo",[SzpController::class, "getOneDriverGeo"]);
+Route::post("/szp/getCommentsForSzp",[SzpController::class, "getCommentsForSzp"]);
+
+Route::post("/szp/getDriversForNaznachenieZakaza",[SzpController::class, "getDriversForNaznachenieZakaza"]);
+Route::post("/szp/naznachitZakaz",[SzpController::class, "naznachitZakaz"]);
+
+
+
+
+
 
