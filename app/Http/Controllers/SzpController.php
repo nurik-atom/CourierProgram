@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -116,16 +118,16 @@ class SzpController extends Controller
     public function getDriversForNaznachenieZakaza(Request $request)
     {
         $pass = $request->input('pass');
-        $id_allfood = $request->input('id_driver');
+        $id_allfood = $request->input('id_allfood');
         $type = $request->input('type');
         $result['success'] = false;
         if ($pass != $this->key_szp_allfood) {
             exit('Error Key');
         }
         do {
-            $order = DB::table('orders')->where('id_allfood', $id_allfood)->where('type',$type)->first();
+            $order = DB::table('orders')->where('id_allfood', $id_allfood)->where('type', $type)->first();
 
-            if (!$order){
+            if (!$order) {
                 $result['message'] = 'Заказ не найден';
                 break;
             }
@@ -148,14 +150,14 @@ class SzpController extends Controller
             $distance = 10000;
 
             $drivers = DB::table("users_geo")
-                ->selectRaw("users.id as id, id_user, users_geo.type, users.state, ".$geo_sql)
-                ->join("users", "users_geo.id_user", "=","users.id")
-                ->where("users.status",3)
-                ->where("users_geo.updated_at",">", date("Y-m-d H:i:s",time()-3600))
-                ->whereNotIn('users.state', [0,3,4])
-                ->having("distance", "<",$distance)
+                ->selectRaw("users.id as id, id_user, users_geo.type, users.name, users.surname, users.state, " . $geo_sql)
+                ->join("users", "users_geo.id_user", "=", "users.id")
+                ->where("users.status", 3)
+                ->where("users_geo.updated_at", ">", date("Y-m-d H:i:s", time() - 3600))
+                ->whereNotIn('users.state', [0, 3, 4])
+                ->having("distance", "<", $distance)
                 ->orderByDesc("users.rating")
-                ->get();
+                ->get()->unique('id_user');
 
             $result['drivers'] = $drivers;
             $result['success'] = true;
@@ -168,16 +170,93 @@ class SzpController extends Controller
     {
         $pass = $request->input('pass');
         $id_driver = $request->input('id_driver');
-        $id_order = $request->input('id_order');
+        $id_allfood = $request->input('id_allfood');
+        $type = $request->input('type');
+        $result['success'] = false;
+        /* TODO
+            1. Проверяем заказ есть нет
+            2. Статус заказ ищем текущего курьера
+            3. Если есть текущий курьер отменяем для Него заказ. Отправляем пуш уведомление
+            4. Назначаем заказ курьеру отправляем пуш уведомление. Если у него есть активный заказ, state не меняем.
+            5. Отправляем результат
+        */
 
         if ($pass != $this->key_szp_allfood) {
             exit('Error Key');
         }
 
+        do {
+            $order = DB::table('orders')
+                ->where('id_allfood', $id_allfood)
+                ->where('type', $type)
+                ->first();
 
+            $new_driver = DB::table('users')
+                ->select('id', 'token', 'state', 'name', 'photo', 'phone', 'type')
+                ->where('id', $id_driver)
+                ->first();
+
+            if (!$order){
+                $result['message'] = 'Заказ не найден';
+                break;
+            }
+            if (!$new_driver){
+                $result['message'] = 'Курьер не найден';
+                break;
+            }
+
+            if ($new_driver->state == 0){
+                $result['message'] = 'Курьер не активен';
+                break;
+            }
+
+            $update_order = DB::table('orders')->where('id_allfood', $id_allfood)->where('type', $type)->update(['id_courier', $new_driver->id, 'status' => 3]);
+
+
+            // ! Если заказ не переназначен
+            if (!$update_order){
+                $result['message'] = 'Ошибка назначение заказа';
+                break;
+            }
+
+            //ADD to ORDER_USER table
+            DB::table("order_user")
+                ->insert([
+                    "id_user" => $new_driver->id,
+                    "id_order" => $order->id,
+                    "status" => 3,
+                    "created_at" => Carbon::now(),
+                    "updated_at" => Carbon::now()]);
+
+            // * Проверяем есть ли курьер который получил этот заказ
+            if ($order->id_courier){
+                UserController::insertStateUserFunc($order->id_courier, 0);
+                PushController::sendDataPush($order->id_courier,
+                    array('type' => 'order_cancel'),
+                    array('title'=>'Заказ #'.$order->id.' переназначен',
+                        'Оператор переназначил заказ другому курьеру.'));
+            }
+
+            // ! Если новый курьер свободен поменяем State на 3
+            if ($new_driver->state == 1){
+                UserController::insertStateUserFunc($new_driver->id, 3);
+            }
+
+            PushController::sendDataPush($order->id_courier,
+                array('type' => 'order', 'status' => 'new_order'),
+                array('title'=>'Новый заказ',
+                    'Заказ на сумму '.$order->price_delivery.' тенге'));
+
+            PushController::takedOrderAllfood($order, $new_driver, "5");
+
+            $result['success'] = true;
+        } while (false);
+
+        return response()->json($result);
     }
 
-    public function getCommentsForSzp(Request $request){
+    public function getCommentsForSzp(Request $request)
+    {
 
     }
 
