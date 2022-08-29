@@ -151,10 +151,20 @@ class OrderController extends Controller
         DB::table("orders")->where("id", $id_order)
             ->update(['status' => $status, 'id_courier' => $id_courier]);
 
-        if ($status == 7)
-            $user_state = 1;
-        else
+
+        if ($status == 7){
+            $oneMoreOrder = DB::table('orders')->select('status', 'id')->where('id_courier', $id_courier)->whereNotIn('status', [1,7,9])->first();
+
+            if ($oneMoreOrder){
+                $user_state = $oneMoreOrder['status'];
+            }else{
+                $user_state = 1;
+            }
+        }
+        else{
             $user_state = $status;
+        }
+
         //Update User State
         UserController::insertStateUserFunc($id_courier, $user_state);
 

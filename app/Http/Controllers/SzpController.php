@@ -210,7 +210,7 @@ class SzpController extends Controller
                 break;
             }
 
-            $update_order = DB::table('orders')->where('id_allfood', $id_allfood)->where('type', $type)->update(['id_courier', $new_driver->id, 'status' => 3]);
+            $update_order = DB::table('orders')->where('id_allfood', $id_allfood)->where('type', $type)->update(['id_courier' => $new_driver->id, 'status' => 3]);
 
 
             // ! Если заказ не переназначен
@@ -234,7 +234,7 @@ class SzpController extends Controller
                 PushController::sendDataPush($order->id_courier,
                     array('type' => 'order_cancel'),
                     array('title'=>'Заказ #'.$order->id.' переназначен',
-                        'Оператор переназначил заказ другому курьеру.'));
+                        'body' => 'Оператор переназначил заказ другому курьеру.'));
             }
 
             // ! Если новый курьер свободен поменяем State на 3
@@ -245,7 +245,7 @@ class SzpController extends Controller
             PushController::sendDataPush($order->id_courier,
                 array('type' => 'order', 'status' => 'new_order'),
                 array('title'=>'Новый заказ',
-                    'Заказ на сумму '.$order->price_delivery.' тенге'));
+                    'body'=>'Заказ на сумму '.$order->price_delivery.' тенге'));
 
             PushController::takedOrderAllfood($order, $new_driver, "5");
 
