@@ -232,7 +232,7 @@ class SzpController extends Controller
             if ($order->id_courier){
                 UserController::insertStateUserFunc($order->id_courier, 0);
                 PushController::sendDataPush($order->id_courier,
-                    array('type' => 'order_cancel'),
+                    array('type' => 'order', 'status' => 'other_driver'),
                     array('title'=>'Заказ #'.$order->id.' переназначен',
                         'body' => 'Оператор переназначил заказ другому курьеру.'));
             }
@@ -242,7 +242,7 @@ class SzpController extends Controller
                 UserController::insertStateUserFunc($new_driver->id, 3);
             }
 
-            PushController::sendDataPush($order->id_courier,
+            PushController::sendDataPush($id_driver,
                 array('type' => 'order', 'status' => 'new_order'),
                 array('title'=>'Новый заказ',
                     'body'=>'Заказ на сумму '.$order->price_delivery.' тенге'));
@@ -257,7 +257,48 @@ class SzpController extends Controller
 
     public function getCommentsForSzp(Request $request)
     {
+        $pass = $request->input('pass');
+        $result['success'] = false;
 
+        if ($pass != $this->key_szp_allfood) {
+            exit('Error Key');
+        }
+        $result['comments'] = array();
+        $comments = DB::table('rating')
+            ->select('rating.id', 'rating.id_allfood', 'rating.id_courier', 'rating.star', 'rating.comment', 'rating.user_tel','rating.created_at', 'orders.cafe_name', 'orders.name', 'orders.type')
+            ->leftJoin('orders', 'rating.id_allfood', '=','orders.id_allfood')
+            ->where('rating.created_at', '>=', Carbon::yesterday())->get();
+
+        if ($comments){
+            $result['comments'] = $comments;
+        }
+
+        $result['success'] = true;
+        return response()->json($result);
     }
 
+    public function sendeTestPushSzp(Request $request){
+        $id_driver = $request->input('id_driver');
+
+        PushController::sendDataPush($id_driver,
+            array('type' => 'order', 'status' => 'other_driver'),
+            array('title'=>'Новый заказ',
+                'body'=>'Заказ на сумму 500 тенге'));
+    }
+
+    public function driverReturnCash(Request $request){
+        $pass      = $request->input('pass');
+        $id_driver = $request->input('id_driver');
+        $summa     = $request->input('summa');
+        $pass = $request->input('pass');
+
+        if ($pass != $this->key_szp_allfood) {
+            exit('Error Key');
+        }
+
+        $result['success'] = (bool) (new CashOnHandController)->minusSumma($id_driver, $summa);
+
+        return response()->json($result);
+
+    }
 }

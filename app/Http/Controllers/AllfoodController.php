@@ -32,6 +32,7 @@ class AllfoodController extends Controller
         $to_address = $request->input('to_address');
         $summ_order = $request->input('summ_order');
         $price_delivery = 0;
+        $sposob_oplaty = $request->input('sposob_oplaty');
         $type = $request->input('type');
         $distance = SearchController::getDistance($from_geo, $to_geo);
         $arrive_minute = $request->input("arrive_minute");
@@ -63,6 +64,7 @@ class AllfoodController extends Controller
                 'blob' => $blob,
                 'status' => $status,
                 'price_delivery' => $price_delivery,
+                'sposob_oplaty' => $sposob_oplaty,
                 'id_cafe' => $id_cafe,
                 'cafe_name' => $cafe_name,
                 'cafe_phone' => $cafe_phone,

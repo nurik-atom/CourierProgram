@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Http\Controllers\OrderController;
 use Carbon\Carbon;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\DB;
@@ -41,6 +42,18 @@ class OrderResource extends JsonResource
         }
     }
 
+    public static function getTextSposopOplaty($key){
+        $res = array(
+            1=>'Наличными',
+            2=>'Банковской картой',
+            3=>'KASPI GOLD',
+            4=>'KASPI RED',
+            5=>'Halyk Pay'
+        );
+
+        return $res[$key];
+    }
+
     public function toArray($request)
     {
         // Comment ADD
@@ -56,6 +69,7 @@ class OrderResource extends JsonResource
             "type" => $this->type,
             "cafe_name" => $this->cafe_name,
             "cafe_phone" => $this->cafe_phone,
+            "sposob_oplaty" => $this->getTextSposopOplaty($this->sposob_oplaty),
             "user_phone" => $this->phone,
             "user_name" => $this->name,
             "blob" => ($this->type == 1 ? $this->blobToArray($this->blob) : ""),

@@ -153,10 +153,10 @@ class OrderController extends Controller
 
 
         if ($status == 7){
-            $oneMoreOrder = DB::table('orders')->select('status', 'id')->where('id_courier', $id_courier)->whereNotIn('status', [1,7,9])->first();
+            $oneMoreOrder = DB::table('orders')->select('status', 'id')->where('id_courier', $id_courier)->whereNotIn('status', [1,7,9])->where('id', '!=', $id_order)->first();
 
             if ($oneMoreOrder){
-                $user_state = $oneMoreOrder['status'];
+                $user_state = $oneMoreOrder->status;
             }else{
                 $user_state = 1;
             }
@@ -323,6 +323,10 @@ class OrderController extends Controller
 
             $description = "Заказ №" . $order->id;
             MoneyController::addAmount($user->id, $order->id, $order->price_delivery, $description);
+
+            if ($order->sposob_oplaty == 1){
+                (new CashOnHandController)->plusSumma($order->id_allfood, $order->summ_order);
+            }
 
             $result['price'] = $order->price_delivery;
             self::changeOrderCourierStatus($order->id, $user->id, 7);
