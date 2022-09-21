@@ -325,7 +325,7 @@ class OrderController extends Controller
             MoneyController::addAmount($user->id, $order->id, $order->price_delivery, $description);
 
             if ($order->sposob_oplaty == 1){
-                (new CashOnHandController)->plusSumma($order->id_allfood, $order->summ_order);
+                (new CashOnHandController)->plusSumma($order->id_courier, $order->summ_order);
             }
 
             $result['price'] = $order->price_delivery;
