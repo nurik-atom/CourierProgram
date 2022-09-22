@@ -17,8 +17,8 @@ class CashOnHandHistoryResource extends JsonResource
     {
         return [
             'id'=>$this->id,
-            'summa' =>$this->summa,
-            'date_short'=>Carbon::parse($this->created_at)->locale("ru_RU")->isoFormat('LL')
+            'summa' => (int) $this->summa,
+            'date_short'=>Carbon::parse($this->created_at)->locale("ru_RU")->isoFormat('LLL')
         ];
     }
 }

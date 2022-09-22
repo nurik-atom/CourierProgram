@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AllfoodController;
+use App\Http\Controllers\CashOnHandController;
 use App\Http\Controllers\HelpController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OrderController;
@@ -61,6 +62,9 @@ Route::post('/cancelOrder',[OrderController::class,'cancelOrder']);
 Route::post('/register', [UserController::class, 'register']);
 Route::post('/signIn', [UserController::class, 'signIn']);
 Route::post('/profile', [UserController::class, 'profile']);
+Route::post("/getCashHistory",[CashOnHandController::class, "getCashHistory"]);
+Route::post("/getCurrentCash",[CashOnHandController::class, "getCurrentCash"]);
+Route::post("/driverReturnCash",[CashOnHandController::class, "driverReturnCash"]);
 Route::post('/getMoneyAndOrdersUser', [UserController::class, 'getMoneyAndOrdersUser']);
 Route::post('/getDateRangeOrders', [UserController::class, 'getDateRangeOrders']);
 Route::post('/getFullDetailsOrder', [UserController::class, 'getFullDetailsOrder']);
@@ -114,7 +118,6 @@ Route::post("/szp/getCommentsForSzp",[SzpController::class, "getCommentsForSzp"]
 Route::post("/szp/getDriversForNaznachenieZakaza",[SzpController::class, "getDriversForNaznachenieZakaza"]);
 Route::post("/szp/naznachitZakaz",[SzpController::class, "naznachitZakaz"]);
 Route::post("/szp/driverReturnCash",[SzpController::class, "driverReturnCash"]);
-Route::post("/szp/getCashHistory",[SzpController::class, "getCashHistory"]);
 
 
 

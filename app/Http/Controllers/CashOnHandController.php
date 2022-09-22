@@ -12,10 +12,10 @@ class CashOnHandController extends Controller
     public function plusSumma($id_driver, $summa){
 
         $insert  = DB::table("cash_driver_history")->insert([
-                'id_driver' => $id_driver,
-                'summa'     => $summa,
-                "created_at" => Carbon::now(),
-                "updated_at" => Carbon::now()]);
+            'id_driver' => $id_driver,
+            'summa'     => $summa,
+            "created_at" => Carbon::now(),
+            "updated_at" => Carbon::now()]);
         if ($insert){
             $this->updateSumma($id_driver,$summa);
         }
@@ -55,15 +55,17 @@ class CashOnHandController extends Controller
         $password = $request->input('password');
         $result['success'] = false;
         do{
-            $result['current'] = DB::table('users')->where('password',$password)->pluck('cash_on_hand')->first();
+            $current = DB::table('users')->where('password',$password)->select('cash_on_hand', 'id')->first();
 
-            if (!is_int($result)){
+            if (!$current){
                 $result['message'] = 'Пользователь не найден';
                 break;
             }
 
+            $result['current'] = $current->cash_on_hand;
+
             $result['history'] = array();
-            $history = DB::table('cash_driver_history')->where('id_driver', $id_driver)->get();
+            $history = DB::table('cash_driver_history')->where('id_driver', $current->id)->get();
             if($history) {
                 $result['history'] = CashOnHandHistoryResource::collection($history);
             }
@@ -72,4 +74,26 @@ class CashOnHandController extends Controller
         return response()->json($result);
     }
 
+    public function getCurrentCash(Request $request){
+        $password = $request->input('password');
+        $result['success'] = false;
+        do{
+            $current = DB::table('users')->where('password',$password)->select('cash_on_hand', 'id')->first();
+
+            if (!$current){
+                $result['message'] = 'Пользователь не найден';
+                break;
+            }
+
+            $result['current'] = $current->cash_on_hand;
+
+            $result['success'] = true;
+        }while(false);
+        return response()->json($result);
+    }
+
+    public function driverReturnCash(Request $request){
+        $key = $request->input('key');
+
+    }
 }
