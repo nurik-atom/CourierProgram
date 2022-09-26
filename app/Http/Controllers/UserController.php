@@ -267,13 +267,17 @@ class UserController extends Controller
     function deleteUser(Request $request)
     {
         $phone = $request->input('phone');
-        $user = DB::table('users')->where('phone', $phone)->delete();
+        $password = $request->input('password');
+        $user = DB::table('users')->where('password', $password)->first();
         if ($user) {
             $data['success'] = true;
         } else {
             $data['success'] = false;
             $data['message'] = 'Номер телефона не найден';
         }
+
+        $data['success'] = true;
+
         return response()->json($data);
     }
 

@@ -131,6 +131,10 @@ class OrderController extends Controller
                     $result['seconds'] = strtotime($order[0]->arrive_time) - time();
                 }
 
+                if ($order[0]->status == 4) {
+                    $result['seconds'] = $order[0]->needed_sec;
+                }
+
                 if ($order[0]->status == 5) {
                     $start_time = DB::table("order_user")->where("id_order", $order[0]->id)->where("status", 5)->select("created_at")->first();
 
@@ -262,6 +266,8 @@ class OrderController extends Controller
                 $result['message'] = 'Вы слишком далеко находитесь от кафе';
                 break;
             }
+
+            $result['seconds'] = $order->needed_sec;
 
             self::changeOrderCourierStatus($order->id, $user->id, 5);
             //Curl to allfood kz

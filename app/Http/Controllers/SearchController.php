@@ -131,7 +131,7 @@ class SearchController extends Controller
 
         DB::table("orders")->where("id", $order->id)
             ->update([
-                "needed_sec" => $matrix['time'],
+                "needed_sec" => $matrix['time'] > 450 ? $matrix['time'] : 450,
                 "distance_matrix" => $matrix['distance'],
                 "routing_points" => $matrix['route_points'],
                 "mode" => $user->type,
