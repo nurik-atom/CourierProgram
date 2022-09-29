@@ -277,7 +277,7 @@ class SzpController extends Controller
         return response()->json($result);
     }
 
-    public function sendeTestPushSzp(Request $request){
+    public function sendTestPushSzp(Request $request){
         $id_driver = $request->input('id_driver');
 
         PushController::sendDataPush($id_driver,
@@ -300,5 +300,36 @@ class SzpController extends Controller
 
         return response()->json($result);
 
+    }
+
+    public function izmenitSposobOplaty(Request $request){
+        $pass   = $request->input('pass');
+        $id     = $request->input('id_order');
+        $type   = $request->input('type');
+        $new_sposob_oplaty = $request->input('new_sposob_oplaty');
+        $result['success'] = false;
+
+        do{
+            if ($pass != $this->key_szp_allfood) {
+                exit('Error Key');
+            }
+
+            $order = DB::table('orders')
+                ->where('id_allfood', $id)
+                ->where('type', $type)
+                ->first();
+
+            if (!$order){
+                $result['message'] = 'Заказ не найден';
+                break;
+            }
+
+            $update_order = DB::table('orders')->where('id_allfood', $id)->where('type', $type)->update(['sposob_oplaty' => $new_sposob_oplaty]);
+
+            $result['success'] = true;
+
+        }while(false);
+
+        return response()->json($result);
     }
 }
