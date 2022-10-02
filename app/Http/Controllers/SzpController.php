@@ -332,4 +332,30 @@ class SzpController extends Controller
 
         return response()->json($result);
     }
+
+    public function getDriverCashHistoryForSzp(Request $request){
+        $pass   = $request->input('pass');
+        $result['success'] = false;
+
+        do{
+            if ($pass != $this->key_szp_allfood) {
+                exit('Error Key');
+            }
+
+            $history = DB::table('cash_driver_history')->select('id', 'summa', 'id_driver', 'created_at', 'users.name')
+                ->leftJoin('users', 'cash_driver_history.id_driver = users.id')
+                ->orderByDesc('id')
+                ->get();
+
+            if ($history){
+                $result['history'] = $history;
+            }
+
+            $result['success'] = true;
+
+        }while(false);
+
+        return response()->json($result);
+    }
+
 }

@@ -118,7 +118,8 @@ Route::post("/szp/getCommentsForSzp",[SzpController::class, "getCommentsForSzp"]
 Route::post("/szp/getDriversForNaznachenieZakaza",[SzpController::class, "getDriversForNaznachenieZakaza"]);
 Route::post("/szp/naznachitZakaz",[SzpController::class, "naznachitZakaz"]);
 Route::post("/szp/driverReturnCash",[SzpController::class, "driverReturnCash"]);
-Route::post("/szp/izmenitSposobOplaty ",[SzpController::class, "izmenitSposobOplaty "]);
+Route::post("/szp/izmenitSposobOplaty ",[SzpController::class, "izmenitSposobOplaty"]);
+Route::post("/szp/getDriverCashHistoryForSzp ",[SzpController::class, "getDriverCashHistoryForSzp"]);
 
 
 
