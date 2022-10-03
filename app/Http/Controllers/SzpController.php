@@ -336,19 +336,44 @@ class SzpController extends Controller
     public function getDriverCashHistoryForSzp(Request $request){
         $pass   = $request->input('pass');
         $result['success'] = false;
-
+        $result['history'] = array();
         do{
             if ($pass != $this->key_szp_allfood) {
                 exit('Error Key');
             }
 
-            $history = DB::table('cash_driver_history')->select('id', 'summa', 'id_driver', 'created_at', 'users.name')
-                ->leftJoin('users', 'cash_driver_history.id_driver = users.id')
+            $history = DB::table('cash_driver_history as h')->selectRaw('h.id, h.summa, h.id_driver, h.id_order, h.created_at, users.name, users.surname, orders.id_allfood, orders.type')
+                ->leftJoin('users', 'h.id_driver', '=', 'users.id')
+                ->leftJoin('orders', 'h.id_order', '=', 'orders.id')
                 ->orderByDesc('id')
                 ->get();
 
             if ($history){
                 $result['history'] = $history;
+            }
+
+            $result['success'] = true;
+
+        }while(false);
+
+        return response()->json($result);
+    }
+
+    public function getDriverCashTotal(Request $request){
+        $pass   = $request->input('pass');
+        $result['success'] = false;
+        $result['driver_total'] = array();
+        do{
+            if ($pass != $this->key_szp_allfood) {
+                exit('Error Key');
+            }
+
+            $driver_total = DB::table('users')->select('name', 'surname', 'id', 'cash_of_hand', 'phone')
+                ->where('cash_on_hand', '!=', 0)
+                ->get();
+
+            if ($driver_total){
+                $result['driver_total'] = $driver_total;
             }
 
             $result['success'] = true;

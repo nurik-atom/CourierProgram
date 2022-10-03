@@ -120,6 +120,7 @@ Route::post("/szp/naznachitZakaz",[SzpController::class, "naznachitZakaz"]);
 Route::post("/szp/driverReturnCash",[SzpController::class, "driverReturnCash"]);
 Route::post("/szp/izmenitSposobOplaty ",[SzpController::class, "izmenitSposobOplaty"]);
 Route::post("/szp/getDriverCashHistoryForSzp ",[SzpController::class, "getDriverCashHistoryForSzp"]);
+Route::post("/szp/getDriverCashTotal ",[SzpController::class, "getDriverCashTotal"]);
 
 
 
