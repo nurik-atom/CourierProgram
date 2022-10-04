@@ -9,11 +9,13 @@ use Illuminate\Support\Facades\DB;
 
 class CashOnHandController extends Controller
 {
-    public function plusSumma($id_driver, $summa){
+    public function plusSumma($id_driver, $summa, $id_order, $comment = ''){
 
         $insert  = DB::table("cash_driver_history")->insert([
             'id_driver' => $id_driver,
+            'id_order'  => $id_order,
             'summa'     => $summa,
+            'comment'   => $comment,
             "created_at" => Carbon::now(),
             "updated_at" => Carbon::now()]);
         if ($insert){
@@ -23,11 +25,13 @@ class CashOnHandController extends Controller
         return (bool)$insert;
     }
 
-    public function minusSumma($id_driver, $summa){
+    public function minusSumma($id_driver, $summa, $id_order, $comment = ''){
         $summa = -1 * $summa;
         $insert = DB::table("cash_driver_history")->insert([
             'id_driver' => $id_driver,
+            'id_order'  => $id_order,
             'summa'     => $summa,
+            'comment'   => $comment,
             "created_at" => Carbon::now(),
             "updated_at" => Carbon::now()]);
 

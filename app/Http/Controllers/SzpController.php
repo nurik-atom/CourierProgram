@@ -368,7 +368,7 @@ class SzpController extends Controller
                 exit('Error Key');
             }
 
-            $driver_total = DB::table('users')->select('name', 'surname', 'id', 'cash_of_hand', 'phone')
+            $driver_total = DB::table('users')->select('name', 'surname', 'id', 'cash_on_hand', 'phone')
                 ->where('cash_on_hand', '!=', 0)
                 ->get();
 
@@ -383,4 +383,30 @@ class SzpController extends Controller
         return response()->json($result);
     }
 
+
+    public function addZapisTranzakciaDriver(Request $request){
+        $id_driver = $request->input('id_driver');
+        $id_order  = $request->input('id_order');
+        $summa     = $request->input('summa');
+        $comment   = $request->input('comment');
+        $pass   = $request->input('pass');
+        $result['success'] = false;
+        do {
+            if ($pass != $this->key_szp_allfood) {
+                exit('Error Key');
+            }
+
+            $driver_check = DB::table('users')->where('id', $id_driver)->first();
+            if (!$driver_check){
+                $result['message'] = 'Пользователь не найден';
+                break;
+            }
+
+            $insert = (new CashOnHandController)->plusSumma($id_driver, $summa, $id_order, $comment);
+
+            $result['success'] = true;
+        }while(false);
+
+        return response()->json($result);
+    }
 }
