@@ -119,9 +119,10 @@ Route::post("/szp/getDriversForNaznachenieZakaza",[SzpController::class, "getDri
 Route::post("/szp/naznachitZakaz",[SzpController::class, "naznachitZakaz"]);
 Route::post("/szp/driverReturnCash",[SzpController::class, "driverReturnCash"]);
 Route::post("/szp/izmenitSposobOplaty ",[SzpController::class, "izmenitSposobOplaty"]);
-Route::post("/szp/getDriverCashHistoryForSzp ",[SzpController::class, "getDriverCashHistoryForSzp"]);
-Route::post("/szp/getDriverCashTotal ",[SzpController::class, "getDriverCashTotal"]);
-Route::post("/szp/addZapisTranzakciaDriver ",[SzpController::class, "addZapisTranzakciaDriver"]);
+Route::post("/szp/getDriverCashHistoryForSzp",[SzpController::class, "getDriverCashHistoryForSzp"]);
+Route::post("/szp/getDriverCashTotal",[SzpController::class, "getDriverCashTotal"]);
+Route::post("/szp/addZapisTranzakciaDriver",[SzpController::class, "addZapisTranzakciaDriver"]);
+Route::post("/szp/updateAllSummaDriverSZP",[SzpController::class, "updateAllSummaDriverSZP"]);
 
 
 

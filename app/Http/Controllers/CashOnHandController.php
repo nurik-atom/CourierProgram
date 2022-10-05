@@ -44,15 +44,19 @@ class CashOnHandController extends Controller
     public function updateSumma($id_driver, $summa){
         if ($summa != 0){
             $old_summa = DB::table('users')->where('id', $id_driver)->pluck('cash_on_hand')->first();
-            $update_summa = $old_summa + $summa;
+            $new_summa = (int) $old_summa + $summa;
+            $update_users = DB::table('users')
+                ->where('id', $id_driver)
+                ->update(['cash_on_hand' => $new_summa]);
 
-            if ($update_summa != 0){
-                $new_summa = (int) $update_summa + $old_summa;
-                $update_users = DB::table('users')
-                    ->where('id', $id_driver)
-                    ->update(['cash_on_hand' => $new_summa]);
-            }
         }
+    }
+
+    public function updateAllSummaDriver($id_driver){
+        $summa = DB::table('users')->where('id', $id_driver)->sum('cash_on_hand');
+        $update_users = DB::table('users')
+            ->where('id', $id_driver)
+            ->update(['cash_on_hand' => $summa]);
     }
 
     public function getCashHistory(Request $request){

@@ -409,4 +409,26 @@ class SzpController extends Controller
 
         return response()->json($result);
     }
+
+    public function updateAllSummaDriverSZP(Request $request){
+        $id_driver = $request->input('id_driver');
+        $pass   = $request->input('pass');
+        $result['success'] = false;
+        do {
+            if ($pass != $this->key_szp_allfood) {
+                exit('Error Key');
+            }
+
+            $driver_check = DB::table('users')->where('id', $id_driver)->first();
+            if (!$driver_check) {
+                $result['message'] = 'Пользователь не найден';
+                break;
+            }
+            (new CashOnHandController)->updateAllSummaDriver($id_driver);
+            $result['success'] = true;
+        }while(false);
+
+        return response()->json($result);
+
+    }
 }
