@@ -53,10 +53,11 @@ class CashOnHandController extends Controller
     }
 
     public function updateAllSummaDriver($id_driver){
-        $summa = DB::table('users')->where('id', $id_driver)->sum('cash_on_hand');
+        $summa = DB::table('cash_driver_history')->where('id_driver', $id_driver)->sum('summa');
         $update_users = DB::table('users')
             ->where('id', $id_driver)
             ->update(['cash_on_hand' => $summa]);
+        return $summa;
     }
 
     public function getCashHistory(Request $request){

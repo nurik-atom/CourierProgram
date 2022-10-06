@@ -383,7 +383,6 @@ class SzpController extends Controller
         return response()->json($result);
     }
 
-
     public function addZapisTranzakciaDriver(Request $request){
         $id_driver = $request->input('id_driver');
         $id_order  = $request->input('id_order');
@@ -430,5 +429,19 @@ class SzpController extends Controller
 
         return response()->json($result);
 
+    }
+
+    public function getOrdersLast24Hour(Request $request){
+        $pass   = $request->input('pass');
+        $result['success'] = false;
+        do {
+            if ($pass != $this->key_szp_allfood) {
+                exit('Error Key');
+            }
+
+            $orders = DB::table('orders')->where('date', '>=', Carbon::yesterday())->get();
+
+
+        }while(false);
     }
 }
