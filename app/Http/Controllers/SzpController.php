@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\OrderMiniResource;
+use App\Http\Resources\OrderResource;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -440,8 +442,14 @@ class SzpController extends Controller
             }
 
             $orders = DB::table('orders')->where('date', '>=', Carbon::yesterday())->get();
-
-
+            if ($orders){
+                $result['orders'] = OrderMiniResource::collection($orders);
+            }
+            $result['success'] = true;
         }while(false);
+
+        return response()->json($result);
     }
+
+
 }
