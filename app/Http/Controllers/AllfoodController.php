@@ -31,6 +31,7 @@ class AllfoodController extends Controller
         $to_geo = $request->input('to_geo');
         $to_address = $request->input('to_address');
         $summ_order = $request->input('summ_order');
+        $pay_to_cafe = $request->input('pay_to_cafe');
         $price_delivery = 0;
         $sposob_oplaty = $request->input('sposob_oplaty');
         $type = $request->input('type');
@@ -74,6 +75,7 @@ class AllfoodController extends Controller
                 'to_geo' => $to_geo,
                 'to_address' => $to_address,
                 'summ_order' => $summ_order,
+                'pay_to_cafe' => $pay_to_cafe,
                 'type' => $type,
                 'distance' => $distance,
                 'created_at' => Carbon::now(),

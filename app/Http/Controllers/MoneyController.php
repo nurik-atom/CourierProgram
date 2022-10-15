@@ -9,10 +9,10 @@ use Illuminate\Support\Facades\DB;
 class MoneyController extends Controller
 {
     const MIN_AMOUNT = array(
-        1 => 300, // Walking Courier
-        2 => 350, // Velo Courier
-        3 => 400, // Moto Courier
-        4 => 500  // Car  Courier
+        1 => 400, // Walking Courier
+        2 => 400, // Velo Courier
+        3 => 450, // Moto Courier
+        4 => 600  // Car  Courier
     );
 
     const POLTORA_KM = 300;

@@ -87,6 +87,7 @@ class OrderResource extends JsonResource
             "prichina_otmeny" => ($this->status == 9 ? $this->prichinaOtmeny($this->id) : ""),
             "to_address" => $this->to_address,
             "summ_order" => $this->summ_order,
+            "pay_to_cafe" => $this->pay_to_cafe,
             "price_delivery" => $this->price_delivery,
             "distance" => $this->distance,
             "routing_points" => json_decode($this->routing_points,true),

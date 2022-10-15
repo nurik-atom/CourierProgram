@@ -123,6 +123,7 @@ Route::post("/szp/getDriverCashHistoryForSzp",[SzpController::class, "getDriverC
 Route::post("/szp/getDriverCashTotal",[SzpController::class, "getDriverCashTotal"]);
 Route::post("/szp/addZapisTranzakciaDriver",[SzpController::class, "addZapisTranzakciaDriver"]);
 Route::post("/szp/updateAllSummaDriverSZP",[SzpController::class, "updateAllSummaDriverSZP"]);
+Route::post("/szp/getOrdersLast24Hour",[SzpController::class, "getOrdersLast24Hour"]);
 
 
 

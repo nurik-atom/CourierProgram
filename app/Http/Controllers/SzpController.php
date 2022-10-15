@@ -441,7 +441,7 @@ class SzpController extends Controller
                 exit('Error Key');
             }
 
-            $orders = DB::table('orders')->where('date', '>=', Carbon::yesterday())->get();
+            $orders = DB::table('orders')->where('created_at', '>=', Carbon::yesterday())->orderByDesc('id')->get();
             if ($orders){
                 $result['orders'] = OrderMiniResource::collection($orders);
             }

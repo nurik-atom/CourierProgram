@@ -262,6 +262,8 @@ class OrderController extends Controller
 
             $distance_to_cafe = SearchController::getDistance($order->from_geo, $lat . "\n" . $lon);
 
+            (new CashOnHandController)->minusSumma($order->id_courier, $order->pay_to_cafe, $order->id);
+
             if ($distance_to_cafe > 100) {
                 $result['message'] = 'Вы слишком далеко находитесь от кафе';
                 break;
@@ -330,9 +332,9 @@ class OrderController extends Controller
             $description = "Заказ №" . $order->id;
             MoneyController::addAmount($user->id, $order->id, $order->price_delivery, $description);
 
-            if ($order->sposob_oplaty == 1){
-                (new CashOnHandController)->plusSumma($order->id_courier, $order->summ_order, $order->id);
-            }
+
+            (new CashOnHandController)->plusSumma($order->id_courier, $order->summ_order, $order->id);
+
 
             $result['price'] = $order->price_delivery;
             self::changeOrderCourierStatus($order->id, $user->id, 7);
