@@ -230,14 +230,14 @@ class SzpController extends Controller
                     "created_at" => Carbon::now(),
                     "updated_at" => Carbon::now()]);
 
-            // * Проверяем есть ли курьер который получил этот заказ
-            if ($order->id_courier){
-                UserController::insertStateUserFunc($order->id_courier, 0);
-                PushController::sendDataPush($order->id_courier,
-                    array('type' => 'order', 'status' => 'other_driver'),
-                    array('title'=>'Заказ #'.$order->id.' переназначен',
-                        'body' => 'Оператор переназначил заказ другому курьеру.'));
-            }
+//            // * Проверяем есть ли курьер который получил этот заказ
+//            if ($order->id_courier){
+//                UserController::insertStateUserFunc($order->id_courier, 0);
+//                PushController::sendDataPush($order->id_courier,
+//                    array('type' => 'order', 'status' => 'other_driver'),
+//                    array('title'=>'Заказ #'.$order->id.' переназначен',
+//                        'body' => 'Оператор переназначил заказ другому курьеру.'));
+//            }
 
             // ! Если новый курьер свободен поменяем State на 3
             if ($new_driver->state == 1){
@@ -452,4 +452,44 @@ class SzpController extends Controller
     }
 
 
+    public function getWhereOrderDriver(Request $request)
+    {
+        $pass       = $request->input('pass');
+        $id_allfood = $request->input('id_allfood');
+        $type       = $request->input('type');
+        $result['success'] = false;
+
+        do {
+            if ($pass != $this->key_szp_allfood) {
+                exit('Error Key');
+            }
+
+            $order = DB::table('order')->where('id_allfood', $id_allfood)->where('type', $type)->first();
+
+            if (!$order){
+                $result['message'] = 'Заказ не найден';
+                break;
+            }
+
+            if ($order->id_courier == 0){
+                $result['message'] = 'Пока что курьер не найден';
+                break;
+            }
+
+            $result['routing_points'] = $order->routing_points;
+            $result['distance_matrix'] = $order->distance_matrix;
+
+            $users_geo = DB::table('users_geo')->where('id_user', $order->id_courier)->orderByDesc('id')->first();
+
+            $result['driver_lat'] = $users_geo->lan;
+            $result['driver_lon'] = $users_geo->lon;
+            $result['driver_type'] = $users_geo->type;
+            $result['driver_geo_update_time'] = $users_geo->updated_at;
+
+            $result['success'] = true;
+
+        }while(false);
+
+        return response()->json($result);
+    }
 }

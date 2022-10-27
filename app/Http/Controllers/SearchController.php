@@ -42,7 +42,7 @@ class SearchController extends Controller
         $newOrders = DB::table("orders")
             ->select("id", "id_city", "distance","from_geo", "to_geo")
             ->where("status", 1)
-//            ->whereRaw("TIMESTAMPDIFF(MINUTE, NOW(), arrive_time) < 15")
+            //          ->whereRaw("TIMESTAMPDIFF(MINUTE, NOW(), arrive_time) < 15")
             ->get();
         foreach ($newOrders as $newOrder) {
             $result['courier'][] = self::searchCourier($newOrder);
@@ -125,9 +125,13 @@ class SearchController extends Controller
 
     public static function offerToCourier($user, $order){
 
-        $price_delivery = MoneyController::costDelivery($order->distance, $user->type);
-
         $matrix = PushController::getPointsRoutinAndTime($order->from_geo, $order->to_geo, $user->type);
+
+        $price_delivery = MoneyController::costDelivery($matrix['distance'], $user->type);
+
+        //$price_delivery = MoneyController::costDelivery($order->distance, $user->type);
+
+        //$matrix = PushController::getPointsRoutinAndTime($order->from_geo, $order->to_geo, $user->type);
 
         DB::table("orders")->where("id", $order->id)
             ->update([
@@ -171,9 +175,9 @@ class SearchController extends Controller
             ->selectRaw("users.id as id, id_user, users_geo.type, users.state, ".$geo_sql)
             ->join("users", "users_geo.id_user", "=","users.id")
             ->where("users_geo.type",$type)
-            ->where("users_geo.updated_at",">", date("Y-m-d H:i:s",time()-3600))
+            ->where("users_geo.updated_at",">", date("Y-m-d H:i:s",time()-14400))
             ->where("users.state" ,1)
-            ->whereNotIn("users.id" ,$not_users_id)
+            //->whereNotIn("users.id" ,$not_users_id)
             ->having("distance", "<",$distance)
             ->orderByDesc("users.rating")
             ->first();

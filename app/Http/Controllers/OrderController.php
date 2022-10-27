@@ -149,6 +149,25 @@ class OrderController extends Controller
 
     }
 
+    public function checkOrderUser_2(Request $request){
+        $password = $request->input("password");
+        $user = UserController::getUser($password);
+        $result['success'] = false;
+        $result['have_order'] = false;
+
+        do {
+            if (!$user) {
+                $result['message'] = 'Пользователь не найден';
+                break;
+            }
+            $result['user_state'] = $user->state;
+
+
+
+        }while(false);
+
+    }
+
     public static function changeOrderCourierStatus($id_order, $id_courier, $status)
     {
         //Update "ORDERS" table
@@ -228,12 +247,12 @@ class OrderController extends Controller
             $user = $checkedDataResult['user'];
             $order = $checkedDataResult['order'];
 
-            $distance_to_cafe = SearchController::getDistance($order->from_geo, $lat . "\n" . $lon);
+            //$distance_to_cafe = SearchController::getDistance($order->from_geo, $lat . "\n" . $lon);
 
-            if ($distance_to_cafe > 100) {
-                $result['message'] = 'Вы слишком далеко находитесь от кафе';
-                break;
-            }
+            //if ($distance_to_cafe > 100) {
+            //    $result['message'] = 'Вы слишком далеко находитесь от кафе';
+            //     break;
+            // }
 
             self::changeOrderCourierStatus($order->id, $user->id, 4);
             //Curl to allfood kz
@@ -260,20 +279,21 @@ class OrderController extends Controller
             $user = $checkedDataResult['user'];
             $order = $checkedDataResult['order'];
 
-            $distance_to_cafe = SearchController::getDistance($order->from_geo, $lat . "\n" . $lon);
+            //$distance_to_cafe = SearchController::getDistance($order->from_geo, $lat . "\n" . $lon);
 
-            (new CashOnHandController)->minusSumma($order->id_courier, $order->pay_to_cafe, $order->id);
 
-            if ($distance_to_cafe > 100) {
-                $result['message'] = 'Вы слишком далеко находитесь от кафе';
-                break;
-            }
+
+            //if ($distance_to_cafe > 100) {
+            //    $result['message'] = 'Вы слишком далеко находитесь от кафе';
+            //     break;
+            // }
 
             $result['seconds'] = $order->needed_sec;
 
             self::changeOrderCourierStatus($order->id, $user->id, 5);
             //Curl to allfood kz
             $result['allfood'] = PushController::startDeliveryOrder($order, $user, $order->needed_sec);
+            (new CashOnHandController)->minusSumma($order->id_courier, $order->pay_to_cafe, $order->id);
             $result['success'] = true;
         } while (false);
 

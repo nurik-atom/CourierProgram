@@ -15,7 +15,7 @@ class MoneyController extends Controller
         4 => 600  // Car  Courier
     );
 
-    const POLTORA_KM = 300;
+    const POLTORA_KM = 500;
 
     public function test_money(Request $request){
 //        $t = self::minusAmount(10,5,600,"Test Amount");
