@@ -126,3 +126,4 @@ Route::post("/szp/addZapisTranzakciaDriver",[SzpController::class, "addZapisTran
 Route::post("/szp/updateAllSummaDriverSZP",[SzpController::class, "updateAllSummaDriverSZP"]);
 Route::post("/szp/getOrdersLast24Hour",[SzpController::class, "getOrdersLast24Hour"]);
 Route::post("/szp/getWhereOrderDriver",[SzpController::class, "getWhereOrderDriver"]);
+Route::post("/szp/getOrderStatusHistory",[SzpController::class, "getOrderStatusHistory"]);

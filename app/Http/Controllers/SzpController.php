@@ -515,4 +515,37 @@ class SzpController extends Controller
 
         return response()->json($result);
     }
+
+    public function getOrderStatusHistory(Request $request){
+        $pass       = $request->input('pass');
+        $id_allfood = $request->input('id_allfood');
+        $type       = $request->input('type');
+
+        $result['success'] = false;
+        do {
+            if ($pass != $this->key_szp_allfood) {
+                exit('Error Key');
+            }
+
+            $order = DB::table('orders')
+                ->where('id_allfood',$id_allfood)
+                ->where('type', $type)->first();
+
+            if (!$order){
+                $result['message'] = 'Заказ не найден';
+                break;
+            }
+
+            $order_user = DB::table('order_user')->where('id_order', $order->id)->get();
+
+            $result['status_history'] = array();
+            if ($order_user){
+                $result['status_history'] = $order_user;
+            }
+
+            $result['success'] = true;
+        }while(false);
+
+        return response()->json($result);
+    }
 }
