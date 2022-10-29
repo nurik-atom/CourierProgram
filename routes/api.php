@@ -76,6 +76,7 @@ Route::post('/signStepTwo',[UserController::class,'signStepTwo']);
 Route::post('/successRegistration',[UserController::class,'successRegistration']);
 Route::post('/checkUser',[UserController::class,'checkUser']);
 Route::post('/checkOrderUser',[OrderController::class,'checkOrderUser']);
+Route::post('/checkOrderUser_2',[OrderController::class,'checkOrderUser_2']);
 
 Route::post('/test_graphhopper',[AllfoodController::class,'test_graphhopper']);
 Route::post('/getOrderDriverPosition',[AllfoodController::class,'getOrderDriverPosition']);
@@ -125,9 +126,3 @@ Route::post("/szp/addZapisTranzakciaDriver",[SzpController::class, "addZapisTran
 Route::post("/szp/updateAllSummaDriverSZP",[SzpController::class, "updateAllSummaDriverSZP"]);
 Route::post("/szp/getOrdersLast24Hour",[SzpController::class, "getOrdersLast24Hour"]);
 Route::post("/szp/getWhereOrderDriver",[SzpController::class, "getWhereOrderDriver"]);
-
-
-
-
-
-

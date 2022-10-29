@@ -163,9 +163,23 @@ class OrderController extends Controller
             $result['user_state'] = $user->state;
 
 
+            $orders = DB::table("orders")
+                ->where("id_courier", $user->id)
+                ->whereNotIn('status', [7,9])
+                ->orderBy("id")
+                ->get();
+            if ($orders){
+                $result['kol_order'] = count($orders);
+                $result['orders'] = OrderResource::collection($orders);
+            }else{
+                $result['kol_order'] = 0;
+                $result['orders'] = array();
+            }
 
+            $result['success'] = true;
         }while(false);
-
+        
+        return response()->json($result);
     }
 
     public static function changeOrderCourierStatus($id_order, $id_courier, $status)
