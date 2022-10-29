@@ -42,7 +42,7 @@ class SearchController extends Controller
         $newOrders = DB::table("orders")
             ->select("id", "id_city", "distance","from_geo", "to_geo")
             ->where("status", 1)
-            //          ->whereRaw("TIMESTAMPDIFF(MINUTE, NOW(), arrive_time) < 15")
+            ->whereRaw("TIMESTAMPDIFF(MINUTE, NOW(), arrive_time) < 30")
             ->get();
         foreach ($newOrders as $newOrder) {
             $result['courier'][] = self::searchCourier($newOrder);

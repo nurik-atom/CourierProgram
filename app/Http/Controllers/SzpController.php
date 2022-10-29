@@ -193,6 +193,8 @@ class SzpController extends Controller
                 ->where('type', $type)
                 ->first();
 
+            $old_driver_id = $order->id_courier;
+
             $new_driver = DB::table('users')
                 ->select('id', 'token', 'state', 'name', 'photo', 'phone', 'type')
                 ->where('id', $id_driver)
@@ -212,7 +214,19 @@ class SzpController extends Controller
                 break;
             }
 
-            $update_order = DB::table('orders')->where('id_allfood', $id_allfood)->where('type', $type)->update(['id_courier' => $new_driver->id, 'status' => 3]);
+            $matrix = PushController::getPointsRoutinAndTime($order->from_geo, $order->to_geo, $new_driver->type);
+            $price_delivery = MoneyController::costDelivery($matrix['distance'], $new_driver->type);
+
+            $update_order = DB::table("orders")->where("id", $order->id)
+                ->update([
+                    "needed_sec" => $matrix['time'] > 450 ? $matrix['time'] : 450,
+                    "distance_matrix" => $matrix['distance'],
+                    "routing_points" => $matrix['route_points'],
+                    "mode" => $new_driver->type,
+                    "price_delivery" => $price_delivery,
+                    'id_courier' => $new_driver->id,
+                    'status' => 3
+                ]);
 
 
             // ! Если заказ не переназначен
@@ -221,23 +235,27 @@ class SzpController extends Controller
                 break;
             }
 
+            OrderController::changeOrderCourierStatus($order->id, $new_driver->id, 3);
+
+
             //ADD to ORDER_USER table
-            DB::table("order_user")
-                ->insert([
-                    "id_user" => $new_driver->id,
-                    "id_order" => $order->id,
-                    "status" => 3,
-                    "created_at" => Carbon::now(),
-                    "updated_at" => Carbon::now()]);
+//            DB::table("order_user")
+//                ->insert([
+//                    "id_user" => $new_driver->id,
+//                    "id_order" => $order->id,
+//                    "status" => 3,
+//                    "created_at" => Carbon::now(),
+//                    "updated_at" => Carbon::now()]);
 
 //            // * Проверяем есть ли курьер который получил этот заказ
-//            if ($order->id_courier){
-//                UserController::insertStateUserFunc($order->id_courier, 0);
-//                PushController::sendDataPush($order->id_courier,
-//                    array('type' => 'order', 'status' => 'other_driver'),
-//                    array('title'=>'Заказ #'.$order->id.' переназначен',
-//                        'body' => 'Оператор переназначил заказ другому курьеру.'));
-//            }
+
+            if ($old_driver_id != 0){
+                UserController::insertStateUserFunc($order->id_courier, 1);
+                PushController::sendDataPush($order->id_courier,
+                    array('type' => 'order', 'status' => 'other_driver'),
+                    array('title'=>'Заказ #'.$order->id.' переназначен',
+                        'body' => 'Оператор переназначил заказ другому курьеру.'));
+            }
 
             // ! Если новый курьер свободен поменяем State на 3
             if ($new_driver->state == 1){
@@ -464,7 +482,7 @@ class SzpController extends Controller
                 exit('Error Key');
             }
 
-            $order = DB::table('order')->where('id_allfood', $id_allfood)->where('type', $type)->first();
+            $order = DB::table('orders')->where('id_allfood', $id_allfood)->where('type', $type)->first();
 
             if (!$order){
                 $result['message'] = 'Заказ не найден';
@@ -475,6 +493,11 @@ class SzpController extends Controller
                 $result['message'] = 'Пока что курьер не найден';
                 break;
             }
+
+            $driver = DB::table('users')->where('id', $order->id_courier)->first();
+
+            $result['driver_name'] = $driver->name;
+            $result['driver_phone'] = $driver->phone;
 
             $result['routing_points'] = $order->routing_points;
             $result['distance_matrix'] = $order->distance_matrix;
