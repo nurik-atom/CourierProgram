@@ -54,6 +54,32 @@ class OrderResource extends JsonResource
         return $res[$key];
     }
 
+    public static function getSeconds($order){
+        $result = 0;
+
+        if ($order->status == 2){
+            $order_user = DB::table("order_user")->where("id_user", $order->id_courier)->orderByDesc("id")->first();
+
+            $result = time() - strtotime($order_user->created_at);
+        }
+
+        if ($order->status <= 3) {
+            $result = strtotime($order->arrive_time) - time();
+        }
+
+        if ($order->status == 4) {
+            $result = $order->needed_sec;
+        }
+
+        if ($order->status == 5) {
+            $start_time = DB::table("order_user")->where("id_order", $order->id)->where("status", 5)->select("created_at")->first();
+
+            $result = $order->needed_sec + strtotime($start_time->created_at) - time();
+        }
+
+        return $result;
+    }
+
     public function toArray($request)
     {
         // Comment ADD
@@ -93,6 +119,7 @@ class OrderResource extends JsonResource
             "routing_points" => json_decode($this->routing_points,true),
          //   "add_time" => Carbon::createFromFormat('Y-m-d H:i:s', $this->created_at)->timezone("Asia/Almaty")
             "add_time" =>Carbon::createFromFormat('Y-m-d H:i:s',$this->created_at),
+            'seconds' => $this->getSeconds($this)
         ];
     }
 }

@@ -153,7 +153,7 @@ class OrderController extends Controller
         $password = $request->input("password");
         $user = UserController::getUser($password);
         $result['success'] = false;
-        $result['have_order'] = false;
+//        $result['have_order'] = false;
 
         do {
             if (!$user) {
@@ -178,7 +178,7 @@ class OrderController extends Controller
 
             $result['success'] = true;
         }while(false);
-        
+
         return response()->json($result);
     }
 
