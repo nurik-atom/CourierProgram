@@ -748,6 +748,36 @@ class UserController extends Controller
         return response()->json($result);
     }
 
+    public static function defineStateAndUpdate($id_driver)
+    {
+        $active_order = DB::table('orders')
+            ->where('id_courier', $id_driver)
+            ->whereNotIn('status', [7,9])
+            ->first();
+
+        if ($active_order){
+            $new_state = $active_order->status;
+        }else{
+            $new_state = 1;
+        }
+
+        $update = DB::table('users')->where('id', $id_driver)->update(['state'=>$new_state]);
+
+        if ($update){
+            PushController::sendDataPush($id_driver, ['type'=>'new_state'], ['title'=>'Статус изменен', 'body'=>'Новый статус = '.$new_state]);
+        }
+    }
+    public function testStaticFunctions(Request $request){
+        $pass = $request->input('pass');
+
+        if ($pass === 'VzlomatEtpen'){
+            self::defineStateAndUpdate(36);
+        }
+
+
+    }
+
+
     public function test()
     {
         echo "something";
