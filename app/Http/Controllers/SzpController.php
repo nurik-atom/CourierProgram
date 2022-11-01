@@ -548,4 +548,33 @@ class SzpController extends Controller
 
         return response()->json($result);
     }
+
+    public function izmenitStatusDriverOrder(Request $request){
+        $pass       = $request->input('pass');
+        $id_allfood = $request->input('id_allfood');
+        $type       = $request->input('type');
+        $new_status = $request->input('new_status');
+
+        $result['success'] = false;
+        do {
+            if ($pass != $this->key_szp_allfood) {
+                exit('Error Key');
+            }
+
+            $order = DB::table('orders')
+                ->where('id_allfood',$id_allfood)
+                ->where('type', $type)->first();
+
+            if (!$order){
+                $result['message'] = 'Заказ не найден';
+                break;
+            }
+
+            OrderController::changeOrderCourierStatus($order->id, $order->id_courier, $new_status);
+
+            $result['success'] = true;
+        }while(false);
+
+        return response()->json($result);
+    }
 }
