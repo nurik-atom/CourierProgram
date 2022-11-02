@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\OrderResource;
 //use Illuminate\Http\Request;
+use Carbon\Carbon;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -81,6 +82,16 @@ class PushController extends Controller
         $res['time_value'] = @$response_a['rows'][0]['elements'][0]['duration']['value'];
 
         return $res;
+    }
+
+    public static function eyTyTamOtvechai(){
+        $active_not_gps_users = DB::table('users')
+            ->select('users.id', 'users.token')
+            ->leftJoin('users_geo', 'users.id', '=', 'users_geo.id_user')
+            ->where('users.state', 1)
+            ->where('users_geo.updated_at', '<', date("Y-m-d H:i:s",time()-3600));
+
+        return $active_not_gps_users;
     }
 
     public static function getPointsRoutinAndTime($from, $to, $mode){
