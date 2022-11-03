@@ -161,7 +161,7 @@ class OrderController extends Controller
                 break;
             }
             $result['user_state'] = $user->state;
-
+            $result['user_online'] = $user->state != 0 ? 1 : 0;
 
             $orders = DB::table("orders")
                 ->where("id_courier", $user->id)

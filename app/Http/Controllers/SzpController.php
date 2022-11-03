@@ -156,7 +156,7 @@ class SzpController extends Controller
                 ->join("users", "users_geo.id_user", "=", "users.id")
                 ->where("users.status", 3)
                 ->where("users_geo.updated_at", ">", date("Y-m-d H:i:s", time() - 3600))
-                ->whereNotIn('users.state', [0, 3, 4])
+                ->whereNotIn('users.state', [0, 2])
                 ->having("distance", "<", $distance)
                 ->orderByDesc("users.rating")
                 ->get()->unique('id_user');
@@ -572,6 +572,32 @@ class SzpController extends Controller
 
             OrderController::changeOrderCourierStatus($order->id, $order->id_courier, $new_status);
 
+            $result['success'] = true;
+        }while(false);
+
+        return response()->json($result);
+    }
+
+
+    public function getAllActiveOrders(Request $request){
+        $pass       = $request->input('pass');
+
+        $result['success'] = false;
+        do {
+            if ($pass != $this->key_szp_allfood) {
+                exit('Error Key');
+            }
+            $result['orders'] = array();
+
+            $orders = DB::table('orders','o')
+                ->leftJoin('users AS u', 'o.id_courier', '=', 'users.id')
+                ->select('o.id', 'o.status','o.id_courier', 'o.created_at', 'o.id_city', 'o.id_cafe', 'o.cafe_name', 'u.name')
+                ->whereNotIn('status',[7,9])
+                ->orWhere('created_at', '>', date('Y-m-d H:i:s', time()-43200))->get();
+
+            if ($orders){
+                $result['orders'] = $orders;
+            }
             $result['success'] = true;
         }while(false);
 

@@ -90,13 +90,14 @@ class PushController extends Controller
             ->leftJoin('users_geo', 'users.id', '=', 'users_geo.id_user')
             ->where('users.state', 1)
             ->where('users_geo.updated_at', '<', date("Y-m-d H:i:s",time()-3600))
+            //->where('users.id', 36)
             ->get();
 
         if ($active_not_gps_users){
             foreach ($active_not_gps_users as $key => $u){
-                self::sendDataPush($u['token'],
-                    ['type' => 'otvachai'],
-                    ['title'=> '🌍 Мы не можем Вас найти', 'body'=>'Пожалуйста запустите приложение']);
+                self::sendDataPush($u->token,
+                    array('type' => 'otvachai'),
+                    array('title'=> '🌍 Мы не можем Вас найти', 'body'=>'Пожалуйста запустите приложение'));
             }
         }
     }

@@ -199,6 +199,7 @@ class UserController extends Controller
         $birthday = $request->input('birthday');
         $id_city = $request->input('id_city');
         $type_transport = $request->input('type_transport');
+        $iin = $request->input('iin');
 
         $data['success'] = false;
         do {
@@ -223,7 +224,7 @@ class UserController extends Controller
 
             $user_data_update = DB::table("users")
                 ->where([["password", '=', $password], ['phone', '=', $phone]])
-                ->update(['name' => $name, 'surname' => $surname, 'id_city' => $id_city, 'birthday' => $birthday, 'type' => $type_transport, 'status' => '2', 'photo' => $image]);
+                ->update(['name' => $name, 'surname' => $surname, 'id_city' => $id_city, 'birthday' => $birthday, 'type' => $type_transport, 'status' => '2', 'photo' => $image, 'iin' =>$iin]);
 
             if ($user_data_update) {
                 $data['success'] = true;
