@@ -129,6 +129,7 @@ Route::post("/szp/getWhereOrderDriver",[SzpController::class, "getWhereOrderDriv
 Route::post("/szp/getOrderStatusHistory",[SzpController::class, "getOrderStatusHistory"]);
 Route::post("/szp/izmenitStatusDriverOrder",[SzpController::class, "izmenitStatusDriverOrder"]);
 Route::post("/szp/getAllActiveOrders",[SzpController::class, "getAllActiveOrders"]);
+Route::post("/szp/changeDriverStateSzp",[SzpController::class, "changeDriverStateSzp"]);
 
 
 Route::post("/szp/testStaticFunctions",[UserController::class, "testStaticFunctions"]);

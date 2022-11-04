@@ -26,6 +26,7 @@ class SzpController extends Controller
 
         $users = DB::table('users')
             ->select('id', 'name', 'surname', 'id_city', 'birthday', 'phone', 'type', 'status', 'rating', 'state', 'created_at')
+            ->orderByDesc('state')
             ->get();
         $result['users'] = $users;
         $result['success'] = true;
@@ -69,6 +70,26 @@ class SzpController extends Controller
         }
 
         $user_update = DB::table('users')->where('id', $id_driver)->update(['status' => $status]);
+
+        if ($user_update) $result['success'] = true;
+
+        return response()->json($result);
+
+    }
+
+
+    public function changeDriverStateSzp(Request $request)
+    {
+        $pass = $request->input('pass');
+        $id_driver = $request->input('id_driver');
+        $state = $request->input('state');
+        $result['success'] = false;
+
+        if ($pass != $this->key_szp_allfood) {
+            exit('Error Key');
+        }
+
+        $user_update = DB::table('users')->where('id', $id_driver)->update(['state' => $state]);
 
         if ($user_update) $result['success'] = true;
 
@@ -591,9 +612,11 @@ class SzpController extends Controller
 
             $orders = DB::table('orders','o')
                 ->leftJoin('users AS u', 'o.id_courier', '=', 'users.id')
-                ->select('o.id', 'o.status','o.id_courier', 'o.created_at', 'o.id_city', 'o.id_cafe', 'o.cafe_name', 'u.name')
-                ->whereNotIn('status',[7,9])
-                ->orWhere('created_at', '>', date('Y-m-d H:i:s', time()-43200))->get();
+                ->select('o.id', 'o.id_allfood', 'o.status','o.type', 'o.id_courier', 'o.created_at', 'o.id_city', 'o.id_cafe', 'o.cafe_name', 'u.name')
+                ->whereNotIn('o.status',[7,9])
+                ->orWhere('o.created_at', '>', date('Y-m-d H:i:s', time()-43200))
+                ->orderByDesc('o.id')
+                ->get();
 
             if ($orders){
                 $result['orders'] = $orders;
