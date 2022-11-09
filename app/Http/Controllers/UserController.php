@@ -773,8 +773,10 @@ class UserController extends Controller
         $pass = $request->input('pass');
 
         if ($pass === 'VzlomatEtpen'){
-            return response()->json(PushController::eyTyTamOtvechai());
+            return response()->json(SearchController::push_new_orders());
 //            self::defineStateAndUpdate(36);
+
+
         }
 
 

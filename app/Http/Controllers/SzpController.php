@@ -611,7 +611,7 @@ class SzpController extends Controller
             $result['orders'] = array();
 
             $orders = DB::table('orders','o')
-                ->leftJoin('users AS u', 'o.id_courier', '=', 'users.id')
+                ->leftJoin('users AS u', 'o.id_courier', '=', 'u.id')
                 ->select('o.id', 'o.id_allfood', 'o.status','o.type', 'o.id_courier', 'o.created_at', 'o.id_city', 'o.id_cafe', 'o.cafe_name', 'u.name')
                 ->whereNotIn('o.status',[7,9])
                 ->orWhere('o.created_at', '>', date('Y-m-d H:i:s', time()-43200))

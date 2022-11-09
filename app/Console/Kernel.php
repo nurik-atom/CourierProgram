@@ -28,6 +28,7 @@ class Kernel extends ConsoleKernel
 
         $schedule->call("\App\Http\Controllers\SearchController::fallBehindOrders")->everyMinute();
         $schedule->call("\App\Http\Controllers\SearchController::searchNewOrder")->everyMinute();
+        $schedule->call("\App\Http\Controllers\SearchController::push_new_orders")->everyMinute();
         $schedule->call("\App\Http\Controllers\PushController::eyTyTamOtvechai")->everyFiveMinutes();
 
     }

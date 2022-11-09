@@ -40,16 +40,35 @@ class SearchController extends Controller
     {
         $result = array();
         $newOrders = DB::table("orders")
-            ->select("id", "id_city", "distance","from_geo", "to_geo")
+            ->select("id", "id_city","id_allfood","type", "distance","from_geo", "to_geo")
             ->where("status", 1)
             ->whereRaw("TIMESTAMPDIFF(MINUTE, NOW(), arrive_time) < 30")
             ->get();
         foreach ($newOrders as $newOrder) {
             $result['courier'][] = self::searchCourier($newOrder);
             $result['order'][] = $newOrder;
+
+
+//            $mes['mess'] = 'Новый заказ в DRIVER # '.$newOrder->id_allfood. ' type = '.$newOrder->type;
+//            PushController::sendReqToAllfood("test_search", $mes);
         }
 
         return response()->json($result);
+    }
+
+    public function push_new_orders(){
+
+        $newOrders = DB::table("orders")
+            ->select("id", "id_city","id_allfood","type", "cafe_name")
+            ->whereIn("status", [1,2])
+            ->whereRaw("TIMESTAMPDIFF(MINUTE, NOW(), arrive_time) < 30")
+            ->get();
+        foreach ($newOrders as $newOrder) {
+            $mes['mess'] = 'Новый заказ в DRIVER # '.$newOrder->id_allfood. ' type = '.$newOrder->type.' cafe='.$newOrder->cafe_name;
+            PushController::sendReqToAllfood("test_search", $mes);
+        }
+        return $newOrders;
+
     }
 
     public static function fallBehindOrders(){
