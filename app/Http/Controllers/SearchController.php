@@ -56,16 +56,17 @@ class SearchController extends Controller
         return response()->json($result);
     }
 
-    public function push_new_orders(){
+    public static function push_new_orders(){
 
         $newOrders = DB::table("orders")
-            ->select("id", "id_city","id_allfood","type", "cafe_name")
+            ->select("id", "id_city", "id_cafe", "id_allfood","type", "cafe_name")
             ->whereIn("status", [1,2])
-            ->whereRaw("TIMESTAMPDIFF(MINUTE, NOW(), arrive_time) < 30")
+            ->whereRaw("TIMESTAMPDIFF(MINUTE, NOW(), arrive_time) < 120")
             ->get();
         foreach ($newOrders as $newOrder) {
             $mes['mess'] = 'Новый заказ в DRIVER # '.$newOrder->id_allfood. ' type = '.$newOrder->type.' cafe='.$newOrder->cafe_name;
-            PushController::sendReqToAllfood("test_search", $mes);
+            $mes['id_cafe'] = $newOrder->id_cafe;
+            PushController::sendReqToAllfood("PushNewOrders", $mes);
         }
         return $newOrders;
 

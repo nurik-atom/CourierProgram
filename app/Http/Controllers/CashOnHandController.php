@@ -74,7 +74,10 @@ class CashOnHandController extends Controller
             $result['current'] = $current->cash_on_hand;
 
             $result['history'] = array();
-            $history = DB::table('cash_driver_history')->where('id_driver', $current->id)->get();
+            $history = DB::table('cash_driver_history', 'h')
+                ->leftJoin('orders as o', 'h.id_order', '=', 'o.id')
+                ->select('h.id', 'h.summa', 'h.created_at', 'o.cafe_name')
+                ->where('id_driver', $current->id)->get();
             if($history) {
                 $result['history'] = CashOnHandHistoryResource::collection($history);
             }

@@ -651,23 +651,23 @@ class UserController extends Controller
 
             $result['help_balance_pages'] = array();
 
-            $help_balance_pages = DB::table("help_balance_pages")
-                ->select("id", "name", "icon", "type")
-                ->orderBy("sort")
-                ->get();
+//            $help_balance_pages = DB::table("help_balance_pages")
+//                ->select("id", "name", "icon", "type")
+//                ->orderBy("sort")
+//                ->get();
 
-            if ($help_balance_pages) {
-                $result['help_balance_pages'] = $help_balance_pages;
-            }
+//            if ($help_balance_pages) {
+//                $result['help_balance_pages'] = $help_balance_pages;
+//            }
 
-//            $result['orders'] = array();
-//
-//            $orders = DB::table("orders")
-//                ->select("id", "created_at", "price_delivery")
-//                ->where("id_courier", $user->id)
-//                ->orderByDesc("id")
-//                ->limit(20)->get();
-//            $result['orders'] = OrderMiniResource::collection($orders);
+            $result['orders'] = array();
+
+            $orders = DB::table("orders")
+                ->select("id","id_courier", "sposob_oplaty", "summ_order", "cafe_name", "created_at","price_delivery", "status")
+                ->where("id_courier", $user->id)
+                ->orderByDesc("id")
+                ->limit(20)->get();
+            $result['orders'] = OrderMiniResource::collection($orders);
 
             $result['date'] = Carbon::now()->startOfMonth()->diffForHumans();
             $result['success'] = true;
@@ -701,7 +701,7 @@ class UserController extends Controller
             $result['count'] = $sumCount->kol;
 
             $orders = DB::table("orders")
-                ->select("id","cafe_name", "created_at","price_delivery", "status")
+                ->select("id","id_courier", "sposob_oplaty", "summ_order", "cafe_name", "created_at","price_delivery", "status")
                 ->where("id_courier", $user->id)
                 ->where("created_at",">=" ,$from)
                 ->where("created_at","<=" ,$to)
