@@ -153,9 +153,11 @@ class PushController extends Controller
         }
         $data_notif = [
             "to"=>$token,
+            "priority"=>'high',
             "notification"=>[
                 "title"=>$message['title'],
-                "body"=>$message['body']
+                "body"=>$message['body'],
+                "sound"=>'default'
             ]
         ];
         if ($data){

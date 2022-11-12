@@ -761,8 +761,8 @@ class UserController extends Controller
         }else{
             $new_state = 1;
         }
-
-        $update = DB::table('users')->where('id', $id_driver)->update(['state'=>$new_state]);
+        $update = self::insertStateUserFunc($id_driver, $new_state);
+//        $update = DB::table('users')->where('id', $id_driver)->update(['state'=>$new_state]);
 
         if ($update){
             PushController::sendDataPush($id_driver, ['type'=>'new_state'], ['title'=>'Статус изменен', 'body'=>'Новый статус = '.$new_state]);

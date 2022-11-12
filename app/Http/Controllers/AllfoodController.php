@@ -131,13 +131,12 @@ class AllfoodController extends Controller
 
     }
 
-    public function cancelOrder(Request $request)
+    public function cancelOrderFromAllfood(Request $request)
     {
         $key = $request->input("key");
         if (!$key || $key != env("ALLFOOD_KEY")) exit("Error key");
 
         $id_allfood = $request->input("id_allfood");
-        $who = $request->input("who");
         $type = $request->input("type");
         $prichina = $request->input("prichina");
         $result['success'] = false;
@@ -157,10 +156,11 @@ class AllfoodController extends Controller
                 $result['message'] = 'Ошибка при отмене';
                 break;
             }
-            OrderController::addCauseToCancelled($order->id, 0, $who, $prichina);
+            OrderController::addCauseToCancelled($order->id, 0, 0, $prichina);
 
             if ($order->id_courier) {
-                UserController::insertStateUserFunc($order->id_courier, 1);
+//                UserController::insertStateUserFunc($order->id_courier, 1);
+                UserController::defineStateAndUpdate($order->id_courier);
                 PushController::cancelFromCafeClient($order->id, $order->id_courier, $prichina);
             }
 
