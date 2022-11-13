@@ -549,6 +549,7 @@ class SzpController extends Controller
             }
 
             $order = DB::table('orders')
+                ->select('id', 'price_delivery', 'status', 'id_courier', 'distance_matrix')
                 ->where('id_allfood',$id_allfood)
                 ->where('type', $type)->first();
 
@@ -556,8 +557,14 @@ class SzpController extends Controller
                 $result['message'] = 'Заказ не найден';
                 break;
             }
+            $result['order'] = $order;
 
-            $order_user = DB::table('order_user')->where('id_order', $order->id)->get();
+            $order_user = DB::table('order_user', 'ou')
+                ->leftJoin('users as u', 'ou.id_user', '=', 'u.id')
+                ->select('ou.id', 'ou.id_order', 'ou.status', 'ou.created_at', 'u.name')
+                ->where('ou.id_order', $order->id)
+                ->get();
+
 
             $result['status_history'] = array();
             if ($order_user){

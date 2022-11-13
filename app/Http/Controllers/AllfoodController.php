@@ -86,6 +86,15 @@ class AllfoodController extends Controller
             $result['success'] = true;
             $result['id'] = $new_order_id;
 
+            if ($new_order_id){
+                DB::table("order_user")
+                    ->insert([
+                        "id_user" => 0,
+                        "id_order" => $new_order_id,
+                        "status" => 1,
+                        "created_at" => Carbon::now(),
+                        "updated_at" => Carbon::now()]);
+            }
 
         } while (false);
 

@@ -111,7 +111,7 @@ class PushController extends Controller
 
         $from = explode("\n", $from)[0].','.explode("\n", $from)[1];
         $to = explode("\n", $to)[0].','.explode("\n", $to)[1];
-        $responce = Http::timeout(15)->get('https://graphhopper.com/api/1//route?point='.$from.'&point='.$to.'&type=json&locale=ru-RU&key='.env('GRAPHHOPPER_API_KEY').'&elevation=true&profile='.$modes[$mode].'&points_encoded=false');
+        $responce = Http::timeout(15)->get('https://graphhopper.com/api/1/route?point='.$from.'&point='.$to.'&type=json&locale=ru-RU&key='.env('GRAPHHOPPER_API_KEY').'&elevation=true&profile='.$modes[$mode].'&points_encoded=false');
 
         $responce = $responce->json();
         $result['time'] = intdiv($responce['paths'][0]['time'], 1000);
@@ -247,7 +247,7 @@ class PushController extends Controller
     }
     public static function cancelFromCafeClient($id_order, $id_user, $prichina){
         $data['type']  = 'order';
-        $data['status']  = 'cancel_order';
+        $data['status']  = 'cancel_orders';
         $data['message']  = $prichina;
 
         $mess['title'] = 'Заказ №'.$id_order. 'отменен';
