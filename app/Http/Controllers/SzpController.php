@@ -383,16 +383,29 @@ class SzpController extends Controller
                 exit('Error Key');
             }
 
-            $history = DB::table('cash_driver_history as h')->selectRaw('h.id, h.summa, h.id_driver, h.id_order, h.created_at, users.name, users.surname, orders.id_allfood, orders.type')
+            $history_cash_of_hand = DB::table('cash_driver_history as h')
+                ->selectRaw('h.id, h.summa, h.id_driver, h.id_order, h.created_at, users.name, users.surname, orders.id_allfood, orders.type')
                 ->leftJoin('users', 'h.id_driver', '=', 'users.id')
                 ->leftJoin('orders', 'h.id_order', '=', 'orders.id')
                 ->orderByDesc('id')
+                ->limit(100)
                 ->get();
 
-            if ($history){
-                $result['history'] = $history;
+            if ($history_cash_of_hand){
+                $result['history_cash_of_hand'] = $history_cash_of_hand;
             }
 
+            $history_balance = DB::table('balance_history', 'h')
+                ->select('h.id','h.id_user', 'h.amount', 'h.created_at', 'o.cafe_name', 'u.name', 'o.id_allfood', 'o.type')
+                ->leftJoin('users', 'h.user', '=', 'users.id')
+                ->leftJoin('orders', 'h.id_order', '=', 'orders.id')
+                ->orderByDesc('id')
+                ->limit(100)
+                ->get();
+
+            if ($history_balance){
+                $result['history_balance'] = $history_balance;
+            }
             $result['success'] = true;
 
         }while(false);
@@ -409,12 +422,21 @@ class SzpController extends Controller
                 exit('Error Key');
             }
 
-            $driver_total = DB::table('users')->select('name', 'surname', 'id', 'cash_on_hand', 'phone')
+            $cash_on_hand = DB::table('users')->select('name', 'surname', 'id', 'cash_on_hand', 'phone')
                 ->where('cash_on_hand', '!=', 0)
                 ->get();
 
-            if ($driver_total){
-                $result['driver_total'] = $driver_total;
+            if ($cash_on_hand){
+                $result['cash_on_hand'] = $cash_on_hand;
+            }
+
+            $balance = DB::table('balance', 'b')
+                ->select('b.id_user','b.amount', 'u.name', 'u.surname')
+                ->leftJoin('users as u', 'b.id_user', '=', 'u.id')
+                ->get();
+
+            if ($balance){
+                $result['balance_user'] = $balance;
             }
 
             $result['success'] = true;
