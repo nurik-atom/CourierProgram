@@ -123,6 +123,7 @@ Route::post("/szp/izmenitSposobOplaty ",[SzpController::class, "izmenitSposobOpl
 Route::post("/szp/getDriverCashHistoryForSzp",[SzpController::class, "getDriverCashHistoryForSzp"]);
 Route::post("/szp/getDriverCashTotal",[SzpController::class, "getDriverCashTotal"]);
 Route::post("/szp/addZapisTranzakciaDriver",[SzpController::class, "addZapisTranzakciaDriver"]);
+Route::post("/szp/addZapisBalanceDriver",[SzpController::class, "addZapisBalanceDriver"]);
 Route::post("/szp/updateAllSummaDriverSZP",[SzpController::class, "updateAllSummaDriverSZP"]);
 Route::post("/szp/getOrdersLast24Hour",[SzpController::class, "getOrdersLast24Hour"]);
 Route::post("/szp/getWhereOrderDriver",[SzpController::class, "getWhereOrderDriver"]);

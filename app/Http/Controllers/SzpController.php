@@ -396,8 +396,8 @@ class SzpController extends Controller
             }
 
             $history_balance = DB::table('balance_history', 'h')
-                ->select('h.id','h.id_user', 'h.amount', 'h.created_at', 'o.cafe_name', 'u.name', 'o.id_allfood', 'o.type')
-                ->leftJoin('users as u', 'h.user', '=', 'u.id')
+                ->select('h.id','h.id_user', 'h.amount', 'h.created_at','h.description', 'o.cafe_name', 'u.name', 'o.id_allfood', 'o.type', 'o.distance_matrix')
+                ->leftJoin('users as u', 'h.id_user', '=', 'u.id')
                 ->leftJoin('orders as o', 'h.id_order', '=', 'o.id')
                 ->orderByDesc('id')
                 ->limit(100)
@@ -465,6 +465,32 @@ class SzpController extends Controller
             }
 
             $insert = (new CashOnHandController)->plusSumma($id_driver, $summa, $id_order, $comment);
+
+            $result['success'] = true;
+        }while(false);
+
+        return response()->json($result);
+    }
+
+    public function addZapisBalanceDriver(Request $request){
+        $id_driver = $request->input('id_driver');
+        $summa     = $request->input('summa');
+        $comment   = $request->input('comment');
+        $pass   = $request->input('pass');
+        $result['success'] = false;
+
+        do {
+            if ($pass != $this->key_szp_allfood) {
+                exit('Error Key');
+            }
+
+            $driver_check = DB::table('users')->where('id', $id_driver)->first();
+            if (!$driver_check){
+                $result['message'] = 'Пользователь не найден';
+                break;
+            }
+
+            $insert = MoneyController::addAmount($id_driver,0,$summa,$comment);
 
             $result['success'] = true;
         }while(false);
