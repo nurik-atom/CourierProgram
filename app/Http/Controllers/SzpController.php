@@ -397,8 +397,8 @@ class SzpController extends Controller
 
             $history_balance = DB::table('balance_history', 'h')
                 ->select('h.id','h.id_user', 'h.amount', 'h.created_at', 'o.cafe_name', 'u.name', 'o.id_allfood', 'o.type')
-                ->leftJoin('users', 'h.user', '=', 'users.id')
-                ->leftJoin('orders', 'h.id_order', '=', 'orders.id')
+                ->leftJoin('users as u', 'h.user', '=', 'u.id')
+                ->leftJoin('orders as o', 'h.id_order', '=', 'o.id')
                 ->orderByDesc('id')
                 ->limit(100)
                 ->get();
