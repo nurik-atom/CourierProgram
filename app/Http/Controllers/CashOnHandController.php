@@ -10,7 +10,9 @@ use Illuminate\Support\Facades\DB;
 class CashOnHandController extends Controller
 {
     public function plusSumma($id_driver, $summa, $id_order, $comment = ''){
-
+        if ($summa == 0) {
+            return true;
+        }
         $insert  = DB::table("cash_driver_history")->insert([
             'id_driver' => $id_driver,
             'id_order'  => $id_order,
@@ -26,6 +28,9 @@ class CashOnHandController extends Controller
     }
 
     public function minusSumma($id_driver, $summa, $id_order, $comment = ''){
+        if ($summa == 0) {
+            return true;
+        }
         $summa = -1 * $summa;
         $insert = DB::table("cash_driver_history")->insert([
             'id_driver' => $id_driver,
