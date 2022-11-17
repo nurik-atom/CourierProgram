@@ -681,4 +681,47 @@ class SzpController extends Controller
 
         return response()->json($result);
     }
+
+    public function getCountActiveOrders(Request $request){
+        $pass = $request->input('pass');
+
+        $result['success'] = false;
+        do {
+            if ($pass != $this->key_szp_allfood) {
+                exit('Error Key');
+            }
+
+            $result['count'] = DB::table('orders')->whereNotIn('status', [7,9])->count();
+
+            $result['success'] = true;
+        }while(false);
+
+        return response()->json($result);
+    }
+
+    public function addTranzakciaBalance(Request $request){
+        $pass      = $request->input('pass');
+        $id_driver = $request->input('id_driver');
+        $summa     = $request->input('summa');
+        $descs     = $request->input('descs');
+
+        $result['success'] = false;
+        do {
+            if ($pass != $this->key_szp_allfood) {
+                exit('Error Key');
+            }
+
+            $driver = DB::table('users')->where('id', $id_driver)->first();
+            if (!$driver){
+                $result['message'] = 'Курьер не найден';
+                break;
+            }
+
+            MoneyController::addAmount($id_driver, 0,$summa, $descs);
+
+            $result['success'] = true;
+        }while(false);
+
+        return response()->json($result);
+    }
 }
