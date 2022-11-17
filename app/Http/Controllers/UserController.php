@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\BalanceHistoryMiniOrderResource;
 use App\Http\Resources\OrderMiniResource;
 use App\Http\Resources\OrderResource;
 use App\Http\Resources\UserResource;
@@ -662,12 +663,21 @@ class UserController extends Controller
 
             $result['orders'] = array();
 
-            $orders = DB::table("orders")
-                ->select("id","id_courier", "sposob_oplaty", "summ_order", "cafe_name", "created_at","price_delivery", "status")
-                ->where("id_courier", $user->id)
+            $history = DB::table('balance_history', 'h')
+                ->leftJoin('orders as o', 'h.id_order', '=', 'o.id')
+                ->select('h.amount', ' h.description', 'h.id_order', 'h.created_at', 'o.cafe_name', 'o.status', 'h.id_user', 'o.sposob_oplaty','o.summ_order')
+                ->where("h.id_user", $user->id)
                 ->orderByDesc("id")
                 ->limit(20)->get();
-            $result['orders'] = OrderMiniResource::collection($orders);
+
+            $result['orders'] = BalanceHistoryMiniOrderResource::collection($history);
+
+//            $orders = DB::table("orders")
+//                ->select("id","id_courier", "sposob_oplaty", "summ_order", "cafe_name", "created_at","price_delivery", "status")
+//                ->where("id_courier", $user->id)
+//                ->orderByDesc("id")
+//                ->limit(20)->get();
+//            $result['orders'] = OrderMiniResource::collection($orders);
 
             $result['date'] = Carbon::now()->startOfMonth()->diffForHumans();
             $result['success'] = true;

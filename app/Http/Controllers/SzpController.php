@@ -423,7 +423,7 @@ class SzpController extends Controller
             }
 
             $cash_on_hand = DB::table('users')->select('name', 'surname', 'id', 'cash_on_hand', 'phone')
-                ->where('cash_on_hand', '!=', 0)
+                ->where('status', 3)
                 ->get();
 
             if ($cash_on_hand){
@@ -433,6 +433,7 @@ class SzpController extends Controller
             $balance = DB::table('balance', 'b')
                 ->select('b.id_user','b.amount', 'u.name', 'u.surname')
                 ->leftJoin('users as u', 'b.id_user', '=', 'u.id')
+                ->where('u.status', 3)
                 ->get();
 
             if ($balance){
@@ -692,32 +693,6 @@ class SzpController extends Controller
             }
 
             $result['count'] = DB::table('orders')->whereNotIn('status', [7,9])->count();
-
-            $result['success'] = true;
-        }while(false);
-
-        return response()->json($result);
-    }
-
-    public function addTranzakciaBalance(Request $request){
-        $pass      = $request->input('pass');
-        $id_driver = $request->input('id_driver');
-        $summa     = $request->input('summa');
-        $descs     = $request->input('descs');
-
-        $result['success'] = false;
-        do {
-            if ($pass != $this->key_szp_allfood) {
-                exit('Error Key');
-            }
-
-            $driver = DB::table('users')->where('id', $id_driver)->first();
-            if (!$driver){
-                $result['message'] = 'Курьер не найден';
-                break;
-            }
-
-            MoneyController::addAmount($id_driver, 0,$summa, $descs);
 
             $result['success'] = true;
         }while(false);
