@@ -32,8 +32,28 @@ class UserController extends Controller
             $update_state = DB::table("users")->where("id", $user->id)->update(["state" => $state ]);
             $result['success'] = true;
         }
-
+        self::startStopWork($user->id, $state);
         return response()->json($result);
+    }
+
+    public static function startStopWork($id_driver, $state){
+        $seconds = 0;
+        do{
+            $current_state = DB::table('users_active_time')->where('id_driver', $id_driver)->orderByDesc('id')->first();
+
+            if ($current_state){
+                $seconds = time() - strtotime($current_state->created_at);
+
+                if ($current_state->state == $state){
+                    break;
+                }
+            }
+
+            if ($state == 0 || $state == 1){
+                DB::table('users_active_time')->insert(['id_driver'=>$id_driver, 'state'=>$state, 'seconds'=>$seconds, 'created_at'=>Carbon::now(), 'updated_at'=>Carbon::now()]);
+            }
+
+        }while(false);
     }
 
     public static function getUser($password)
@@ -665,9 +685,9 @@ class UserController extends Controller
 
             $history = DB::table('balance_history', 'h')
                 ->leftJoin('orders as o', 'h.id_order', '=', 'o.id')
-                ->select('h.amount', ' h.description', 'h.id_order', 'h.created_at', 'o.cafe_name', 'o.status', 'h.id_user', 'o.sposob_oplaty','o.summ_order')
+                ->select('h.amount', 'h.description', 'h.id_order', 'h.created_at', 'o.cafe_name', 'o.status', 'h.id_user', 'o.sposob_oplaty','o.summ_order')
                 ->where("h.id_user", $user->id)
-                ->orderByDesc("id")
+                ->orderByDesc("h.id")
                 ->limit(20)->get();
 
             $result['orders'] = BalanceHistoryMiniOrderResource::collection($history);

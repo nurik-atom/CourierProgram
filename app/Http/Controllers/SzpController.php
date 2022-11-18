@@ -91,6 +91,10 @@ class SzpController extends Controller
 
         $user_update = DB::table('users')->where('id', $id_driver)->update(['state' => $state]);
 
+        if ($state == 0 || $state == 1){
+            UserController::startStopWork($id_driver,$state);
+        }
+
         if ($user_update) $result['success'] = true;
 
         return response()->json($result);
