@@ -32,7 +32,7 @@ class AllfoodController extends Controller
         $to_address = $request->input('to_address');
         $summ_order = $request->input('summ_order');
         $pay_to_cafe = $request->input('pay_to_cafe');
-        $price_delivery = 0;
+        $price_delivery = $request->input('price_delivery');
         $sposob_oplaty = $request->input('sposob_oplaty');
         $type = $request->input('type');
         $distance = SearchController::getDistance($from_geo, $to_geo);
@@ -122,7 +122,7 @@ class AllfoodController extends Controller
             $order = $check['order'];
 
             $cancelSql = DB::table("orders")->where('id', $order->id)
-                ->update(['status' => 9, "price_delivery" => "0"]);
+                ->update(['status' => 9]);
             if (!$cancelSql) {
                 $result['message'] = 'Ошибка при отмене';
                 break;
@@ -159,7 +159,7 @@ class AllfoodController extends Controller
             $order = $check['order'];
 
             $cancelSql = DB::table("orders")->where('id', $order->id)
-                ->update(['status' => 9, "price_delivery" => "0"]);
+                ->update(['status' => 9]);
 
             if (!$cancelSql) {
                 $result['message'] = 'Ошибка при отмене';

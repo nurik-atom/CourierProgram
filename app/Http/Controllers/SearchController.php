@@ -40,7 +40,7 @@ class SearchController extends Controller
     {
         $result = array();
         $newOrders = DB::table("orders")
-            ->select("id", "id_city","id_allfood","type", "distance","from_geo", "to_geo")
+            ->select("id", "id_city","id_allfood","type", "distance","from_geo", "to_geo", "price_delivery")
             ->where("status", 1)
             ->whereRaw("TIMESTAMPDIFF(MINUTE, NOW(), arrive_time) < 30")
             ->get();
@@ -146,8 +146,12 @@ class SearchController extends Controller
     public static function offerToCourier($user, $order){
 
         $matrix = PushController::getPointsRoutinAndTime($order->from_geo, $order->to_geo, $user->type);
+        if ($order->type == 1){
+            $price_delivery = MoneyController::costDelivery($matrix['distance'], $user->type);
+        }else{
+            $price_delivery = $order->price_delivery;
+        }
 
-        $price_delivery = MoneyController::costDelivery($matrix['distance'], $user->type);
 
         //$price_delivery = MoneyController::costDelivery($order->distance, $user->type);
 
@@ -159,7 +163,8 @@ class SearchController extends Controller
                 "distance_matrix" => $matrix['distance'],
                 "routing_points" => $matrix['route_points'],
                 "mode" => $user->type,
-                "price_delivery" => $price_delivery
+                "price_delivery" => $price_delivery,
+                'distance_to_cafe' => $user->distance
             ]);
 
         OrderController::changeOrderCourierStatus($order->id, $user->id, 2);

@@ -239,8 +239,17 @@ class SzpController extends Controller
                 break;
             }
 
+            $geo_new_user = DB::table('users_geo')->where('id_user', $new_driver->id)->first();
+            $cafe_geo = explode("\n", $order->from_geo);
+            $distance_to_cafe = SearchController::getDistance([$geo_new_user->lan, $geo_new_user->lon], [$cafe_geo[0], $cafe_geo[1]]);
+
             $matrix = PushController::getPointsRoutinAndTime($order->from_geo, $order->to_geo, $new_driver->type);
-            $price_delivery = MoneyController::costDelivery($matrix['distance'], $new_driver->type);
+
+            if ($order->type == 1) {
+                $price_delivery = MoneyController::costDelivery($matrix['distance'], $new_driver->type);
+            }else{
+                $price_delivery = $order->price_delivery;
+            }
 
             $update_order = DB::table("orders")->where("id", $order->id)
                 ->update([
@@ -250,7 +259,8 @@ class SzpController extends Controller
                     "mode" => $new_driver->type,
                     "price_delivery" => $price_delivery,
                     'id_courier' => $new_driver->id,
-                    'status' => 3
+                    'status' => 3,
+                    'distance_to_cafe'=>$distance_to_cafe
                 ]);
 
 

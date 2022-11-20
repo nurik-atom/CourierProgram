@@ -366,6 +366,11 @@ class OrderController extends Controller
             $description = "Заказ №" . $order->id;
             MoneyController::addAmount($user->id, $order->id, $order->price_delivery, $description);
 
+            //! Доплата Дистанция до кафе
+            $summa_to_cafe = self::getSummaToCafe($order->distance_to_cafe);
+            if ($summa_to_cafe > 0){
+                MoneyController::addAmount($user->id, $order->id, $summa_to_cafe, 'Доплата до кафе');
+            }
 
             (new CashOnHandController)->plusSumma($order->id_courier, $order->summ_order, $order->id);
 
@@ -379,6 +384,15 @@ class OrderController extends Controller
             $result['success'] = true;
         } while (false);
         return response()->json($result);
+    }
+
+    public static function getSummaToCafe($distance){
+        if ($distance < 2000){
+            $res = 0;
+        }else{
+            $res = (int) (50 * ($distance / 1000));
+        }
+        return $res;
     }
 
     public function refusingOrderReq(Request $request)
