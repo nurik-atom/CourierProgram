@@ -554,7 +554,6 @@ class SzpController extends Controller
         return response()->json($result);
     }
 
-
     public function getWhereOrderDriver(Request $request)
     {
         $pass       = $request->input('pass');
@@ -670,7 +669,6 @@ class SzpController extends Controller
         return response()->json($result);
     }
 
-
     public function getAllActiveOrders(Request $request){
         $pass       = $request->input('pass');
 
@@ -708,6 +706,66 @@ class SzpController extends Controller
             }
 
             $result['count'] = DB::table('orders')->whereNotIn('status', [7,9])->count();
+
+            $result['success'] = true;
+        }while(false);
+
+        return response()->json($result);
+    }
+
+    public function getDriverReportForDate(Request $request){
+        $pass      = $request->input('pass');
+        $id_driver = $request->input('id_driver');
+        $date_from = $request->input('date_from');
+        $date_to   = $request->input('date_to');
+
+        $result['success'] = false;
+        do {
+            if ($pass != $this->key_szp_allfood) {
+                exit('Error Key');
+            }
+
+            $driver_info = DB::table('users')
+                ->where('id', $id_driver)
+                ->first();
+
+            if (!$driver_info){
+                $result['message'] = 'Пользователь не найден';
+                break;
+            }
+
+            $orders_history = DB::table('orders')
+                ->selectRaw("COUNT(*) as kol_order, DATE(created_at) as date_day")
+                ->where('id_courier', $id_driver)
+                ->where('DATE(created_at)', '>=', $date_from)
+                ->where('DATE(created_at)', '<=', $date_to)
+                ->get();
+
+            $order_ids = DB::table('orders')
+                ->where('id_courier', $id_driver)
+                ->where('type', 1)
+                ->where('DATE(created_at)', '>=', $date_from)
+                ->where('DATE(created_at)', '<=', $date_to)
+                ->pluck('id');
+
+            $zayavka_ids = DB::table('orders')
+                ->where('id_courier', $id_driver)
+                ->where('type', 2)
+                ->where('DATE(created_at)', '>=', $date_from)
+                ->where('DATE(created_at)', '<=', $date_to)
+                ->pluck('id');
+
+            $balance_history = DB::table('balance_history')
+                ->selectRaw('SUM(amount) as summa, DATE(created_at) as date_day')
+                ->where('id_user', $id_driver)
+                ->where('DATE(created_at)', '>=', $date_from)
+                ->where('DATE(created_at)', '<=', $date_to)
+                ->get();
+
+            $result['$orders_history']  = $orders_history;
+            $result['$balance_history'] = $balance_history;
+            $result['$order_ids']       = $order_ids;
+            $result['$zayavka_ids']     = $zayavka_ids;
 
             $result['success'] = true;
         }while(false);

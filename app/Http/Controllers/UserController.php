@@ -804,7 +804,7 @@ class UserController extends Controller
 
         if ($pass === 'VzlomatEtpen'){
 //            return response()->json(SearchController::push_new_orders());
-            self::updateStateIn0000Hour();
+//            self::updateStateIn0000Hour();
         }
     }
 

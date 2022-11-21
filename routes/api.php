@@ -133,6 +133,7 @@ Route::post("/szp/getAllActiveOrders",[SzpController::class, "getAllActiveOrders
 Route::post("/szp/changeDriverStateSzp",[SzpController::class, "changeDriverStateSzp"]);
 Route::post("/szp/getCountActiveOrders",[SzpController::class, "getCountActiveOrders"]);
 Route::post("/szp/addTranzakciaBalance",[SzpController::class, "addTranzakciaBalance"]);
+Route::post("/szp/getDriverReportForDate",[SzpController::class, "getDriverReportForDate"]);
 
 
 Route::post("/szp/testStaticFunctions",[UserController::class, "testStaticFunctions"]);

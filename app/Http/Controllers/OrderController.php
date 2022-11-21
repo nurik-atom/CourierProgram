@@ -542,7 +542,7 @@ class OrderController extends Controller
                 break;
             }
 
-            if ($status !== $order->status) {
+            if ($status != $order->status) {
                 $result['message'] = 'Неправильный статус';
                 break;
             }
