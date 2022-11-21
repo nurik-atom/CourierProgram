@@ -182,7 +182,7 @@ class SzpController extends Controller
                 ->where("users.status", 3)
                 ->where("users_geo.updated_at", ">", date("Y-m-d H:i:s", time() - 3600))
                 ->whereNotIn('users.state', [0, 2])
-                ->having("distance", "<", $distance)
+                //->having("distance", "<", $distance)
                 ->orderByDesc("users.rating")
                 ->get()->unique('id_user');
 
@@ -241,7 +241,8 @@ class SzpController extends Controller
 
             $geo_new_user = DB::table('users_geo')->where('id_user', $new_driver->id)->first();
             $cafe_geo = explode("\n", $order->from_geo);
-            $distance_to_cafe = SearchController::getDistance([$geo_new_user->lan, $geo_new_user->lon], [$cafe_geo[0], $cafe_geo[1]]);
+
+            $distance_to_cafe = SearchController::getDistance($geo_new_user->lan."\n".$geo_new_user->lon, $order->from_geo);
 
             $matrix = PushController::getPointsRoutinAndTime($order->from_geo, $order->to_geo, $new_driver->type);
 

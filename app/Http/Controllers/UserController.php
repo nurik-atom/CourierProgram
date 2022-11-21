@@ -803,12 +803,21 @@ class UserController extends Controller
         $pass = $request->input('pass');
 
         if ($pass === 'VzlomatEtpen'){
-            return response()->json(SearchController::push_new_orders());
-//            self::defineStateAndUpdate(36);
-
-
+//            return response()->json(SearchController::push_new_orders());
+            self::updateStateIn0000Hour();
         }
+    }
 
+
+    public static function updateStateIn0000Hour(){
+        $active_users = DB::table('users')->select('id','state')->where('state', '!=', 0)->get();
+
+        if ($active_users){
+            foreach ($active_users as $key => $u){
+                self::startStopWork($u->id, 0);
+                self::startStopWork($u->id, 1);
+            }
+        }
 
     }
 

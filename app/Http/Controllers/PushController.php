@@ -132,16 +132,16 @@ class PushController extends Controller
 
     public static function newOrderPush($user,$id_order){
 
-        $order = DB::table("orders")->where("id", $id_order)->select("id", "price_delivery")->first();
+        $order = DB::table("orders")->where("id", $id_order)->select("id", "price_delivery", "cafe_name")->first();
         $data = array();
 //        $data['order'] = OrderResource::collection($order);
         $data['type'] = 'order';
         $data['status'] = 'new_order';
         $message['title'] = "Новый заказ";
-        $message['body'] = "Заказ на сумму ".$order->price_delivery.' тенге';
+        $message['body'] = 'Заказ от '.$order->cafe_name;
 
         self::sendDataPush($user, $data, $message);
-        $mes['mess'] = 'Новый заказ '. $order->id.' Courier #'.$user;
+        $mes['mess'] = 'Предложили заказ '. $order->id.' Курьеру #'.$user;
         self::sendReqToAllfood("test_search", $mes);
     }
 

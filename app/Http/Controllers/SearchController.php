@@ -64,7 +64,7 @@ class SearchController extends Controller
             ->whereRaw("TIMESTAMPDIFF(MINUTE, NOW(), arrive_time) < 120")
             ->get();
         foreach ($newOrders as $newOrder) {
-            $mes['mess'] = 'Новый заказ в DRIVER # '.$newOrder->id_allfood. ' type = '.$newOrder->type.' cafe='.$newOrder->cafe_name;
+            $mes['mess'] = 'Новый '.($newOrder->type == 1 ? 'Заказ ALLFOOD' : 'Заявка').' в DRIVER # '.$newOrder->id_allfood;
             $mes['id_cafe'] = $newOrder->id_cafe;
             PushController::sendReqToAllfood("PushNewOrders", $mes);
         }
