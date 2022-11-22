@@ -113,6 +113,7 @@ class SzpController extends Controller
         $users_geo = DB::table('users_geo')->join('users', 'users_geo.id_user', '=', 'users.id')
             ->select('users_geo.id', 'users_geo.id_user', 'users_geo.lan', 'users_geo.lon', 'users_geo.type', 'users_geo.updated_at', 'users.name', 'users.surname', 'users.state', 'users.rating')
             ->where('users.status', 3)
+            ->where('users.state', '!=', 0)
             ->orderByDesc('users_geo.id');
 
         if ($id_city != 0) {

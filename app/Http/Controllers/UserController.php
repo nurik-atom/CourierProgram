@@ -811,7 +811,7 @@ class UserController extends Controller
         $pass = $request->input('pass');
 
         if ($pass === 'VzlomatEtpen'){
-//            return response()->json(SearchController::push_new_orders());
+            return response()->json(self::raschetDriverIn0400Hour());
 //            self::updateStateIn0000Hour();
         }
     }
@@ -827,6 +827,22 @@ class UserController extends Controller
             }
         }
 
+    }
+
+    public static function raschetDriverIn0400Hour(){
+        $active_users = DB::table('users_active_time')
+            ->selectRaw("SUM(seconds) as seconds, id_driver")
+            ->whereRaw("state = 0 AND DATE(created_at) = '".date('Y-m-d', time()-86400)."'")
+            ->groupBy('id_driver')
+            ->get();
+
+        $ids = $active_users->pluck('id_driver')->toArray();
+
+        $res['$active_users'] = $active_users;
+        $res['$ids'] = $ids;
+
+
+        return $res;
     }
 
 
