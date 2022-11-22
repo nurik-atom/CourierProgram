@@ -7,6 +7,7 @@ use App\Http\Resources\OrderMiniResource;
 use App\Http\Resources\OrderResource;
 use App\Http\Resources\UserResource;
 use App\Models\User;
+use Carbon\CarbonInterval;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -830,6 +831,9 @@ class UserController extends Controller
     }
 
     public static function raschetDriverIn0400Hour(){
+        $five_hour_doplata = 5000;
+        $ten_hour_doplata = 10000;
+
         $active_users = DB::table('users_active_time')
             ->selectRaw("SUM(seconds) as seconds, id_driver")
             ->whereRaw("state = 0 AND DATE(created_at) = '".date('Y-m-d', time()-86400)."'")
@@ -838,13 +842,46 @@ class UserController extends Controller
 
         $ids = $active_users->pluck('id_driver')->toArray();
 
-        $res['$active_users'] = $active_users;
-        $res['$ids'] = $ids;
+//        $res['$active_users'] = $active_users;
+//        $res['$ids'] = $ids;
+
+        $b_user = DB::table('balance_history')
+            ->selectRaw("SUM(amount) as summa, id_user")
+            ->whereRaw("id_user IN (".implode(',', $ids).") AND DATE(created_at) = '".date('Y-m-d', time()-86400)."'")
+            ->groupBy('id_user')
+            ->pluck('summa', 'id_user');
+
+        $doplata_arr = array();
+        $obwiy_doplata = 0;
+        foreach($active_users as $key => $u){
+            $doplata = 0;
+            $doplata_arr[$u->id_driver]['doplata'] = 0;
+            $zarabotal = !empty($b_user[$u->id_driver]) ? $b_user[$u->id_driver] : 0;
+            $doplata_arr[$u->id_driver]['balance'] = $zarabotal;
+            $doplata_arr[$u->id_driver]['time'] = CarbonInterval::seconds($u->seconds)->cascade()->forHumans();
+
+            if ($u->seconds >= 18000 && $u->seconds < 36000){
+                $doplata = $doplata_arr[$u->id_driver]['doplata'] = $five_hour_doplata - (int)($zarabotal);
+            }elseif ($u->seconds >= 36000){
+                $doplata = $doplata_arr[$u->id_driver]['doplata'] = $ten_hour_doplata - (int)($zarabotal);
+            }
+
+            if ($doplata>0){
+                MoneyController::addAmount($u->id_driver,0, $doplata, 'Доплата '.date('d.m.Y', time()-86400).'. Онлайн время'.$doplata_arr[$u->id_driver]['time']);
+                $obwiy_doplata += $doplata;
+            }
+        }
 
 
+        $res['$obwiy_doplata'] = $obwiy_doplata;
+        $res['$doplata'] = $doplata_arr;
         return $res;
     }
 
+    public function getVersionApp(Request $request){
+
+        return response()->json(['version'=>2]);
+    }
 
     public function test()
     {

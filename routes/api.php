@@ -101,6 +101,7 @@ Route::post('/deleteUser',[UserController::class,'deleteUser']);
 
 Route::post('/checkSMS',[UserController::class,'inputSmsCode']);
 Route::post('/setUserGeoPosition',[UserController::class,'setUserGeoPosition']);
+Route::post('/getVersionApp',[UserController::class,'getVersionApp']);
 
 Route::get("/searchStart",[SearchController::class, 'searchNewOrder']);
 Route::get("/fallBehindOrders",[SearchController::class, 'fallBehindOrders']);
