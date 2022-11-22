@@ -372,6 +372,10 @@ class UserController extends Controller
             else
                 $result['success'] = true;
 
+            if ($state == 0 || $state == 1){
+                self::startStopWork($user->id,$state);
+            }
+
         } while (false);
         return response()->json($result);
 
@@ -382,6 +386,10 @@ class UserController extends Controller
         $add_state = DB::table("users_state")->insert(["id_user" => $id_user, "state" => $state,
             "created_at" => Carbon::now(), "updated_at" => Carbon::now()]);
         $update_state = DB::table("users")->where("id", $id_user)->update(["state" => $state]);
+
+        if ($state == 0 || $state == 1){
+            self::startStopWork($id_user,$state);
+        }
 
         if ($add_state && $update_state)
             return true;

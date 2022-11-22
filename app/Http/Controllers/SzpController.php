@@ -6,6 +6,8 @@ use App\Http\Resources\OrderMiniResource;
 use App\Http\Resources\OrderResource;
 use App\Models\User;
 use Carbon\Carbon;
+use Carbon\CarbonInterval;
+use Carbon\CarbonPeriod;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -76,7 +78,6 @@ class SzpController extends Controller
         return response()->json($result);
 
     }
-
 
     public function changeDriverStateSzp(Request $request)
     {
@@ -726,6 +727,7 @@ class SzpController extends Controller
             }
 
             $driver_info = DB::table('users')
+                ->select('id', 'name', 'surname', 'id_city', 'phone', 'cash_on_hand')
                 ->where('id', $id_driver)
                 ->first();
 
@@ -734,38 +736,75 @@ class SzpController extends Controller
                 break;
             }
 
+            $driver_info->balance = DB::table('balance')->where('id_user', $id_driver)->pluck('amount')->first();
+
+            $result['driver_info'] = $driver_info;
+
             $orders_history = DB::table('orders')
                 ->selectRaw("COUNT(*) as kol_order, DATE(created_at) as date_day")
-                ->where('id_courier', $id_driver)
-                ->where('DATE(created_at)', '>=', $date_from)
-                ->where('DATE(created_at)', '<=', $date_to)
-                ->get();
+                ->whereRaw("id_courier = $id_driver AND DATE(created_at) >='$date_from' AND DATE(created_at) <='$date_to'")
+                ->groupBy('date_day')
+                ->get()->toArray();
 
             $order_ids = DB::table('orders')
-                ->where('id_courier', $id_driver)
                 ->where('type', 1)
-                ->where('DATE(created_at)', '>=', $date_from)
-                ->where('DATE(created_at)', '<=', $date_to)
-                ->pluck('id');
+                ->whereRaw("id_courier = $id_driver AND DATE(created_at) >='$date_from' AND DATE(created_at) <='$date_to'")
+                ->pluck('id_allfood');
 
             $zayavka_ids = DB::table('orders')
-                ->where('id_courier', $id_driver)
                 ->where('type', 2)
-                ->where('DATE(created_at)', '>=', $date_from)
-                ->where('DATE(created_at)', '<=', $date_to)
-                ->pluck('id');
+                ->whereRaw("id_courier = $id_driver AND DATE(created_at) >='$date_from' AND DATE(created_at) <='$date_to'")
+                ->pluck('id_allfood');
 
             $balance_history = DB::table('balance_history')
                 ->selectRaw('SUM(amount) as summa, DATE(created_at) as date_day')
-                ->where('id_user', $id_driver)
-                ->where('DATE(created_at)', '>=', $date_from)
-                ->where('DATE(created_at)', '<=', $date_to)
-                ->get();
+                ->whereRaw("id_user = $id_driver AND DATE(created_at) >='$date_from' AND DATE(created_at) <='$date_to'")
+                ->groupBy('date_day')
+                ->get()->toArray();
+
+
+            $active_time_history = DB::table('users_active_time')
+                ->selectRaw('SUM(seconds) as seconds, DATE(created_at) as date_day')
+                ->whereRaw("id_driver = $id_driver AND state = 0 AND DATE(created_at) >='$date_from' AND DATE(created_at) <='$date_to'")
+                ->groupBy('date_day')
+                ->get()->toArray();
+
+            $cash_history = DB::table('cash_driver_history')
+                ->selectRaw('SUM(summa) as summa, DATE(created_at) as date_day')
+                ->whereRaw("id_driver = $id_driver AND DATE(created_at) >='$date_from' AND DATE(created_at) <='$date_to'")
+                ->groupBy('date_day')
+                ->get()->toArray();
+
+
+            $startDate = Carbon::createFromFormat('Y-m-d', $date_from);
+            $endDate = Carbon::createFromFormat('Y-m-d', $date_to);
+
+            $dateRange = CarbonPeriod::create($startDate, $endDate);
+            $result['$dateRange'] = array();
+            foreach ($dateRange as $key => $d){
+                $day = date("Y-m-d", strtotime($d));
+
+                $order_day = array_search($day, array_column($orders_history, 'date_day'), true);
+                $balance_day = array_search($day, array_column($balance_history, 'date_day'), true);
+                $active_time_day = array_search($day, array_column($active_time_history, 'date_day'), true);
+                $cash_day = array_search($day, array_column($cash_history, 'date_day'), true);
+
+                $result['result'][$key]['day'] = $day;
+                //$result['result'][$key]['$order_day'] = $order_day;
+
+                $active_t = $active_time_day !== false ? CarbonInterval::seconds($active_time_history[$active_time_day]->seconds)->cascade()->forHumans() : 0;
+
+                $result['result'][$key]['orders'] = $order_day !== false ? $orders_history[$order_day]->kol_order : 0;
+                $result['result'][$key]['balance'] = $balance_day !== false ? $balance_history[$balance_day]->summa : 0;
+                $result['result'][$key]['cash'] = $cash_day !== false ? (int) $cash_history[$cash_day]->summa : 0;
+                $result['result'][$key]['active_time'] = $active_t;
+            }
 
             $result['$orders_history']  = $orders_history;
             $result['$balance_history'] = $balance_history;
             $result['$order_ids']       = $order_ids;
             $result['$zayavka_ids']     = $zayavka_ids;
+            $result['sql'] = 'id_courier = '.$id_driver.' AND DATE(created_at) >='.$date_from.' AND DATE(created_at) <='.$date_to;
 
             $result['success'] = true;
         }while(false);

@@ -86,18 +86,27 @@ class PushController extends Controller
 
     public static function eyTyTamOtvechai(){
         $active_not_gps_users = DB::table('users')
-            ->select('users.id', 'users.token')
+            ->select('users.id', 'users.token', 'users_geo.updated_at')
             ->leftJoin('users_geo', 'users.id', '=', 'users_geo.id_user')
             ->where('users.state', 1)
-            ->where('users_geo.updated_at', '<', date("Y-m-d H:i:s",time()-3600))
+            ->where('users_geo.updated_at', '<', date("Y-m-d H:i:s",time()-1800))
             //->where('users.id', 36)
             ->get();
 
         if ($active_not_gps_users){
             foreach ($active_not_gps_users as $key => $u){
-                self::sendDataPush($u->token,
-                    array('type' => 'otvachai'),
-                    array('title'=> '🌍 Мы не можем Вас найти', 'body'=>'Пожалуйста запустите приложение'));
+                $seconds = time() - strtotime($u->updated_at);
+                if ($seconds<=2400){
+                    self::sendDataPush($u->token,
+                        array('type' => 'otvachai'),
+                        array('title'=> '🌍 Мы не можем Вас найти', 'body'=>'Пожалуйста запустите приложение'));
+                }
+                else{
+                    self::sendDataPush($u->token,
+                        array('type' => 'otvachai'),
+                        array('title'=> '❌ Поиск заказа приостановлен', 'body'=>'Для получение заказа откройте приложение и нажмите начать работу'));
+                    UserController::insertStateUserFunc($u->id, 0);
+                }
             }
         }
     }

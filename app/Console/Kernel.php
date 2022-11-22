@@ -30,7 +30,7 @@ class Kernel extends ConsoleKernel
         $schedule->call("\App\Http\Controllers\SearchController::searchNewOrder")->everyMinute();
         $schedule->call("\App\Http\Controllers\SearchController::push_new_orders")->everyMinute();
         $schedule->call("\App\Http\Controllers\PushController::eyTyTamOtvechai")->everyFiveMinutes();
-        $schedule->call("\App\Http\Controllers\UserController::updateStateIn0000Hour")->dailyAt('00:00');
+        $schedule->call("\App\Http\Controllers\UserController::updateStateIn0000Hour")->dailyAt('23:58');
 
 
 
