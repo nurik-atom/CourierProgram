@@ -8,6 +8,7 @@ use App\Http\Resources\OrderResource;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use Carbon\CarbonInterval;
+use Carbon\CarbonPeriod;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -757,6 +758,65 @@ class UserController extends Controller
         return response()->json($result);
     }
 
+
+    public function getDateRangeStatistica(Request $request){
+        $password = $request->input("password");
+        $from = $request->input("from");
+        $to = $request->input("to");
+
+        $result['success'] = false;
+
+        do{
+            $user = self::getUser($password);
+            if (!$user){
+                $result['message'] = 'Пользователь не найден';
+                break;
+            }
+
+            $active_time_history = DB::table('users_active_time')
+                ->selectRaw('SUM(seconds) as seconds, DATE(created_at) as date_day')
+                ->whereRaw("id_driver = $user->id AND state = 0 AND DATE(created_at) >='$from' AND DATE(created_at) <='$to'")
+                ->groupBy('date_day')
+                ->get()
+                ->pluck('date_day');
+
+            $orders_history = DB::table('orders')
+                ->selectRaw("COUNT(*) as kol_order, DATE(created_at) as date_day")
+                ->whereRaw("id_courier = $user->id AND DATE(created_at) >='$from' AND DATE(created_at) <='$to'")
+                ->groupBy('date_day')
+                ->get()
+                ->pluck('date_day');
+
+            $balance_history = DB::table('balance_history')
+                ->selectRaw('SUM(amount) as summa, DATE(created_at) as date_day')
+                ->whereRaw("id_user = $user->id AND amount > 0 AND DATE(created_at) >='$from' AND DATE(created_at) <='$to'")
+                ->groupBy('date_day')
+                ->get()
+                ->pluck('date_day');
+
+            $startDate = Carbon::createFromFormat('Y-m-d', $from);
+            $endDate = Carbon::createFromFormat('Y-m-d', $to);
+
+            $dateRange = CarbonPeriod::create($endDate, $startDate);
+
+            $stat = array();
+            foreach ($dateRange as $key => $d) {
+                $day = date("Y-m-d", strtotime($d));
+
+                $stat[$key]['balance'] = !empty($balance_history[$day]) ? $balance_history[$day] : 0;
+                $stat[$key]['orders'] = !empty($orders_history[$day]) ? $orders_history[$day] : 0;
+                $stat[$key]['active_time'] = !empty($active_time_history[$day]) ? $active_time_history[$day] : 0;
+
+            }
+
+            $result['stat'] = $stat;
+            $result['success'] = true;
+
+        }while(false);
+
+        return response()->json($result);
+    }
+
     public function getFullDetailsOrder(Request $request){
         $password = $request->input("password");
         $id_order = $request->input("id_order");
@@ -812,7 +872,7 @@ class UserController extends Controller
         $pass = $request->input('pass');
 
         if ($pass === 'VzlomatEtpen'){
-            return response()->json(self::raschetDriverIn0400Hour());
+//            return response()->json(self::updateStateIn0000Hour());
 //            self::updateStateIn0000Hour();
         }
     }

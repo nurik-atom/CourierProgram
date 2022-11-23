@@ -67,6 +67,7 @@ Route::post("/getCurrentCash",[CashOnHandController::class, "getCurrentCash"]);
 Route::post("/driverReturnCash",[CashOnHandController::class, "driverReturnCash"]);
 Route::post('/getMoneyAndOrdersUser', [UserController::class, 'getMoneyAndOrdersUser']);
 Route::post('/getDateRangeOrders', [UserController::class, 'getDateRangeOrders']);
+Route::post('/getDateRangeStatistica', [UserController::class, 'getDateRangeStatistica']);
 Route::post('/getFullDetailsOrder', [UserController::class, 'getFullDetailsOrder']);
 Route::post('/getHelpBalancePage', [HelpController::class, 'getHelpBalancePage']);
 //sendSms
