@@ -778,38 +778,51 @@ class UserController extends Controller
                 ->whereRaw("id_driver = $user->id AND state = 0 AND DATE(created_at) >='$from' AND DATE(created_at) <='$to'")
                 ->groupBy('date_day')
                 ->get()
-                ->pluck('date_day');
+                ->pluck('seconds','date_day');
 
             $orders_history = DB::table('orders')
                 ->selectRaw("COUNT(*) as kol_order, DATE(created_at) as date_day")
                 ->whereRaw("id_courier = $user->id AND DATE(created_at) >='$from' AND DATE(created_at) <='$to'")
                 ->groupBy('date_day')
                 ->get()
-                ->pluck('date_day');
+                ->pluck('kol_order', 'date_day');
 
             $balance_history = DB::table('balance_history')
                 ->selectRaw('SUM(amount) as summa, DATE(created_at) as date_day')
                 ->whereRaw("id_user = $user->id AND amount > 0 AND DATE(created_at) >='$from' AND DATE(created_at) <='$to'")
                 ->groupBy('date_day')
                 ->get()
-                ->pluck('date_day');
+                ->pluck('summa', 'date_day');
 
             $startDate = Carbon::createFromFormat('Y-m-d', $from);
             $endDate = Carbon::createFromFormat('Y-m-d', $to);
 
-            $dateRange = CarbonPeriod::create($endDate, $startDate);
+            $dateRange = CarbonPeriod::create($startDate, $endDate);
 
             $stat = array();
             foreach ($dateRange as $key => $d) {
                 $day = date("Y-m-d", strtotime($d));
 
+                $today_sec = 0;
+                if($day == date('Y-m-d')){
+                    $now_is_active = DB::table('users_active_time')
+                        ->where('id_driver', $user->id)
+                        ->orderByDesc('id')
+                        ->first();
+
+                    if ($now_is_active->state == 1){
+                        $today_sec = time() - strtotime($now_is_active->created_at);
+                    }
+                }
+
+                $stat[$key]['date'] = Carbon::parse($d)->locale("ru_RU")->isoFormat('LLL');
                 $stat[$key]['balance'] = !empty($balance_history[$day]) ? $balance_history[$day] : 0;
                 $stat[$key]['orders'] = !empty($orders_history[$day]) ? $orders_history[$day] : 0;
-                $stat[$key]['active_time'] = !empty($active_time_history[$day]) ? $active_time_history[$day] : 0;
+                $stat[$key]['active_time'] = !empty($active_time_history[$day]) ? CarbonInterval::seconds($active_time_history[$day]+$today_sec)->cascade()->forHumans() : 0;
 
             }
-
-            $result['stat'] = $stat;
+            $result['$active_time_history'] = $active_time_history;
+            $result['stat'] = array_reverse($stat);
             $result['success'] = true;
 
         }while(false);
@@ -921,7 +934,8 @@ class UserController extends Controller
             $doplata_arr[$u->id_driver]['time'] = CarbonInterval::seconds($u->seconds)->cascade()->forHumans();
 
             if ($u->seconds >= 18000 && $u->seconds < 36000){
-                $doplata = $doplata_arr[$u->id_driver]['doplata'] = $five_hour_doplata - (int)($zarabotal);
+                $one_hour_doplata = ((int) (($u->seconds - 18000)/3600)) * 1000;
+                $doplata = $doplata_arr[$u->id_driver]['doplata'] = $five_hour_doplata + $one_hour_doplata - (int)($zarabotal);
             }elseif ($u->seconds >= 36000){
                 $doplata = $doplata_arr[$u->id_driver]['doplata'] = $ten_hour_doplata - (int)($zarabotal);
             }
