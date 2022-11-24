@@ -260,7 +260,7 @@ class SzpController extends Controller
                     "distance_matrix" => $matrix['distance'],
                     "routing_points" => $matrix['route_points'],
                     "mode" => $new_driver->type,
-                    "price_delivery" => $price_delivery,
+                    "price_delivery" => $price_delivery * $order->kef,
                     'id_courier' => $new_driver->id,
                     'status' => 3,
                     'distance_to_cafe'=>$distance_to_cafe

@@ -37,6 +37,7 @@ class AllfoodController extends Controller
         $type = $request->input('type');
         $distance = SearchController::getDistance($from_geo, $to_geo);
         $arrive_minute = $request->input("arrive_minute");
+        $kef = $request->input("kef");
         $status = 1;
         $id_courier = 0;
         $result['success'] = false;
@@ -77,6 +78,7 @@ class AllfoodController extends Controller
                 'summ_order' => $summ_order,
                 'pay_to_cafe' => $pay_to_cafe,
                 'type' => $type,
+                'kef' => $kef,
                 'distance' => $distance,
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),

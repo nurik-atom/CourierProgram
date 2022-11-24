@@ -40,7 +40,7 @@ class SearchController extends Controller
     {
         $result = array();
         $newOrders = DB::table("orders")
-            ->select("id", "id_city","id_allfood","type", "distance","from_geo", "to_geo", "price_delivery")
+            ->select("id", "id_city","id_allfood","type", "distance","from_geo", "to_geo", "price_delivery", "kef")
             ->where("status", 1)
             ->whereRaw("TIMESTAMPDIFF(MINUTE, NOW(), arrive_time) < 30")
             ->get();
@@ -163,7 +163,7 @@ class SearchController extends Controller
                 "distance_matrix" => $matrix['distance'],
                 "routing_points" => $matrix['route_points'],
                 "mode" => $user->type,
-                "price_delivery" => $price_delivery,
+                "price_delivery" => $price_delivery * $order->kef,
                 'distance_to_cafe' => $user->distance
             ]);
 
