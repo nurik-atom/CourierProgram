@@ -920,7 +920,7 @@ class UserController extends Controller
 
         $b_user = DB::table('balance_history')
             ->selectRaw("SUM(amount) as summa, id_user")
-            ->whereRaw("id_user IN (".implode(',', $ids).") AND DATE(created_at) = '".date('Y-m-d', time()-86400)."'")
+            ->whereRaw("id_user IN (".implode(',', $ids).") AND amount > 0 AND id_order != 0 AND DATE(created_at) = '".date('Y-m-d', time()-86400)."'")
             ->groupBy('id_user')
             ->pluck('summa', 'id_user');
 

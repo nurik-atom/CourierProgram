@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\checkOrderUserRequest;
 use App\Http\Resources\OrderResource;
+use App\Jobs\CalculateRatingUser;
 use Carbon\Carbon;
 use http\Client\Curl\User;
 use Illuminate\Http\Request;
@@ -383,8 +384,13 @@ class OrderController extends Controller
             $result['allfood'] = PushController::finishDeliveryOrder($order, $user);
 
             $result['success'] = true;
+
+            CalculateRatingUser::dispatch($order->id_courier)->delay(30);
+
         } while (false);
+
         return response()->json($result);
+
     }
 
     public static function getSummaToCafe($distance){
