@@ -14,7 +14,7 @@ class AddKefOrders extends Migration
     public function up()
     {
         Schema::table('orders', function (Blueprint $table) {
-            $table->integer('kef')->default(1);
+            $table->float('kef')->default(1);
         });
     }
 
