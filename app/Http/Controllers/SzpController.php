@@ -452,6 +452,9 @@ class SzpController extends Controller
                 ->leftJoin('users as u', 'b.id_user', '=', 'u.id')
                 ->where('u.status', 3)
                 ->get();
+// TODO
+//            $balance_today = DB::table('balance_history')
+//                ->selectRaw("")
 
             if ($balance){
                 $result['balance_user'] = $balance;
@@ -508,7 +511,7 @@ class SzpController extends Controller
                 break;
             }
 
-            $insert = MoneyController::addAmount($id_driver,0,$summa,$comment);
+            $insert = MoneyController::addAmount($id_driver,0,$summa,$comment, 4);
 
             $result['success'] = true;
         }while(false);

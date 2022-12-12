@@ -53,6 +53,20 @@ class SearchController extends Controller
 //            PushController::sendReqToAllfood("test_search", $mes);
         }
 
+        self::push_new_orders();
+
+        if (date('i') % 5 != 0) {
+            PushController::eyTyTamOtvechai();
+        }
+
+        if (date('Hi') == '2355'){
+            UserController::updateStateIn0000Hour();
+        }
+
+        if (date('Hi') == '0400'){
+            UserController::raschetDriverIn0400Hour();
+        }
+
         return response()->json($result);
     }
 
@@ -68,6 +82,10 @@ class SearchController extends Controller
             $mes['id_cafe'] = $newOrder->id_cafe;
             PushController::sendReqToAllfood("PushNewOrders", $mes);
         }
+
+        //$mes['mess'] = 'Пока заказов нет '.date('H:i:s');
+        //$mes['id_cafe'] = 7;
+        //PushController::sendReqToAllfood("PushNewOrders", $mes);
         return $newOrders;
 
     }
@@ -147,7 +165,7 @@ class SearchController extends Controller
 
         $matrix = PushController::getPointsRoutinAndTime($order->from_geo, $order->to_geo, $user->type);
         if ($order->type == 1){
-            $price_delivery = MoneyController::costDelivery($matrix['distance'], $user->type);
+            $price_delivery = MoneyController::costDelivery($matrix['distance'], $user->type) * $order->kef;
         }else{
             $price_delivery = $order->price_delivery;
         }
@@ -163,7 +181,7 @@ class SearchController extends Controller
                 "distance_matrix" => $matrix['distance'],
                 "routing_points" => $matrix['route_points'],
                 "mode" => $user->type,
-                "price_delivery" => $price_delivery * $order->kef,
+                "price_delivery" => $price_delivery,
                 'distance_to_cafe' => $user->distance
             ]);
 

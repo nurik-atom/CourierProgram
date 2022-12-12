@@ -905,7 +905,7 @@ class UserController extends Controller
 
     public static function raschetDriverIn0400Hour(){
         $five_hour_doplata = 5000;
-        $ten_hour_doplata = 10000;
+        $ten_hour_doplata = 12000;
 
         $active_users = DB::table('users_active_time')
             ->selectRaw("SUM(seconds) as seconds, id_driver")
@@ -933,15 +933,15 @@ class UserController extends Controller
             $doplata_arr[$u->id_driver]['balance'] = $zarabotal;
             $doplata_arr[$u->id_driver]['time'] = CarbonInterval::seconds($u->seconds)->cascade()->forHumans();
 
-            if ($u->seconds >= 18000 && $u->seconds < 36000){
+            if ($u->seconds >= 18000 && $u->seconds < 43200){
                 $one_hour_doplata = ((int) (($u->seconds - 18000)/3600)) * 1000;
                 $doplata = $doplata_arr[$u->id_driver]['doplata'] = $five_hour_doplata + $one_hour_doplata - (int)($zarabotal);
-            }elseif ($u->seconds >= 36000){
+            }elseif ($u->seconds >= 43200){
                 $doplata = $doplata_arr[$u->id_driver]['doplata'] = $ten_hour_doplata - (int)($zarabotal);
             }
 
             if ($doplata>0){
-                MoneyController::addAmount($u->id_driver,0, $doplata, 'Доплата '.date('d.m.Y', time()-86400).'. Онлайн время'.$doplata_arr[$u->id_driver]['time']);
+                MoneyController::addAmount($u->id_driver,0, $doplata, 'Доплата '.date('d.m.Y', time()-86400).'. Онлайн время'.$doplata_arr[$u->id_driver]['time'], 3);
                 $obwiy_doplata += $doplata;
             }
         }

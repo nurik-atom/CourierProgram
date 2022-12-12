@@ -56,11 +56,18 @@ class MoneyController extends Controller
         return ceil($summa);
     }
 
-    public static function addAmount($id_user, $id_order, $amount, $description){
+    /** TYPE
+     *  1 За заказ
+     *  2 Бонус до кафе
+     *  3 Доплата за часы
+     *  4 Оператор корректировка
+    */
+    public static function addAmount($id_user, $id_order, $amount, $description, $type=1){
         $add = DB::table("balance_history")->insert([
             "id_user"=>$id_user,
             "id_order"=>$id_order,
             "amount"=>$amount,
+            "type"=>$type,
             "description"=>$description,
             "created_at"=>Carbon::now(),
             "updated_at"=>Carbon::now()
@@ -72,11 +79,12 @@ class MoneyController extends Controller
         }
     }
 
-    public static function minusAmount($id_user, $id_order, $amount, $description){
+    public static function minusAmount($id_user, $id_order, $amount, $description,$type=1){
         $add = DB::table("balance_history")->insert([
             "id_user"=>$id_user,
             "id_order"=>$id_order,
             "amount"=>-1*$amount,
+            "type"=>$type,
             "description"=>$description,
             "created_at"=>Carbon::now(),
             "updated_at"=>Carbon::now()

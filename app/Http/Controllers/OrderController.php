@@ -365,13 +365,13 @@ class OrderController extends Controller
             $order = $checkedDataResult['order'];
 
             $description = "Заказ №" . $order->id;
-            MoneyController::addAmount($user->id, $order->id, $order->price_delivery, $description);
+            MoneyController::addAmount($user->id, $order->id, $order->price_delivery, $description, 1);
 
             //! Доплата Дистанция до кафе
             $summa_to_cafe = self::getSummaToCafe($order->distance_to_cafe);
 
             if ($summa_to_cafe > 0 && $order->type == 1){
-                MoneyController::addAmount($user->id, $order->id, $summa_to_cafe, 'Расстояние до заведения '.round($order->distance_to_cafe/1000, 2).' км');
+                MoneyController::addAmount($user->id, $order->id, $summa_to_cafe, 'Расстояние до заведения '.round($order->distance_to_cafe/1000, 2).' км', 2);
             }
 
             (new CashOnHandController)->plusSumma($order->id_courier, $order->summ_order, $order->id);
