@@ -744,25 +744,43 @@ class SzpController extends Controller
 
             $result['driver_info'] = $driver_info;
 
-            $orders_history = DB::table('orders')
+            $orders_history['offered'] = DB::table('order_user')
+                ->selectRaw("COUNT(*) as kol_order, DATE(created_at) as date_day")
+                ->whereRaw("id_user = $id_driver AND status = 2 AND DATE(created_at) >='$date_from' AND DATE(created_at) <='$date_to'")
+                ->groupBy('date_day')
+                ->get()->toArray();
+
+            $orders_history['ended'] = DB::table('orders')
                 ->selectRaw("COUNT(*) as kol_order, DATE(created_at) as date_day")
                 ->whereRaw("id_courier = $id_driver AND DATE(created_at) >='$date_from' AND DATE(created_at) <='$date_to'")
                 ->groupBy('date_day')
                 ->get()->toArray();
 
-            $order_ids = DB::table('orders')
-                ->where('type', 1)
-                ->whereRaw("id_courier = $id_driver AND DATE(created_at) >='$date_from' AND DATE(created_at) <='$date_to'")
-                ->pluck('id_allfood');
+//            $order_ids = DB::table('orders')
+//                ->where('type', 1)
+//                ->whereRaw("id_courier = $id_driver AND DATE(created_at) >='$date_from' AND DATE(created_at) <='$date_to'")
+//                ->pluck('id_allfood');
+//
+//            $zayavka_ids = DB::table('orders')
+//                ->where('type', 2)
+//                ->whereRaw("id_courier = $id_driver AND DATE(created_at) >='$date_from' AND DATE(created_at) <='$date_to'")
+//                ->pluck('id_allfood');
 
-            $zayavka_ids = DB::table('orders')
-                ->where('type', 2)
-                ->whereRaw("id_courier = $id_driver AND DATE(created_at) >='$date_from' AND DATE(created_at) <='$date_to'")
-                ->pluck('id_allfood');
-
-            $balance_history = DB::table('balance_history')
+            $balance_history['ended'] = DB::table('balance_history')
                 ->selectRaw('SUM(amount) as summa, DATE(created_at) as date_day')
-                ->whereRaw("id_user = $id_driver AND DATE(created_at) >='$date_from' AND DATE(created_at) <='$date_to'")
+                ->whereRaw("id_user = $id_driver AND (type = 1 OR type = 4)  AND DATE(created_at) >='$date_from' AND DATE(created_at) <='$date_to'")
+                ->groupBy('date_day')
+                ->get()->toArray();
+
+            $balance_history['do_kafe'] = DB::table('balance_history')
+                ->selectRaw('SUM(amount) as summa, DATE(created_at) as date_day')
+                ->whereRaw("id_user = $id_driver AND type = 2 AND DATE(created_at) >='$date_from' AND DATE(created_at) <='$date_to'")
+                ->groupBy('date_day')
+                ->get()->toArray();
+
+            $balance_history['doplata_hour'] = DB::table('balance_history')
+                ->selectRaw('SUM(amount) as summa, DATE(DATE_ADD(created_at, INTERVAL -1 DAY)) as date_day')
+                ->whereRaw("id_user = $id_driver AND type = 3 AND DATE(created_at) >=DATE_ADD('$date_from',INTERVAL +1 DAY) AND DATE(created_at) <=DATE_ADD('$date_to',INTERVAL +1 DAY)")
                 ->groupBy('date_day')
                 ->get()->toArray();
 
@@ -785,11 +803,17 @@ class SzpController extends Controller
 
             $dateRange = CarbonPeriod::create($startDate, $endDate);
             $result['$dateRange'] = array();
+
             foreach ($dateRange as $key => $d){
                 $day = date("Y-m-d", strtotime($d));
 
-                $order_day = array_search($day, array_column($orders_history, 'date_day'), true);
-                $balance_day = array_search($day, array_column($balance_history, 'date_day'), true);
+                $order_day['ended'] = array_search($day, array_column($orders_history['ended'], 'date_day'), true);
+                $order_day['offered'] = array_search($day, array_column($orders_history['offered'], 'date_day'), true);
+
+                $balance_day['ended'] = array_search($day, array_column($balance_history['ended'], 'date_day'), true);
+                $balance_day['do_kafe'] = array_search($day, array_column($balance_history['do_kafe'], 'date_day'), true);
+                $balance_day['doplata_hour'] = array_search($day, array_column($balance_history['doplata_hour'], 'date_day'), true);
+
                 $active_time_day = array_search($day, array_column($active_time_history, 'date_day'), true);
                 $cash_day = array_search($day, array_column($cash_history, 'date_day'), true);
 
@@ -798,16 +822,21 @@ class SzpController extends Controller
 
                 $active_t = $active_time_day !== false ? CarbonInterval::seconds($active_time_history[$active_time_day]->seconds)->cascade()->forHumans() : 0;
 
-                $result['result'][$key]['orders'] = $order_day !== false ? $orders_history[$order_day]->kol_order : 0;
-                $result['result'][$key]['balance'] = $balance_day !== false ? $balance_history[$balance_day]->summa : 0;
+                $result['result'][$key]['orders']['ended'] = $order_day['ended'] !== false ? $orders_history['ended'][$order_day]->kol_order : 0;
+                $result['result'][$key]['orders']['offered'] = $order_day['offered'] !== false ? $orders_history['offered'][$order_day]->kol_order : 0;
+
+                $result['result'][$key]['balance']['ended'] = $balance_day['ended'] !== false ? $balance_history['ended'][$balance_day]->summa : 0;
+                $result['result'][$key]['balance']['do_kafe'] = $balance_day['do_kafe'] !== false ? $balance_history['do_kafe'][$balance_day]->summa : 0;
+                $result['result'][$key]['balance']['doplata_hour'] = $balance_day['doplata_hour'] !== false ? $balance_history['doplata_hour'][$balance_day]->summa : 0;
+
                 $result['result'][$key]['cash'] = $cash_day !== false ? (int) $cash_history[$cash_day]->summa : 0;
                 $result['result'][$key]['active_time'] = $active_t;
             }
 
             $result['$orders_history']  = $orders_history;
             $result['$balance_history'] = $balance_history;
-            $result['$order_ids']       = $order_ids;
-            $result['$zayavka_ids']     = $zayavka_ids;
+//            $result['$order_ids']       = $order_ids;
+//            $result['$zayavka_ids']     = $zayavka_ids;
             $result['sql'] = 'id_courier = '.$id_driver.' AND DATE(created_at) >='.$date_from.' AND DATE(created_at) <='.$date_to;
 
             $result['success'] = true;
