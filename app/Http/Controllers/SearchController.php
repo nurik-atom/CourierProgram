@@ -53,19 +53,19 @@ class SearchController extends Controller
 //            PushController::sendReqToAllfood("test_search", $mes);
         }
 
-        self::push_new_orders();
-
-        if (date('i') % 5 != 0) {
-            PushController::eyTyTamOtvechai();
-        }
-
-        if (date('Hi') == '2355'){
-            UserController::updateStateIn0000Hour();
-        }
-
-        if (date('Hi') == '0400'){
-            UserController::raschetDriverIn0400Hour();
-        }
+//        self::push_new_orders();
+//
+//        if (date('i') % 5 != 0) {
+//            PushController::eyTyTamOtvechai();
+//        }
+//
+//        if (date('Hi') == '2355'){
+//            UserController::updateStateIn0000Hour();
+//        }
+//
+//        if (date('Hi') == '0400'){
+//            UserController::raschetDriverIn0400Hour();
+//        }
 
         return response()->json($result);
     }
@@ -217,12 +217,12 @@ class SearchController extends Controller
         return DB::table("users_geo")
             ->selectRaw("users.id as id, id_user, users_geo.type, users.state, ".$geo_sql)
             ->join("users", "users_geo.id_user", "=","users.id")
-            ->where("users_geo.type",$type)
+            ->where("users_geo.type", $type)
             ->where("users_geo.updated_at",">", date("Y-m-d H:i:s",time()-14400))
             ->where("users.state" ,1)
             //->whereNotIn("users.id" ,$not_users_id)
             ->having("distance", "<",$distance)
-            ->orderByDesc("users.rating")
+            ->orderByDesc("users.sort_rating")
             ->first();
 
     }

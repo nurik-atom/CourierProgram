@@ -725,6 +725,7 @@ class SzpController extends Controller
         $date_to   = $request->input('date_to');
 
         $result['success'] = false;
+        $itogo_active_time = 0;
         do {
             if ($pass != $this->key_szp_allfood) {
                 exit('Error Key');
@@ -768,7 +769,7 @@ class SzpController extends Controller
 
             $balance_history['ended'] = DB::table('balance_history')
                 ->selectRaw('SUM(amount) as summa, DATE(created_at) as date_day')
-                ->whereRaw("id_user = $id_driver AND (type = 1 OR type = 4)  AND DATE(created_at) >='$date_from' AND DATE(created_at) <='$date_to'")
+                ->whereRaw("id_user = $id_driver AND (type = 1 OR type = 4) AND amount > 0  AND DATE(created_at) >='$date_from' AND DATE(created_at) <='$date_to'")
                 ->groupBy('date_day')
                 ->get()->toArray();
 
@@ -819,20 +820,21 @@ class SzpController extends Controller
 
                 $result['result'][$key]['day'] = $day;
                 //$result['result'][$key]['$order_day'] = $order_day;
-
+                $itogo_active_time += $active_time_history[$active_time_day]->seconds;
                 $active_t = $active_time_day !== false ? CarbonInterval::seconds($active_time_history[$active_time_day]->seconds)->cascade()->forHumans() : 0;
 
-                $result['result'][$key]['orders']['ended'] = $order_day['ended'] !== false ? $orders_history['ended'][$order_day]->kol_order : 0;
-                $result['result'][$key]['orders']['offered'] = $order_day['offered'] !== false ? $orders_history['offered'][$order_day]->kol_order : 0;
+                $result['result'][$key]['orders']['ended'] = $order_day['ended'] !== false ? $orders_history['ended'][$order_day['ended']]->kol_order : 0;
+                $result['result'][$key]['orders']['offered'] = $order_day['offered'] !== false ? $orders_history['offered'][$order_day['offered']]->kol_order : 0;
 
-                $result['result'][$key]['balance']['ended'] = $balance_day['ended'] !== false ? $balance_history['ended'][$balance_day]->summa : 0;
-                $result['result'][$key]['balance']['do_kafe'] = $balance_day['do_kafe'] !== false ? $balance_history['do_kafe'][$balance_day]->summa : 0;
-                $result['result'][$key]['balance']['doplata_hour'] = $balance_day['doplata_hour'] !== false ? $balance_history['doplata_hour'][$balance_day]->summa : 0;
+                $result['result'][$key]['balance']['ended'] = $balance_day['ended'] !== false ? $balance_history['ended'][$balance_day['ended']]->summa : 0;
+                $result['result'][$key]['balance']['do_kafe'] = $balance_day['do_kafe'] !== false ? $balance_history['do_kafe'][$balance_day['do_kafe']]->summa : 0;
+                $result['result'][$key]['balance']['doplata_hour'] = $balance_day['doplata_hour'] !== false ? $balance_history['doplata_hour'][$balance_day['doplata_hour']]->summa : 0;
 
                 $result['result'][$key]['cash'] = $cash_day !== false ? (int) $cash_history[$cash_day]->summa : 0;
                 $result['result'][$key]['active_time'] = $active_t;
             }
 
+            $result['itogo_active_time'] = $itogo_active_time;
             $result['$orders_history']  = $orders_history;
             $result['$balance_history'] = $balance_history;
 //            $result['$order_ids']       = $order_ids;
