@@ -885,7 +885,7 @@ class UserController extends Controller
         $pass = $request->input('pass');
 
         if ($pass === 'VzlomatEtpen'){
-//            return response()->json(self::updateStateIn0000Hour());
+            return response()->json(self::raschetDriverIn0400Hour());
 //            self::updateStateIn0000Hour();
         }
     }
@@ -930,18 +930,24 @@ class UserController extends Controller
             $doplata = 0;
             $doplata_arr[$u->id_driver]['doplata'] = 0;
             $zarabotal = !empty($b_user[$u->id_driver]) ? $b_user[$u->id_driver] : 0;
+
             $doplata_arr[$u->id_driver]['balance'] = $zarabotal;
             $doplata_arr[$u->id_driver]['time'] = CarbonInterval::seconds($u->seconds)->cascade()->forHumans();
 
             if ($u->seconds >= 18000 && $u->seconds < 43200){
-                $one_hour_doplata = ((int) (($u->seconds - 18000)/3600)) * 1000;
-                $doplata = $doplata_arr[$u->id_driver]['doplata'] = $five_hour_doplata + $one_hour_doplata - (int)($zarabotal);
+
+                //$one_hour_doplata = ((int) (($u->seconds- 18000)/3600)) * 1000;
+                $skolko_doljno = (int) $u->seconds / 3600 * 1000;
+
+                $doplata = $doplata_arr[$u->id_driver]['doplata'] = $skolko_doljno - (int)($zarabotal);
+
+
             }elseif ($u->seconds >= 43200){
                 $doplata = $doplata_arr[$u->id_driver]['doplata'] = $ten_hour_doplata - (int)($zarabotal);
             }
 
             if ($doplata>0){
-                MoneyController::addAmount($u->id_driver,0, $doplata, 'Доплата '.date('d.m.Y', time()-86400).'. Онлайн время'.$doplata_arr[$u->id_driver]['time'], 3);
+                //MoneyController::addAmount($u->id_driver,0, $doplata, 'Доплата '.date('d.m.Y', time()-86400).'. Онлайн время'.$doplata_arr[$u->id_driver]['time'], 3);
                 $obwiy_doplata += $doplata;
             }
         }

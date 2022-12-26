@@ -218,11 +218,12 @@ class SearchController extends Controller
             ->selectRaw("users.id as id, id_user, users_geo.type, users.state, ".$geo_sql)
             ->join("users", "users_geo.id_user", "=","users.id")
             ->where("users_geo.type", $type)
-            ->where("users_geo.updated_at",">", date("Y-m-d H:i:s",time()-14400))
+            ->where("users_geo.updated_at",">", date("Y-m-d H:i:s",time()-3600))
             ->where("users.state" ,1)
             //->whereNotIn("users.id" ,$not_users_id)
             ->having("distance", "<",$distance)
-            ->orderByDesc("users.sort_rating")
+//            ->orderByDesc("users.sort_rating")
+            ->orderBy('distance')
             ->first();
 
     }
