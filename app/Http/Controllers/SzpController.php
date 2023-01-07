@@ -249,7 +249,7 @@ class SzpController extends Controller
             $matrix = PushController::getPointsRoutinAndTime($order->from_geo, $order->to_geo, $new_driver->type);
 
             if ($order->type == 1) {
-                $price_delivery = MoneyController::costDelivery($matrix['distance'], $new_driver->type);
+                $price_delivery = MoneyController::costDelivery($matrix['distance'], $new_driver->type) * $order->kef;
             }else{
                 $price_delivery = $order->price_delivery;
             }
@@ -260,7 +260,7 @@ class SzpController extends Controller
                     "distance_matrix" => $matrix['distance'],
                     "routing_points" => $matrix['route_points'],
                     "mode" => $new_driver->type,
-                    "price_delivery" => $price_delivery * $order->kef,
+                    "price_delivery" => $price_delivery,
                     'id_courier' => $new_driver->id,
                     'status' => 3,
                     'distance_to_cafe'=>$distance_to_cafe
