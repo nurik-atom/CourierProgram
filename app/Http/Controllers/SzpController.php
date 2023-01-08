@@ -288,7 +288,16 @@ class SzpController extends Controller
 //            // * Проверяем есть ли курьер который получил этот заказ
 
             if ($old_driver_id != 0){
-                UserController::insertStateUserFunc($order->id_courier, 1);
+
+                $active_order = DB::table('orders')->select('id','status')->where('id_courier', $order->id_courier)->whereNotIn('status', [1,7,9])->orderByDesc('id')->first();
+
+                if ($active_order){
+                    $state = $active_order->status;
+                }else{
+                    $state = 1;
+                }
+
+                UserController::insertStateUserFunc($order->id_courier, $state);
                 PushController::sendDataPush($order->id_courier,
                     array('type' => 'order', 'status' => 'other_driver'),
                     array('title'=>'Заказ #'.$order->id.' переназначен',
