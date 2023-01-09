@@ -47,9 +47,17 @@ class SzpController extends Controller
             ->select('id', 'name', 'surname', 'id_city', 'photo', 'birthday', 'phone', 'type', 'status', 'rating', 'state', 'created_at')
             ->where('id', $id_driver)->first();
 
-        $active_order = DB::table('orders')->select('id_allfood', 'from_address', 'to_address', 'cafe_phone', 'cafe_name', 'phone', 'name', 'type', 'status', 'created_at', 'distance', 'duration_sec', 'needed_sec', 'mode')->whereNotIn('status', ['7', '9'])->where('id_courier', $user->id)->orderByDesc('id')->get();
+        $active_order = DB::table('orders')
+            ->select('id_allfood', 'from_address', 'to_address', 'cafe_phone', 'cafe_name', 'phone', 'name', 'type', 'status', 'created_at', 'distance', 'duration_sec', 'distance_matrix', 'price_delivery', 'kef',  'needed_sec', 'mode')
+            ->whereNotIn('status', ['7', '9'])
+            ->where('id_courier', $user->id)
+            ->orderByDesc('id')->get();
 
-        $orders = DB::table('orders')->select('id_allfood', 'type', 'cafe_name', 'to_address', 'status', 'created_at', 'distance', 'duration_sec', 'needed_sec', 'mode')->where('id_courier', $user->id)->orderByDesc('id')->limit(10)->get();
+        $orders = DB::table('orders')
+            ->select('id_allfood', 'type', 'cafe_name', 'to_address', 'status', 'created_at', 'distance','distance_matrix', 'price_delivery', 'kef', 'duration_sec', 'needed_sec', 'mode')
+            ->where('id_courier', $user->id)
+            ->orderByDesc('id')
+            ->limit(100)->get();
 
         $result['user'] = $user;
         $result['active_order'] = $active_order;
