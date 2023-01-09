@@ -778,7 +778,7 @@ class SzpController extends Controller
 
             $balance_history['ended'] = DB::table('balance_history')
                 ->selectRaw('SUM(amount) as summa, DATE(created_at) as date_day')
-                ->whereRaw("id_user = $id_driver AND (type = 1 OR type = 4) AND amount > 0  AND DATE(created_at) >='$date_from' AND DATE(created_at) <='$date_to'")
+                ->whereRaw("id_user = $id_driver AND type = 1 AND amount > 0  AND DATE(created_at) >='$date_from' AND DATE(created_at) <='$date_to'")
                 ->groupBy('date_day')
                 ->get()->toArray();
 
@@ -791,6 +791,12 @@ class SzpController extends Controller
             $balance_history['doplata_hour'] = DB::table('balance_history')
                 ->selectRaw('SUM(amount) as summa, DATE(DATE_ADD(created_at, INTERVAL -1 DAY)) as date_day')
                 ->whereRaw("id_user = $id_driver AND type = 3 AND DATE(created_at) >=DATE_ADD('$date_from',INTERVAL +1 DAY) AND DATE(created_at) <=DATE_ADD('$date_to',INTERVAL +1 DAY)")
+                ->groupBy('date_day')
+                ->get()->toArray();
+
+            $balance_history['other'] = DB::table('balance_history')
+                ->selectRaw('SUM(amount) as summa, DATE(created_at) as date_day')
+                ->whereRaw("id_user = $id_driver AND type NOT IN (1,2,3) AND amount > 0  AND DATE(created_at) >='$date_from' AND DATE(created_at) <='$date_to'")
                 ->groupBy('date_day')
                 ->get()->toArray();
 
@@ -823,6 +829,7 @@ class SzpController extends Controller
                 $balance_day['ended'] = array_search($day, array_column($balance_history['ended'], 'date_day'), true);
                 $balance_day['do_kafe'] = array_search($day, array_column($balance_history['do_kafe'], 'date_day'), true);
                 $balance_day['doplata_hour'] = array_search($day, array_column($balance_history['doplata_hour'], 'date_day'), true);
+                $balance_day['other'] = array_search($day, array_column($balance_history['other'], 'date_day'), true);
 
                 $active_time_day = array_search($day, array_column($active_time_history, 'date_day'), true);
                 $cash_day = array_search($day, array_column($cash_history, 'date_day'), true);
@@ -838,6 +845,7 @@ class SzpController extends Controller
                 $result['result'][$key]['balance']['ended'] = $balance_day['ended'] !== false ? $balance_history['ended'][$balance_day['ended']]->summa : 0;
                 $result['result'][$key]['balance']['do_kafe'] = $balance_day['do_kafe'] !== false ? $balance_history['do_kafe'][$balance_day['do_kafe']]->summa : 0;
                 $result['result'][$key]['balance']['doplata_hour'] = $balance_day['doplata_hour'] !== false ? $balance_history['doplata_hour'][$balance_day['doplata_hour']]->summa : 0;
+                $result['result'][$key]['balance']['other'] = $balance_day['other'] !== false ? $balance_history['other'][$balance_day['other']]->summa : 0;
 
                 $result['result'][$key]['cash'] = $cash_day !== false ? (int) $cash_history[$cash_day]->summa : 0;
                 $result['result'][$key]['active_time'] = $active_t;
