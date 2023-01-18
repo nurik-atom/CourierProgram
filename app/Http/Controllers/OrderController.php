@@ -483,7 +483,7 @@ class OrderController extends Controller
             }
 
             $cancelSql = DB::table("orders")->where('id', $id_order)
-                ->update(['status' => 9]);
+                ->update(['status' => 1]);
             self::addCauseToCancelled($id_order, $user->id, 1, $cause);
 
             UserController::insertStateUserFunc($user->id, 1);
