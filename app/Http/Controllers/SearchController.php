@@ -256,9 +256,9 @@ class SearchController extends Controller
             ->toArray();
 
         $not_users_id_2 = DB::table('orders')
-            ->where('status', 3)
+            ->whereNotIn('status', [7,9])
             ->groupBy('id_courier')
-            ->havingRaw('COUNT(*) = 1')
+            ->havingRaw('COUNT(*) > 1')
             ->pluck('id_courier')
             ->toArray();
 
@@ -284,6 +284,54 @@ class SearchController extends Controller
             ->whereNotIn("u.id" ,$not_users_id_2)
             ->where("g.updated_at",">", date("Y-m-d H:i:s",time()-3600))
             ->where('o.status', '=', 3)
+            ->where('o.id_cafe', '=', $order->id_cafe)
+            ->having("distance", "<",$distance)
+            ->orderBy('distance')
+            ->first();
+
+        return $find;
+
+    }
+
+
+    public static function searchStatus_5_NearDriver($type, $distance, $order){
+        $from_lat = explode("\n", $order->from_geo)[0];
+        $from_lon = explode("\n", $order->from_geo)[1];
+
+        $not_users_id = DB::table("order_user")
+            ->where("id_order", $order->id)
+            ->pluck("id_user")
+            ->toArray();
+
+        $not_users_id_2 = DB::table('orders')
+            ->whereNotIn('status', [7,9])
+            ->groupBy('id_courier')
+            ->havingRaw('COUNT(*) > 1')
+            ->pluck('id_courier')
+            ->toArray();
+
+        $geo_sql = "( 6371000 *
+                    ACOS(
+                        COS( RADIANS( {$from_lat} ) ) *
+                        COS( RADIANS( SUBSTRING_INDEX(o.to_geo, '\n', 1) ) ) *
+                        COS( RADIANS( SUBSTRING_INDEX(o.to_geo, '\n', -1) ) -
+                        RADIANS( {$from_lon} ) ) +
+                        SIN( RADIANS( {$from_lat} ) ) *
+                        SIN( RADIANS( SUBSTRING_INDEX(to_geo, '\n', 1)) )
+                    )
+                )
+                AS distance";
+
+        $find = DB::table('users', 'u')
+            ->leftJoin('orders as o', 'u.id', '=', 'o.id_courier')
+            ->leftJoin('users_geo as g', 'u.id', '=', 'g.id_user')
+            ->selectRaw('u.id, u.type, u.state, '.$geo_sql)
+            ->whereIn('u.state', [4,5,6])
+            ->where('u.type', $type)
+            ->whereNotIn("u.id" ,$not_users_id)
+            ->whereNotIn("u.id" ,$not_users_id_2)
+            ->where("g.updated_at",">", date("Y-m-d H:i:s",time()-3600))
+            ->whereIn('o.status', [4,5,6])
             ->having("distance", "<",$distance)
             ->orderBy('distance')
             ->first();
