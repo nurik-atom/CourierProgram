@@ -40,7 +40,7 @@ class SearchController extends Controller
     {
         $result = array();
         $newOrders = DB::table("orders")
-            ->select("id", "id_city","id_allfood","type", "distance_matrix","from_geo", "to_geo", "price_delivery", "kef")
+            ->select("id", "id_cafe", "id_city","id_allfood","type", "distance_matrix","from_geo", "to_geo", "price_delivery", "kef")
             ->where("status", 1)
             ->whereRaw("TIMESTAMPDIFF(MINUTE, NOW(), arrive_time) < 20")
             ->get();
@@ -211,6 +211,91 @@ class SearchController extends Controller
 
     }
 
+
+    //! New Search Drivers
+    public static function searchCourierV2($order)
+    {
+        $c = array();
+        do {
+            //Поиск пеших курьеров
+            if($order->distance_matrix < self::MAX_FOOT_DRIVER){
+                $c = self::searchCourierSql("1", "1000", $order);
+                if ($c){
+                    self::offerToCourier($c, $order);
+                    break;
+                }
+            }
+
+            //Поиск велосипедных курьеров
+            if($order->distance_matrix < self::MAX_VELO_DRIVER) {
+                $c = self::searchCourierSql("2", "2000", $order);
+                if ($c){
+                    self::offerToCourier($c, $order);
+                    break;
+                }
+            }
+            //Поиск мопедных курьеров
+            if($order->distance_matrix < self::MAX_MOPED_DRIVER) {
+                if ($c = self::searchFreeDriverInRadius("3", "2000", $order)){
+                    self::offerToCourier($c, $order);
+                }elseif($c = self::searchStatus_3_NearDriver("3", "3000", $order)){
+                    self::assignToCourier($c, $order);
+                }elseif($c = self::searchStatus_5_NearDriver("3", "2000", $order)){
+                    self::assignToCourier($c, $order);
+                }elseif ($c = self::searchFreeDriverInRadius("3", "6000", $order)){
+                    self::offerToCourier($c, $order);
+                }
+                if ($c) break;
+            }
+            //Поиск авто курьеров
+            if($order->distance_matrix < self::MAX_AUTO_DRIVER) {
+
+                if ($c = self::searchFreeDriverInRadius("4", "2000", $order)){
+                    self::offerToCourier($c, $order);
+                }elseif($c = self::searchStatus_3_NearDriver("4", "5000", $order)){
+                    self::assignToCourier($c, $order);
+                }elseif($c = self::searchStatus_5_NearDriver("4", "3000", $order)){
+                    self::assignToCourier($c, $order);
+                }elseif ($c = self::searchFreeDriverInRadius("4", "12000", $order)){
+                    self::offerToCourier($c, $order);
+                }
+                if ($c) break;
+            }
+
+        } while (false);
+
+        return $c;
+    }
+
+    public static function assignToCourier($user, $order){
+
+        $matrix = PushController::getPointsRoutinAndTime($order->from_geo, $order->to_geo, $user->type);
+        if ($order->type == 1){
+            $price_delivery = MoneyController::costDelivery($matrix['distance'], $user->type) * $order->kef;
+        }else{
+            $price_delivery = $order->price_delivery;
+        }
+
+        DB::table("orders")->where("id", $order->id)
+            ->update([
+                "needed_sec" => $matrix['time'] > 450 ? $matrix['time'] : 450,
+                "distance_matrix" => $matrix['distance'],
+                "routing_points" => $matrix['route_points'],
+                "mode" => $user->type,
+                "price_delivery" => $price_delivery,
+                'distance_to_cafe' => $user->distance
+            ]);
+
+        OrderController::changeOrderCourierStatus($order->id, $user->id, 3);
+
+        PushController::sendDataPush($user->id,
+            array('type' => 'order', 'status' => 'new_order'),
+            array('title'=>'Новый заказ',
+                'body'=>'Заказ на сумму '.$order->price_delivery.' тенге'));
+
+        return true;
+    }
+
     public static function searchFreeDriverInRadius($type, $distance, $order){
         $from_lat = explode("\n", $order->from_geo)[0];
         $from_lon = explode("\n", $order->from_geo)[1];
@@ -241,6 +326,11 @@ class SearchController extends Controller
             ->having("distance", "<",$distance)
             ->orderBy('distance')
             ->first();
+
+        if ($find){
+            $find->searchFreeDriverInRadius_distance = $distance;
+        }
+
 
         return $find;
 
@@ -289,10 +379,13 @@ class SearchController extends Controller
             ->orderBy('distance')
             ->first();
 
+        if ($find){
+            $find->searchStatus_3_NearDriver = $distance;
+        }
+
         return $find;
 
     }
-
 
     public static function searchStatus_5_NearDriver($type, $distance, $order){
         $from_lat = explode("\n", $order->from_geo)[0];
@@ -335,6 +428,10 @@ class SearchController extends Controller
             ->having("distance", "<",$distance)
             ->orderBy('distance')
             ->first();
+
+        if ($find){
+            $find->searchStatus_5_NearDriver = $distance;
+        }
 
         return $find;
 
