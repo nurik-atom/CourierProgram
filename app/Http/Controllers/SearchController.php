@@ -40,32 +40,15 @@ class SearchController extends Controller
     {
         $result = array();
         $newOrders = DB::table("orders")
-            ->select("id", "id_city","id_allfood","type", "distance","from_geo", "to_geo", "price_delivery", "kef")
+            ->select("id", "id_city","id_allfood","type", "distance_matrix","from_geo", "to_geo", "price_delivery", "kef")
             ->where("status", 1)
-            ->whereRaw("TIMESTAMPDIFF(MINUTE, NOW(), arrive_time) < 30")
+            ->whereRaw("TIMESTAMPDIFF(MINUTE, NOW(), arrive_time) < 20")
             ->get();
         foreach ($newOrders as $newOrder) {
             $result['courier'][] = self::searchCourier($newOrder);
             $result['order'][] = $newOrder;
 
-
-//            $mes['mess'] = 'Новый заказ в DRIVER # '.$newOrder->id_allfood. ' type = '.$newOrder->type;
-//            PushController::sendReqToAllfood("test_search", $mes);
         }
-
-//        self::push_new_orders();
-//
-//        if (date('i') % 5 != 0) {
-//            PushController::eyTyTamOtvechai();
-//        }
-//
-//        if (date('Hi') == '2355'){
-//            UserController::updateStateIn0000Hour();
-//        }
-//
-//        if (date('Hi') == '0400'){
-//            UserController::raschetDriverIn0400Hour();
-//        }
 
         return response()->json($result);
     }
@@ -119,7 +102,7 @@ class SearchController extends Controller
         $drivers = array();
         do {
             //Поиск пеших курьеров
-            if($order->distance < self::MAX_FOOT_DRIVER){
+            if($order->distance_matrix < self::MAX_FOOT_DRIVER){
                 $c = self::searchCourierSql("1", "1000", $order);
                 if ($c){
                     $drivers[] = $c;
@@ -129,7 +112,7 @@ class SearchController extends Controller
             }
 
             //Поиск велосипедных курьеров
-            if($order->distance < self::MAX_VELO_DRIVER) {
+            if($order->distance_matrix < self::MAX_VELO_DRIVER) {
                 $c = self::searchCourierSql("2", "2000", $order);
                 if ($c){
                     $drivers[] = $c;
@@ -138,7 +121,7 @@ class SearchController extends Controller
                 }
             }
             //Поиск мопедных курьеров
-            if($order->distance < self::MAX_MOPED_DRIVER) {
+            if($order->distance_matrix < self::MAX_MOPED_DRIVER) {
                 $c = self::searchCourierSql("3", "4000", $order);
                 if ($c){
                     $drivers[] = $c;
@@ -147,7 +130,7 @@ class SearchController extends Controller
                 }
             }
             //Поиск авто курьеров
-            if($order->distance < self::MAX_AUTO_DRIVER) {
+            if($order->distance_matrix < self::MAX_AUTO_DRIVER) {
                 $c = self::searchCourierSql("4", "10000", $order);
                 if ($c){
                     $drivers[] = $c;
@@ -159,38 +142,6 @@ class SearchController extends Controller
         } while (false);
 
         return $drivers;
-    }
-
-    public static function offerToCourier($user, $order){
-
-        $matrix = PushController::getPointsRoutinAndTime($order->from_geo, $order->to_geo, $user->type);
-        if ($order->type == 1){
-            $price_delivery = MoneyController::costDelivery($matrix['distance'], $user->type) * $order->kef;
-        }else{
-            $price_delivery = $order->price_delivery;
-        }
-
-
-        //$price_delivery = MoneyController::costDelivery($order->distance, $user->type);
-
-        //$matrix = PushController::getPointsRoutinAndTime($order->from_geo, $order->to_geo, $user->type);
-
-        DB::table("orders")->where("id", $order->id)
-            ->update([
-                "needed_sec" => $matrix['time'] > 450 ? $matrix['time'] : 450,
-                "distance_matrix" => $matrix['distance'],
-                "routing_points" => $matrix['route_points'],
-                "mode" => $user->type,
-                "price_delivery" => $price_delivery,
-                'distance_to_cafe' => $user->distance
-            ]);
-
-        OrderController::changeOrderCourierStatus($order->id, $user->id, 2);
-
-        PushController::newOrderPush($user->id, $order->id);
-
-        return true;
-
     }
 
     public static function searchCourierSql($type, $distance, $order){
@@ -225,6 +176,119 @@ class SearchController extends Controller
 //            ->orderByDesc("users.sort_rating")
             ->orderBy('distance')
             ->first();
+
+    }
+
+    public static function offerToCourier($user, $order){
+
+        $matrix = PushController::getPointsRoutinAndTime($order->from_geo, $order->to_geo, $user->type);
+        if ($order->type == 1){
+            $price_delivery = MoneyController::costDelivery($matrix['distance'], $user->type) * $order->kef;
+        }else{
+            $price_delivery = $order->price_delivery;
+        }
+
+
+        //$price_delivery = MoneyController::costDelivery($order->distance, $user->type);
+
+        //$matrix = PushController::getPointsRoutinAndTime($order->from_geo, $order->to_geo, $user->type);
+
+        DB::table("orders")->where("id", $order->id)
+            ->update([
+                "needed_sec" => $matrix['time'] > 450 ? $matrix['time'] : 450,
+                "distance_matrix" => $matrix['distance'],
+                "routing_points" => $matrix['route_points'],
+                "mode" => $user->type,
+                "price_delivery" => $price_delivery,
+                'distance_to_cafe' => $user->distance
+            ]);
+
+        OrderController::changeOrderCourierStatus($order->id, $user->id, 2);
+
+        PushController::newOrderPush($user->id, $order->id);
+
+        return true;
+
+    }
+
+    public static function searchFreeDriverInRadius($type, $distance, $order){
+        $from_lat = explode("\n", $order->from_geo)[0];
+        $from_lon = explode("\n", $order->from_geo)[1];
+
+        $not_users_id = DB::table("order_user")
+            ->where("id_order", $order->id)
+            ->pluck("id_user")
+            ->toArray();
+
+        $geo_sql = "( 6371000 *
+                    ACOS(
+                        COS( RADIANS( {$from_lat} ) ) *
+                        COS( RADIANS( g.lan ) ) *
+                        COS( RADIANS( g.lon ) -
+                        RADIANS( {$from_lon} ) ) +
+                        SIN( RADIANS( {$from_lat} ) ) *
+                        SIN( RADIANS( g.lan) )
+                    )
+                )
+                AS distance";
+
+        $find = DB::table('users' , 'u')->leftJoin('users_geo as g', 'u.id', '=', 'g.id_user')
+            ->selectRaw('u.id, g.type, u.state, '.$geo_sql)
+            ->where('u.state', 1)
+            ->where("u.type", $type)
+            ->whereNotIn("u.id" ,$not_users_id)
+            ->where("g.updated_at",">", date("Y-m-d H:i:s",time()-3600))
+            ->having("distance", "<",$distance)
+            ->orderBy('distance')
+            ->first();
+
+        return $find;
+
+    }
+
+    public static function searchStatus_3_NearDriver($type, $distance, $order){
+        $to_lat = explode("\n", $order->to_geo)[0];
+        $to_lon = explode("\n", $order->to_geo)[1];
+
+        $not_users_id = DB::table("order_user")
+            ->where("id_order", $order->id)
+            ->pluck("id_user")
+            ->toArray();
+
+        $not_users_id_2 = DB::table('orders')
+            ->where('status', 3)
+            ->groupBy('id_courier')
+            ->havingRaw('COUNT(*) = 1')
+            ->pluck('id_courier')
+            ->toArray();
+
+        $geo_sql = "( 6371000 *
+                    ACOS(
+                        COS( RADIANS( {$to_lat} ) ) *
+                        COS( RADIANS( SUBSTRING_INDEX(o.to_geo, '\n', 1) ) ) *
+                        COS( RADIANS( SUBSTRING_INDEX(o.to_geo, '\n', -1) ) -
+                        RADIANS( {$to_lon} ) ) +
+                        SIN( RADIANS( {$to_lat} ) ) *
+                        SIN( RADIANS( SUBSTRING_INDEX(to_geo, '\n', 1)) )
+                    )
+                )
+                AS distance";
+
+        $find = DB::table('users', 'u')
+            ->leftJoin('orders as o', 'u.id', '=', 'o.id_courier')
+            ->leftJoin('users_geo as g', 'u.id', '=', 'g.id_user')
+            ->selectRaw('u.id, u.type, u.state, '.$geo_sql)
+            ->where('u.state', 3)
+            ->where('u.type', $type)
+            ->whereNotIn("u.id" ,$not_users_id)
+            ->whereNotIn("u.id" ,$not_users_id_2)
+            ->where("g.updated_at",">", date("Y-m-d H:i:s",time()-3600))
+            ->where('o.status', '=', 3)
+            ->having("distance", "<",$distance)
+            ->orderBy('distance')
+            ->first();
+
+        return $find;
 
     }
 

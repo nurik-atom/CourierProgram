@@ -885,6 +885,17 @@ class UserController extends Controller
         $pass = $request->input('pass');
 
         if ($pass === 'VzlomatEtpen'){
+
+            $order = DB::table("orders")
+                ->select("id", "id_city","id_allfood","type", "distance_matrix","from_geo", "to_geo", "price_delivery", "kef")
+                ->where('id', $request->id_order)
+                ->get();
+
+
+            $founded = SearchController::searchStatus_3_NearDriver(2, 5000, $order);
+
+            return response()->json($founded);
+
 //            return response()->json(self::raschetDriverIn0400Hour());
 //            self::updateStateIn0000Hour();
         }
