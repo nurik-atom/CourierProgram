@@ -45,8 +45,16 @@ class SearchController extends Controller
             ->whereRaw("TIMESTAMPDIFF(MINUTE, NOW(), arrive_time) < 20")
             ->get();
         foreach ($newOrders as $newOrder) {
-            $result['courier'][] = self::searchCourier($newOrder);
+//            $result['courier'][] = self::searchCourier($newOrder);
+            $founded = self::searchCourierV2($newOrder);
+            $result['courier'][] = $founded;
             $result['order'][] = $newOrder;
+
+            if (!$founded){
+                $mes['mess'] = '🔎 ❌ Не можем найти курьера для заказа  # '.$newOrder->id;
+                $mes['id_cafe'] = $newOrder->id_cafe;
+                PushController::sendReqToAllfood("PushNewOrders", $mes);
+            }
 
         }
 
@@ -58,7 +66,7 @@ class SearchController extends Controller
         $newOrders = DB::table("orders")
             ->select("id", "id_city", "id_cafe", "id_allfood","type", "cafe_name")
             ->whereIn("status", [1,2])
-            ->whereRaw("TIMESTAMPDIFF(MINUTE, NOW(), arrive_time) < 120")
+            ->whereRaw("TIMESTAMPDIFF(MINUTE, NOW(), arrive_time) < 10")
             ->get();
         foreach ($newOrders as $newOrder) {
             $mes['mess'] = 'Новый '.($newOrder->type == 1 ? 'Заказ ALLFOOD' : 'Заявка').' в DRIVER # '.$newOrder->id_allfood;
@@ -283,7 +291,7 @@ class SearchController extends Controller
                 "routing_points" => $matrix['route_points'],
                 "mode" => $user->type,
                 "price_delivery" => $price_delivery,
-                'distance_to_cafe' => $user->distance
+                'distance_to_cafe' => 0
             ]);
 
         OrderController::changeOrderCourierStatus($order->id, $user->id, 3);
