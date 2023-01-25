@@ -910,12 +910,12 @@ class SzpController extends Controller
 
             $result['cash_change'] = DB::table('cash_driver_history')
                 ->selectRaw("COUNT(*) as kol, SUM(summa) as summa")
-                ->whereRaw("DATE(created_at) >= '$start_date' AND DATE(created_at) <= '$end_date'")
+                ->whereRaw("DATE(created_at) >= '$start_date' AND DATE(created_at) <= '$end_date' AND id_order > 0")
                 ->get();
 
             $result['compare_cash_change'] = DB::table('cash_driver_history')
                 ->selectRaw("COUNT(*) as kol, SUM(summa) as summa")
-                ->whereRaw("DATE(created_at) >= '$compare_start_date' AND DATE(created_at) <= '$compare_end_date'")
+                ->whereRaw("DATE(created_at) >= '$compare_start_date' AND DATE(created_at) <= '$compare_end_date' AND id_order > 0")
                 ->get();
 
             $result['success'] = true;
