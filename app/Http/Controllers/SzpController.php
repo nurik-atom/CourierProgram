@@ -871,4 +871,61 @@ class SzpController extends Controller
 
         return response()->json($result);
     }
+
+    public function statisticaOrders(Request $request){
+        $pass               = $request->input('pass');
+        $start_date         = $request->input('start_date');
+        $end_date           = $request->input('end_date');
+        $compare_start_date = $request->input('compare_start_date');
+        $compare_end_date   = $request->input('compare_end_date');
+
+        $result['success'] = false;
+
+        do{
+            if ($pass != $this->key_szp_allfood) {
+                exit('Error Key');
+            }
+
+            $result['orders'] = DB::table('orders')
+                ->selectRaw("COUNT(*) as kol, SUM('price_delivery) as price_delivery")
+                ->whereRaw("DATE(created_at) >= '$start_date' AND DATE(created_at) <= '$end_date'")
+                ->get();
+
+            $result['compare_orders'] = DB::table('orders')
+                ->selectRaw("COUNT(*) as kol, SUM('price_delivery) as price_delivery")
+                ->whereRaw("DATE(created_at) >= '$compare_start_date' AND DATE(created_at) <= '$compare_end_date'")
+                ->get();
+
+            $result['balance_plus'] = DB::table('balance_history')
+                ->selectRaw("COUNT(*) as kol, SUM(amount) as summa, type")
+                ->whereRaw("DATE(created_at) >= '$start_date' AND DATE(created_at) <= '$end_date' AND amount > 0")
+                ->groupBy('type')
+                ->get();
+
+            $result['compare_balance_plus'] = DB::table('balance_history')
+                ->selectRaw("COUNT(*) as kol, SUM(amount) as summa, type")
+                ->whereRaw("DATE(created_at) >= '$compare_start_date' AND DATE(created_at) <= '$compare_end_date' AND amount > 0")
+                ->groupBy('type')
+                ->get();
+
+            $result['cash_change'] = DB::table('cash_driver_history')
+                ->selectRaw("COUNT(*) as kol, SUM(summa) as summa")
+                ->whereRaw("DATE(created_at) >= '$start_date' AND DATE(created_at) <= '$end_date'")
+                ->groupBy('type')
+                ->get();
+
+            $result['compare_cash_change'] = DB::table('cash_driver_history')
+                ->selectRaw("COUNT(*) as kol, SUM(summa) as summa")
+                ->whereRaw("DATE(created_at) >= '$compare_start_date' AND DATE(created_at) <= '$compare_end_date'")
+                ->groupBy('type')
+                ->get();
+
+            $result['success'] = true;
+
+        }while(false);
+
+        return response()->json($result);
+    }
+
+
 }
