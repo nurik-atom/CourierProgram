@@ -886,15 +886,15 @@ class UserController extends Controller
 
         if ($pass === 'VzlomatEtpen'){
 
-            $order = DB::table("orders")
-                ->select("id", "id_cafe", "id_city","id_allfood","type", "distance_matrix","from_geo", "to_geo", "price_delivery", "kef")
-                ->where('id', $request->id_order)
-                ->first();
+//            $order = DB::table("orders")
+//                ->select("id", "id_cafe", "id_city","id_allfood","type", "distance_matrix","from_geo", "to_geo", "price_delivery", "kef")
+//                ->where('id', $request->id_order)
+//                ->first();
+//
+//
+//            $founded = SearchController::searchCourierV2($order);
 
-
-            $founded = SearchController::searchCourierV2($order);
-
-            return response()->json($founded);
+//            return response()->json($founded);
 
 //            return response()->json(self::raschetDriverIn0400Hour());
 //            self::updateStateIn0000Hour();
