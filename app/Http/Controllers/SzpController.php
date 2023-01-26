@@ -889,12 +889,12 @@ class SzpController extends Controller
             $result['orders'] = DB::table('orders')
                 ->selectRaw("COUNT(*) as kol, SUM(price_delivery) as price_delivery")
                 ->whereRaw("DATE(created_at) >= '$start_date' AND DATE(created_at) <= '$end_date'")
-                ->get();
+                ->first();
 
             $result['compare_orders'] = DB::table('orders')
                 ->selectRaw("COUNT(*) as kol, SUM(price_delivery) as price_delivery")
                 ->whereRaw("DATE(created_at) >= '$compare_start_date' AND DATE(created_at) <= '$compare_end_date'")
-                ->get();
+                ->first();
 
             $result['balance_plus'] = DB::table('balance_history')
                 ->selectRaw("COUNT(*) as kol, SUM(amount) as summa, type")
@@ -913,12 +913,12 @@ class SzpController extends Controller
             $result['cash_change'] = DB::table('cash_driver_history')
                 ->selectRaw("COUNT(*) as kol, SUM(summa) as summa")
                 ->whereRaw("DATE(created_at) >= '$start_date' AND DATE(created_at) <= '$end_date' AND id_order > 0")
-                ->get();
+                ->first();
 
             $result['compare_cash_change'] = DB::table('cash_driver_history')
                 ->selectRaw("COUNT(*) as kol, SUM(summa) as summa")
                 ->whereRaw("DATE(created_at) >= '$compare_start_date' AND DATE(created_at) <= '$compare_end_date' AND id_order > 0")
-                ->get();
+                ->first();
 
             $result['success'] = true;
 
