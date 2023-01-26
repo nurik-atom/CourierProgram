@@ -900,12 +900,14 @@ class SzpController extends Controller
                 ->selectRaw("COUNT(*) as kol, SUM(amount) as summa, type")
                 ->whereRaw("DATE(created_at) >= '$start_date' AND DATE(created_at) <= '$end_date' AND amount > 0")
                 ->groupBy('type')
+                ->pluck('type')
                 ->get();
 
             $result['compare_balance_plus'] = DB::table('balance_history')
                 ->selectRaw("COUNT(*) as kol, SUM(amount) as summa, type")
                 ->whereRaw("DATE(created_at) >= '$compare_start_date' AND DATE(created_at) <= '$compare_end_date' AND amount > 0")
                 ->groupBy('type')
+                ->pluck('type')
                 ->get();
 
             $result['cash_change'] = DB::table('cash_driver_history')
