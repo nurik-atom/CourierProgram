@@ -297,6 +297,11 @@ class SzpController extends Controller
 
             if ($old_driver_id != 0){
 
+                $old_driver = DB::table('users')
+                    ->select( 'name')
+                    ->where('id', $old_driver_id)
+                    ->first();
+
                 $active_order = DB::table('orders')->select('id','status')->where('id_courier', $order->id_courier)->whereNotIn('status', [1,7,9])->orderByDesc('id')->first();
 
                 if ($active_order){
@@ -312,10 +317,22 @@ class SzpController extends Controller
                         'body' => 'Оператор переназначил заказ другому курьеру.'));
             }
 
+
+
             // ! Если новый курьер свободен поменяем State на 3
             if ($new_driver->state == 1){
                 UserController::insertStateUserFunc($new_driver->id, 3);
             }
+
+
+            if ($old_driver_id != 0) {
+                $mes['mess'] = '🔄️ Переназначение. ' . $old_driver->name.' ➡ '.$new_driver->name;
+            }else{
+                $mes['mess'] = '➡ Назначение заказа на'.$new_driver->name;
+            }
+            $mes['id_cafe'] = $order->id_cafe;
+            PushController::sendReqToAllfood("PushNewOrders", $mes);
+
 
             PushController::sendDataPush($id_driver,
                 array('type' => 'order', 'status' => 'new_order'),

@@ -219,6 +219,23 @@ class SearchController extends Controller
 
     }
 
+    public static function pushToLatedDrivers(){
+        $lated_orders = DB::table('orders', 'o')
+            ->leftJoin('users as u', 'o.id_courier', '=', 'u.id')
+            ->select('o.id', 'o.id_courier', 'o.id_cafe', 'o.cafe_name', 'u.name')
+            ->where('status', 3)
+            ->where('arrive_time', '<', Carbon::now())
+            ->get();
+
+        if ($lated_orders){
+            foreach ($lated_orders as $key => $o){
+
+                $mes['mess'] = '🕔 '.$o->name.' опаздывает на заказ # '.$o->id;
+                $mes['id_cafe'] = $o->id_cafe;
+                PushController::sendReqToAllfood("PushNewOrders", $mes);
+            }
+        }
+    }
 
     //! New Search Drivers
     public static function searchCourierV2($order)
