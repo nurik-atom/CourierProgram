@@ -223,8 +223,8 @@ class SearchController extends Controller
         $lated_orders = DB::table('orders', 'o')
             ->leftJoin('users as u', 'o.id_courier', '=', 'u.id')
             ->select('o.id', 'o.id_courier', 'o.id_cafe', 'o.cafe_name', 'u.name')
-            ->where('status', 3)
-            ->where('arrive_time', '<', Carbon::now())
+            ->where('o.status', 3)
+            ->where('o.arrive_time', '<', Carbon::now())
             ->get();
 
         if ($lated_orders){

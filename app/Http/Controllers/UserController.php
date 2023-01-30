@@ -918,10 +918,11 @@ class UserController extends Controller
         $five_hour_doplata = 5000;
         $ten_hour_doplata = 12000;
 
-        $active_users = DB::table('users_active_time')
-            ->selectRaw("SUM(seconds) as seconds, id_driver")
-            ->whereRaw("state = 0 AND DATE(created_at) = '".date('Y-m-d', time()-86400)."'")
-            ->groupBy('id_driver')
+        $active_users = DB::table('users_active_time', 't')
+            ->leftJoin('users as u', 't.id_driver', '=', 'u.id')
+            ->selectRaw("SUM(t.seconds) as seconds, t.id_driver")
+            ->whereRaw("t.state = 0 AND DATE(t.created_at) = '".date('Y-m-d', time()-86400)."' AND u.status = 3")
+            ->groupBy('t.id_driver')
             ->get();
 
         $ids = $active_users->pluck('id_driver')->toArray();
