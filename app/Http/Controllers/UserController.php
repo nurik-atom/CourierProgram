@@ -444,7 +444,7 @@ class UserController extends Controller
     {
         $password = $request->input('password');
         $token = $request->input('token');
-        $result['success'] = false;
+//        $result['success'] = false;
 
         if ($user = DB::table("users")->where("password", $password)->first()) {
             $result["success"] = true;
@@ -551,7 +551,7 @@ class UserController extends Controller
         $new_number = $request->input("new_number");
         $sms_code   = $request->input("sms_code");
 
-        $result['success'] = false;
+//        $result['success'] = false;
 
         do{
             $user = DB::table("users")->where("password", $password)->first();

@@ -132,7 +132,7 @@ class AllfoodController extends Controller
             OrderController::addCauseToCancelled($order->id, 0, $who, $prichina);
 
             if ($order->id_courier) {
-                UserController::insertStateUserFunc($order->id_courier, 1);
+                UserController::defineStateAndUpdate($order->id_courier);
                 PushController::cancelFromCafeClient($order->id, $order->id_courier, $prichina);
             }
             $result['success'] = true;

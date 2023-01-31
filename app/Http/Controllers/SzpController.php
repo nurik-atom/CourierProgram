@@ -328,7 +328,7 @@ class SzpController extends Controller
             if ($old_driver_id != 0) {
                 $mes['mess'] = '🔄️ Переназначение. ' . $old_driver->name.' ➡ '.$new_driver->name;
             }else{
-                $mes['mess'] = '➡ Назначение заказа на'.$new_driver->name;
+                $mes['mess'] = '➡ Назначение заказа на '.$new_driver->name;
             }
             $mes['id_cafe'] = $order->id_cafe;
             PushController::sendReqToAllfood("PushNewOrders", $mes);

@@ -486,7 +486,7 @@ class OrderController extends Controller
                 ->update(['status' => 1]);
             self::addCauseToCancelled($id_order, $user->id, 1, $cause);
 
-            UserController::insertStateUserFunc($user->id, 1);
+            UserController::defineStateAndUpdate($user->id);
 
             if (!$cancelSql) {
                 $result['message'] = 'Произошло ошибка';
