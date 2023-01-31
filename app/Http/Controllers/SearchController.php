@@ -264,9 +264,9 @@ class SearchController extends Controller
                 if ($c = self::searchFreeDriverInRadius("3", "2000", $order)){
                     self::offerToCourier($c, $order);
                 }elseif($c = self::searchStatus_3_NearDriver("3", "3000", $order)){
-                    self::assignToCourier($c, $order);
+                    self::assignToCourier($c, $order, '2 шаг мото');
                 }elseif($c = self::searchStatus_5_NearDriver("3", "2000", $order)){
-                    self::assignToCourier($c, $order);
+                    self::assignToCourier($c, $order, '3 шаг мото');
                 }elseif ($c = self::searchFreeDriverInRadius("3", "6000", $order)){
                     self::offerToCourier($c, $order);
                 }
@@ -278,9 +278,9 @@ class SearchController extends Controller
                 if ($c = self::searchFreeDriverInRadius("4", "2000", $order)){
                     self::offerToCourier($c, $order);
                 }elseif($c = self::searchStatus_3_NearDriver("4", "5000", $order)){
-                    self::assignToCourier($c, $order);
+                    self::assignToCourier($c, $order, '2 шаг авто');
                 }elseif($c = self::searchStatus_5_NearDriver("4", "3000", $order)){
-                    self::assignToCourier($c, $order);
+                    self::assignToCourier($c, $order, '3 шаг авто');
                 }elseif ($c = self::searchFreeDriverInRadius("4", "12000", $order)){
                     self::offerToCourier($c, $order);
                 }
@@ -292,7 +292,7 @@ class SearchController extends Controller
         return $c;
     }
 
-    public static function assignToCourier($user, $order){
+    public static function assignToCourier($user, $order, $shag = ''){
 
         $matrix = PushController::getPointsRoutinAndTime($order->from_geo, $order->to_geo, $user->type);
         if ($order->type == 1){
@@ -317,6 +317,12 @@ class SearchController extends Controller
             array('type' => 'order', 'status' => 'new_order'),
             array('title'=>'Новый заказ',
                 'body'=>'Заказ на сумму '.$order->price_delivery.' тенге'));
+
+        PushController::takedOrderAllfood($order, $user, "5");
+
+        $mes['mess'] = '🤖 Авто-назначение заказа #'.$order->id.' на '.$user->name.' ('.$shag.') ';
+        $mes['id_cafe'] = $order->id_cafe;
+        PushController::sendReqToAllfood("PushNewOrders", $mes);
 
         return true;
     }
@@ -392,7 +398,7 @@ class SearchController extends Controller
         $find = DB::table('users', 'u')
             ->leftJoin('orders as o', 'u.id', '=', 'o.id_courier')
             ->leftJoin('users_geo as g', 'u.id', '=', 'g.id_user')
-            ->selectRaw('u.id, u.type, u.state, '.$geo_sql)
+            ->selectRaw('u.id, u.type, u.state, u.name, u.photo, u.phone, '.$geo_sql)
             ->where('u.state', 3)
             ->where('u.type', $type)
             ->whereNotIn("u.id" ,$not_users_id)
