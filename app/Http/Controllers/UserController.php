@@ -33,6 +33,17 @@ class UserController extends Controller
                 "created_at" => Carbon::now(), "updated_at" => Carbon::now()]);
             $update_state = DB::table("users")->where("id", $user->id)->update(["state" => $state ]);
             $result['success'] = true;
+
+            $count = DB::table('users')->where('state', '!=', 0)->count();
+
+            if ($state == 0){
+                $mes['mess'] = '🔚 '.$user->name.' завершил работу. В онлайне '.$count.' 🚗';
+            }else{
+                $mes['mess'] = '➕ '.$user->name.' начал работу. В онлайне '.$count.' 🚗';
+            }
+
+            $mes['id_cafe'] = 321;
+            PushController::sendReqToAllfood("PushNewOrders", $mes);
         }
         self::startStopWork($user->id, $state);
         return response()->json($result);
