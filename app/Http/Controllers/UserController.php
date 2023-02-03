@@ -987,6 +987,7 @@ class UserController extends Controller
             ->selectRaw("id_courier, COUNT(*) as kol")
             ->where('status', 7)
             ->where('created_at', date('Y-m-d', time()-86400))
+            ->groupBy('id_courier')
             ->having('kol', '>=',3)
             ->get();
         $result = array();
