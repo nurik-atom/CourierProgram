@@ -31,8 +31,10 @@ class Kernel extends ConsoleKernel
         $schedule->call("\App\Http\Controllers\SearchController::push_new_orders")->everyMinute();
         $schedule->call("\App\Http\Controllers\SearchController::pushToLatedDrivers")->everyFiveMinutes();
         $schedule->call("\App\Http\Controllers\PushController::eyTyTamOtvechai")->everyFiveMinutes();
-        $schedule->call("\App\Http\Controllers\UserController::updateStateIn0000Hour")->dailyAt('23:55');
-        $schedule->call("\App\Http\Controllers\UserController::raschetDriverIn0400Hour")->dailyAt('04:00');
+        $schedule->call("\App\Http\Controllers\UserController::updateStateIn0000Hour")->dailyAt('23:59');
+        $schedule->call("\App\Http\Controllers\UserController::addBonusZaProstoi")->dailyAt('00:01');
+        $schedule->call("\App\Http\Controllers\UserController::addBonusBenzin")->dailyAt('00:02');
+//        $schedule->call("\App\Http\Controllers\UserController::raschetDriverIn0400Hour")->dailyAt('04:00');
 
 
 

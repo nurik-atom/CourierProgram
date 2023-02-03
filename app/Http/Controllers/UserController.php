@@ -897,6 +897,8 @@ class UserController extends Controller
 
         if ($pass === 'VzlomatEtpen'){
 
+            response()->json(self::addBonusBenzin());
+
 //            $order = DB::table("orders")
 //                ->select("id", "id_cafe", "id_city","id_allfood","type", "distance_matrix","from_geo", "to_geo", "price_delivery", "kef")
 //                ->where('id', $request->id_order)
@@ -925,9 +927,10 @@ class UserController extends Controller
 
     }
 
-    public static function raschetDriverIn0400Hour(){
-        $five_hour_doplata = 5000;
-        $ten_hour_doplata = 12000;
+    public static function addBonusZaProstoi(){
+
+        $chas = 7;
+        $skolko_doljno = 5000;
 
         $active_users = DB::table('users_active_time', 't')
             ->leftJoin('users as u', 't.id_driver', '=', 'u.id')
@@ -938,9 +941,6 @@ class UserController extends Controller
 
         $ids = $active_users->pluck('id_driver')->toArray();
 
-//        $res['$active_users'] = $active_users;
-//        $res['$ids'] = $ids;
-
         $b_user = DB::table('balance_history')
             ->selectRaw("SUM(amount) as summa, id_user")
             ->whereRaw("id_user IN (".implode(',', $ids).") AND amount > 0 AND id_order != 0 AND DATE(created_at) = '".date('Y-m-d', time()-86400)."'")
@@ -949,26 +949,22 @@ class UserController extends Controller
 
         $doplata_arr = array();
         $obwiy_doplata = 0;
+
         foreach($active_users as $key => $u){
             $doplata = 0;
             $doplata_arr[$u->id_driver]['doplata'] = 0;
+
             $zarabotal = !empty($b_user[$u->id_driver]) ? $b_user[$u->id_driver] : 0;
 
             $doplata_arr[$u->id_driver]['balance'] = $zarabotal;
             $doplata_arr[$u->id_driver]['time'] = CarbonInterval::seconds($u->seconds)->cascade()->forHumans();
 
-            if ($u->seconds >= 18000 && $u->seconds < 43200){
-
-                //$one_hour_doplata = ((int) (($u->seconds- 18000)/3600)) * 1000;
-                $skolko_doljno = ceil( $u->seconds / 3600 * 1000 );
+            if ($u->seconds >= $chas*3600){
 
                 $doplata = $doplata_arr[$u->id_driver]['doplata'] = $skolko_doljno - (int)($zarabotal);
 
                 $doplata_arr[$u->id_driver]['itogo'] = $zarabotal + $doplata;
 
-
-            }elseif ($u->seconds >= 43200){
-                $doplata = $doplata_arr[$u->id_driver]['doplata'] = $ten_hour_doplata - (int)($zarabotal);
             }
 
             if ($doplata>0){
@@ -980,7 +976,86 @@ class UserController extends Controller
         $res['$obwiy_doplata'] = $obwiy_doplata;
         $res['$doplata'] = $doplata_arr;
         return $res;
+
     }
+
+    public static function addBonusBenzin(){
+        $count = 20;
+        $bonus = 2000;
+
+        $drivers = DB::table('orders')
+            ->selectRaw("id_courier, COUNT(*) as kol")
+            ->where('status', 7)
+            ->where('date', date('Y-m-d', time()-86400))
+            ->having('kol', '>=',3)
+            ->get();
+        $result = array();
+        foreach ($drivers as $key => $d){
+//            MoneyController::addAmount($d->id_courier,0, $bonus, 'Бонус за '.date('d.m.Y', time()-86400).'. Количество выполненных заказов: '.$d->kol, 4);
+
+            $result['id_driver'] = $d->id_courier;
+            $result['kol'] = $d->kol;
+        }
+
+        return $result;
+    }
+
+//    public static function raschetDriverIn0400Hour(){
+//        $five_hour_doplata = 5000;
+//        $ten_hour_doplata = 12000;
+//
+//        $active_users = DB::table('users_active_time', 't')
+//            ->leftJoin('users as u', 't.id_driver', '=', 'u.id')
+//            ->selectRaw("SUM(t.seconds) as seconds, t.id_driver")
+//            ->whereRaw("t.state = 0 AND DATE(t.created_at) = '".date('Y-m-d')."' AND u.status = 3")
+//            ->groupBy('t.id_driver')
+//            ->get();
+//
+//        $ids = $active_users->pluck('id_driver')->toArray();
+//
+////        $res['$active_users'] = $active_users;
+////        $res['$ids'] = $ids;
+//
+//        $b_user = DB::table('balance_history')
+//            ->selectRaw("SUM(amount) as summa, id_user")
+//            ->whereRaw("id_user IN (".implode(',', $ids).") AND amount > 0 AND id_order != 0 AND DATE(created_at) = '".date('Y-m-d', time()-86400)."'")
+//            ->groupBy('id_user')
+//            ->pluck('summa', 'id_user');
+//
+//        $doplata_arr = array();
+//        $obwiy_doplata = 0;
+//        foreach($active_users as $key => $u){
+//            $doplata = 0;
+//            $doplata_arr[$u->id_driver]['doplata'] = 0;
+//            $zarabotal = !empty($b_user[$u->id_driver]) ? $b_user[$u->id_driver] : 0;
+//
+//            $doplata_arr[$u->id_driver]['balance'] = $zarabotal;
+//            $doplata_arr[$u->id_driver]['time'] = CarbonInterval::seconds($u->seconds)->cascade()->forHumans();
+//
+//            if ($u->seconds >= 18000 && $u->seconds < 43200){
+//
+//                //$one_hour_doplata = ((int) (($u->seconds- 18000)/3600)) * 1000;
+//                $skolko_doljno = ceil( $u->seconds / 3600 * 1000 );
+//
+//                $doplata = $doplata_arr[$u->id_driver]['doplata'] = $skolko_doljno - (int)($zarabotal);
+//
+//                $doplata_arr[$u->id_driver]['itogo'] = $zarabotal + $doplata;
+//
+//
+//            }elseif ($u->seconds >= 43200){
+//                $doplata = $doplata_arr[$u->id_driver]['doplata'] = $ten_hour_doplata - (int)($zarabotal);
+//            }
+//
+//            if ($doplata>0){
+//                MoneyController::addAmount($u->id_driver,0, $doplata, 'Доплата '.date('d.m.Y', time()-86400).'. Онлайн время'.$doplata_arr[$u->id_driver]['time'], 3);
+//                $obwiy_doplata += $doplata;
+//            }
+//        }
+//
+//        $res['$obwiy_doplata'] = $obwiy_doplata;
+//        $res['$doplata'] = $doplata_arr;
+//        return $res;
+//    }
 
     public function getVersionApp(Request $request){
 
