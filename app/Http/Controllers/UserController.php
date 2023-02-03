@@ -897,7 +897,7 @@ class UserController extends Controller
 
         if ($pass === 'VzlomatEtpen'){
 
-            response()->json(self::addBonusBenzin());
+            return response()->json(self::addBonusBenzin());
 
 //            $order = DB::table("orders")
 //                ->select("id", "id_cafe", "id_city","id_allfood","type", "distance_matrix","from_geo", "to_geo", "price_delivery", "kef")
