@@ -987,14 +987,14 @@ class UserController extends Controller
             ->selectRaw("id_courier, COUNT(*) as kol")
             ->whereRaw("status = 7 AND DATE(created_at) = '".date('Y-m-d', time()-86400)."'")
             ->groupBy('id_courier')
-            ->having('kol', '>=',3)
+            ->having('kol', '>=',$count)
             ->get();
         $result = array();
         foreach ($drivers as $key => $d){
-//            MoneyController::addAmount($d->id_courier,0, $bonus, 'Бонус за '.date('d.m.Y', time()-86400).'. Количество выполненных заказов: '.$d->kol, 4);
+            MoneyController::addAmount($d->id_courier,0, $bonus, 'Бонус за '.date('d.m.Y', time()-86400).'. Количество выполненных заказов: '.$d->kol, 4);
 
-            $result['id_driver'] = $d->id_courier;
-            $result['kol'] = $d->kol;
+            $result[$key]['id_driver'] = $d->id_courier;
+            $result[$key]['kol'] = $d->kol;
         }
 
         return $result;
