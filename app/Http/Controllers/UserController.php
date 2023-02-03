@@ -986,7 +986,7 @@ class UserController extends Controller
         $drivers = DB::table('orders')
             ->selectRaw("id_courier, COUNT(*) as kol")
             ->where('status', 7)
-            ->where('created_at', date('Y-m-d', time()-86400))
+            ->whereRaw("DATE(created_at) = '".date('Y-m-d', time()-86400)."'")
             ->groupBy('id_courier')
             ->having('kol', '>=',3)
             ->get();
