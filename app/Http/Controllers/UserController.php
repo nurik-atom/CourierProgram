@@ -986,7 +986,7 @@ class UserController extends Controller
         $drivers = DB::table('orders')
             ->selectRaw("id_courier, COUNT(*) as kol")
             ->where('status', 7)
-            ->where('date', date('Y-m-d', time()-86400))
+            ->where('created_at', date('Y-m-d', time()-86400))
             ->having('kol', '>=',3)
             ->get();
         $result = array();
