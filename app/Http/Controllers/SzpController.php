@@ -29,6 +29,7 @@ class SzpController extends Controller
         $users = DB::table('users')
             ->select('id', 'name', 'surname', 'id_city', 'birthday', 'phone', 'type', 'status', 'rating', 'state', 'created_at')
             ->orderByDesc('state')
+            ->latest()
             ->get();
         $result['users'] = $users;
         $result['success'] = true;

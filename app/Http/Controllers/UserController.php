@@ -135,6 +135,7 @@ class UserController extends Controller
                 $users_sms_id = DB::table('users_sms')->insertGetId([
                     'phone' => $phone,
                     'code' => $code,
+                    'state'=> 0,
                     'created_at' => Carbon::now(),
                     'updated_at' => Carbon::now(),
                 ]);
@@ -897,7 +898,7 @@ class UserController extends Controller
 
         if ($pass === 'VzlomatEtpen'){
 
-            return response()->json(self::addBonusBenzin());
+            // return response()->json(self::addBonusBenzin());
 
 //            $order = DB::table("orders")
 //                ->select("id", "id_cafe", "id_city","id_allfood","type", "distance_matrix","from_geo", "to_geo", "price_delivery", "kef")
@@ -909,7 +910,7 @@ class UserController extends Controller
 
 //            return response()->json($founded);
 
-//            return response()->json(self::raschetDriverIn0400Hour());
+            //return response()->json(self::raschetDriverIn0400Hour());
 //            self::updateStateIn0000Hour();
         }
     }
@@ -1007,7 +1008,7 @@ class UserController extends Controller
 //        $active_users = DB::table('users_active_time', 't')
 //            ->leftJoin('users as u', 't.id_driver', '=', 'u.id')
 //            ->selectRaw("SUM(t.seconds) as seconds, t.id_driver")
-//            ->whereRaw("t.state = 0 AND DATE(t.created_at) = '".date('Y-m-d')."' AND u.status = 3")
+//            ->whereRaw("t.state = 0 AND DATE(t.created_at) = '".date('Y-m-d', time()-86400)."' AND u.status = 3")
 //            ->groupBy('t.id_driver')
 //            ->get();
 //
