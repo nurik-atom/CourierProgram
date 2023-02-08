@@ -135,7 +135,6 @@ class UserController extends Controller
                 $users_sms_id = DB::table('users_sms')->insertGetId([
                     'phone' => $phone,
                     'code' => $code,
-                    'state'=> 0,
                     'created_at' => Carbon::now(),
                     'updated_at' => Carbon::now(),
                 ]);
@@ -183,6 +182,7 @@ class UserController extends Controller
                 $users_sms_id = DB::table('users')->insertGetId([
                     'phone' => $phone,
                     'status' => 1,
+                    'state'=> 0,
                     'password' => $password,
                     'created_at' => Carbon::now(),
                     'updated_at' => Carbon::now()
