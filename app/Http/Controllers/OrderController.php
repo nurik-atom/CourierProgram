@@ -376,8 +376,14 @@ class OrderController extends Controller
 
             (new CashOnHandController)->plusSumma($order->id_courier, $order->summ_order, $order->id);
 
+            $hour = (int) date('H', strtotime($order->created_at));
+            $bonus_morning = 0;
+            if ($hour > 05 && $hour < 13){
+                $bonus_morning = ceil($order->price_delivery / 2);
+                MoneyController::addAmount($user->id, $order->id, $bonus_morning, 'Бонус. Заказы до 14:00', 5);
+            }
 
-            $result['price'] = $order->price_delivery;
+            $result['price'] = $order->price_delivery + $summa_to_cafe + $bonus_morning;
             self::changeOrderCourierStatus($order->id, $user->id, 7);
 
             //Curl to allfood kz
