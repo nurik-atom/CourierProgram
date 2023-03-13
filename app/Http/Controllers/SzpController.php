@@ -481,7 +481,7 @@ class SzpController extends Controller
 
 
             $balance = DB::table('balance', 'b')
-                ->select('b.id_user','b.amount', 'u.name', 'u.surname')
+                ->select('b.id_user','b.amount', 'u.name', 'u.surname', 'u.cash_on_hand')
                 ->leftJoin('users as u', 'b.id_user', '=', 'u.id')
                 ->where('u.status', 3)
                 ->get();
@@ -489,10 +489,6 @@ class SzpController extends Controller
             $balance_id_user = $balance->pluck('id_user');
 
             if ($cash_on_hand){
-                foreach ($cash_on_hand as $key => $c){
-                    $c->balance = $balance_id_user[$c['id']]['amount'];
-                }
-
                 $result['cash_on_hand'] = $cash_on_hand;
             }
 // TODO
