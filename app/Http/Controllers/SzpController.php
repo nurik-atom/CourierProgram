@@ -478,15 +478,23 @@ class SzpController extends Controller
                 ->where('status', 3)
                 ->get();
 
-            if ($cash_on_hand){
-                $result['cash_on_hand'] = $cash_on_hand;
-            }
+
 
             $balance = DB::table('balance', 'b')
                 ->select('b.id_user','b.amount', 'u.name', 'u.surname')
                 ->leftJoin('users as u', 'b.id_user', '=', 'u.id')
                 ->where('u.status', 3)
                 ->get();
+
+            $balance_id_user = $balance->pluck('id_user');
+
+            if ($cash_on_hand){
+                foreach ($cash_on_hand as $key => $c){
+                    $cash_on_hand[$key]['balance'] = $balance_id_user[$c['id']]['amount'];
+                }
+
+                $result['cash_on_hand'] = $cash_on_hand;
+            }
 // TODO
 //            $balance_today = DB::table('balance_history')
 //                ->selectRaw("")
