@@ -490,7 +490,7 @@ class SzpController extends Controller
 
             if ($cash_on_hand){
                 foreach ($cash_on_hand as $key => $c){
-                    $cash_on_hand[$key]->balance = $balance_id_user[$c['id']]->amount;
+                    $cash_on_hand->$key->balance = $balance_id_user->$c['id']->amount;
                 }
 
                 $result['cash_on_hand'] = $cash_on_hand;
