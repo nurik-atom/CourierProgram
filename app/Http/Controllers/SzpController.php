@@ -492,11 +492,11 @@ class SzpController extends Controller
                 $result['cash_on_hand'] = $cash_on_hand;
             }
 
-            $result['new'] = DB::table('users', 'u')
-                ->leftJoin('balance as b', 'u.id', '=', 'b.id_user')
-                ->select('u.name', 'u.surname', 'u.id', 'u.cash_on_hand', 'u.phone', 'u.id_city', 'b.amount as balance')
-                ->where('status', 3)
-                ->get();
+//            $result['new'] = DB::table('users', 'u')
+//                ->leftJoin('balance as b', 'u.id', '=', 'b.id_user')
+//                ->select('u.name', 'u.surname', 'u.id', 'u.cash_on_hand', 'u.phone', 'u.id_city', 'b.amount as balance')
+//                ->where('status', 3)
+//                ->get();
 // TODO
 //            $balance_today = DB::table('balance_history')
 //                ->selectRaw("")
@@ -521,13 +521,13 @@ class SzpController extends Controller
                 exit('Error Key');
             }
 
-            $result = DB::table('users', 'u')
+            $driver_total = DB::table('users', 'u')
                 ->leftJoin('balance as b', 'u.id', '=', 'b.id_user')
                 ->select('u.name', 'u.surname', 'u.id', 'u.cash_on_hand', 'u.phone', 'u.id_city', 'b.amount as balance')
                 ->where('status', 3)
                 ->get();
 
-            $result['driver_total'] = $result;
+            $result['driver_total'] = $driver_total;
 
             $result['success'] = true;
 
