@@ -506,6 +506,31 @@ class SzpController extends Controller
         return response()->json($result);
     }
 
+
+    public function getDriverCashTotalNew(Request $request){
+        $pass   = $request->input('pass');
+        $result['success'] = false;
+        $result['driver_total'] = array();
+        do{
+            if ($pass != $this->key_szp_allfood) {
+                exit('Error Key');
+            }
+
+            $result = DB::table('users', 'u')
+                ->leftJoin('balance as b', 'u.id', '=', 'b.id_user')
+                ->select('u.name', 'u.surname', 'u.id', 'u.cash_on_hand', 'u.phone', 'u.id_city', 'b.amount as balance')
+                ->where('status', 3)
+                ->get();
+
+            $result['result'] = $result;
+
+            $result['success'] = true;
+
+        }while(false);
+
+        return response()->json($result);
+    }
+
     public function addZapisTranzakciaDriver(Request $request){
         $id_driver = $request->input('id_driver');
         $id_order  = $request->input('id_order');
