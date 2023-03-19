@@ -491,6 +491,12 @@ class SzpController extends Controller
             if ($cash_on_hand){
                 $result['cash_on_hand'] = $cash_on_hand;
             }
+
+            $result['new'] = DB::table('users', 'u')
+                ->leftJoin('balance as b', 'u.id', '=', 'b.id_user')
+                ->select('u.name', 'u.surname', 'u.id', 'u.cash_on_hand', 'u.phone', 'u.id_city', 'b.amount as balance')
+                ->where('status', 3)
+                ->get();
 // TODO
 //            $balance_today = DB::table('balance_history')
 //                ->selectRaw("")
@@ -515,30 +521,13 @@ class SzpController extends Controller
                 exit('Error Key');
             }
 
-            $cash_on_hand = DB::table('users')->select('name', 'surname', 'id', 'cash_on_hand', 'phone')
+            $result = DB::table('users', 'u')
+                ->leftJoin('balance as b', 'u.id', '=', 'b.id_user')
+                ->select('u.name', 'u.surname', 'u.id', 'u.cash_on_hand', 'u.phone', 'u.id_city', 'b.amount as balance')
                 ->where('status', 3)
                 ->get();
 
-
-
-            $balance = DB::table('balance', 'b')
-                ->select('b.id_user','b.amount', 'u.name', 'u.surname', 'u.cash_on_hand')
-                ->leftJoin('users as u', 'b.id_user', '=', 'u.id')
-                ->where('u.status', 3)
-                ->get();
-
-            $balance_id_user = $balance->pluck('id_user');
-
-            if ($cash_on_hand){
-                $result['cash_on_hand'] = $cash_on_hand;
-            }
-// TODO
-//            $balance_today = DB::table('balance_history')
-//                ->selectRaw("")
-
-            if ($balance){
-                $result['balance_user'] = $balance;
-            }
+            $result['driver_total'] = $result;
 
             $result['success'] = true;
 
@@ -546,31 +535,6 @@ class SzpController extends Controller
 
         return response()->json($result);
     }
-
-
-//    public function getDriverCashTotalNew(Request $request){
-//        $pass   = $request->input('pass');
-//        $result['success'] = false;
-//        $result['driver_total'] = array();
-//        do{
-//            if ($pass != $this->key_szp_allfood) {
-//                exit('Error Key');
-//            }
-//
-//            $result = DB::table('users', 'u')
-//                ->leftJoin('balance as b', 'u.id', '=', 'b.id_user')
-//                ->select('u.name', 'u.surname', 'u.id', 'u.cash_on_hand', 'u.phone', 'u.id_city', 'b.amount as balance')
-//                ->where('status', 3)
-//                ->get();
-//
-//            $result['result'] = $result;
-//
-//            $result['success'] = true;
-//
-//        }while(false);
-//
-//        return response()->json($result);
-//    }
 
     public function addZapisTranzakciaDriver(Request $request){
         $id_driver = $request->input('id_driver');
