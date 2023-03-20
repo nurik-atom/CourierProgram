@@ -603,6 +603,10 @@ class SzpController extends Controller
                 break;
             }
             (new CashOnHandController)->updateAllSummaDriver($id_driver);
+
+            MoneyController::calculateBalance($id_driver);
+
+
             $result['success'] = true;
         }while(false);
 
