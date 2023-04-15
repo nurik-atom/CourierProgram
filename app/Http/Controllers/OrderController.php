@@ -379,7 +379,7 @@ class OrderController extends Controller
             $hour = (int) date('H', strtotime($order->created_at));
             $bonus_morning = 0;
             if ($hour > 05 && $hour < 13){
-                $bonus_morning = ceil($order->price_delivery / 2);
+                $bonus_morning = ceil($order->price_delivery * 0.25);
                 MoneyController::addAmount($user->id, $order->id, $bonus_morning, 'Бонус. Заказы до 14:00', 5);
             }
 

@@ -36,9 +36,6 @@ class MoneyController extends Controller
 
         if ($distance < 3000) $metr_500 = 50;
         if ($distance > 3000) $metr_500 = 45;
-        if ($distance > 5000) $metr_500 = 40;
-        if ($distance > 6000) $metr_500 = 35;
-        if ($distance > 7000) $metr_500 = 30;
 
         $count_500 = ($distance - 1500)/500;
         if ($count_500 < 0)
