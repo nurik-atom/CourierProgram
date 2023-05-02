@@ -198,6 +198,7 @@ class PushController extends Controller
     public static function takedOrderAllfood($order, $driver, $time){
         $req['order_id']    = $order->id_allfood;
         $req['order_type']  = $order->type;
+
         $req['driver_id']   = $driver->id;
         $req['driver_name'] = $driver->name;
         $req['driver_photo']= $driver->photo;

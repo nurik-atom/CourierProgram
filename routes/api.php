@@ -44,6 +44,7 @@ Route::post('/sendNotification',[NotificationController::class,'sendNotification
 
 Route::post('/getStatusTimeOrder', [OrderController::class, 'getStatusTimeOrder']);
 Route::post('/newOrder', [AllfoodController::class, 'newOrder']);
+Route::post("/whoIsDriver",[AllfoodController::class, "whoIsDriver"]);
 
 Route::post("/allfood/cancelOrderFromAllfood", [AllfoodController::class, 'cancelOrderFromAllfood']);
 Route::post("/allfood/cancelTelOrderFromAllfood", [AllfoodController::class, 'cancelTelOrderFromAllfood']);
@@ -117,6 +118,7 @@ Route::post("/szp/changeDriverStatusSzp",[SzpController::class, "changeDriverSta
 Route::post("/szp/getDriversGeo",[SzpController::class, "getDriversGeo"]);
 Route::post("/szp/getOneDriverGeo",[SzpController::class, "getOneDriverGeo"]);
 Route::post("/szp/getCommentsForSzp",[SzpController::class, "getCommentsForSzp"]);
+
 
 Route::post("/szp/getDriversForNaznachenieZakaza",[SzpController::class, "getDriversForNaznachenieZakaza"]);
 Route::post("/szp/naznachitZakaz",[SzpController::class, "naznachitZakaz"]);

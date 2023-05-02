@@ -271,4 +271,53 @@ class AllfoodController extends Controller
         return response()->json($result);
     }
 
+    public function whoIsDriver(Request $request){
+        $key = $request->input("key");
+        $id_allfood = $request->input("id_order");
+        $type = $request->input("type");
+        $result['success'] = false;
+
+        if (!$key || $key != env("ALLFOOD_KEY")) exit("Error key");
+
+        do{
+
+            $order = DB::table('orders')
+                ->where('id_allfood', $id_allfood)
+                ->where('type', $type)
+                ->first();
+
+            if (!$order){
+                $result['message'] = 'order not found';
+                break;
+            }
+
+            if (!$order->id_courier){
+                $result['message'] = 'driver не определен';
+                break;
+            }
+
+            $driver = DB::table('users')
+                ->where('id', $order->id_courier)
+                ->first();
+
+            if ($driver){
+                $result['driver']['id'] = $driver->id;
+                $result['driver']['name'] = $driver->name;
+                $result['driver']['photo'] = $driver->photo;
+                $result['driver']['phone'] = $driver->phone;
+                $result['driver']['type'] = $driver->type;
+                $result['success'] = true;
+
+            }else{
+                $result['message'] = 'driver не найден';
+                break;
+            }
+
+
+        }while(false);
+
+        return response()->json($result);
+
+    }
+
 }

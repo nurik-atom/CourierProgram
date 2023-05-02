@@ -342,6 +342,12 @@ class SzpController extends Controller
 
             PushController::takedOrderAllfood($order, $new_driver, "5");
 
+            $result['driver']['id']     = $new_driver->id;
+            $result['driver']['name']   = $new_driver->name;
+            $result['driver']['photo']  = $new_driver->photo;
+            $result['driver']['phone']  = $new_driver->phone;
+            $result['driver']['type']   = $new_driver->type;
+
             $result['success'] = true;
         } while (false);
 
