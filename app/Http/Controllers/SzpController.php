@@ -989,5 +989,26 @@ class SzpController extends Controller
         return response()->json($result);
     }
 
+    public function getStatussTelOrders(Request $request){
+        $pass = $request->input('pass');
+        $ids  = $request->input('ids');
+        $result['success'] = false;
+        do {
+            if ($pass != $this->key_szp_allfood) {
+                exit('Error Key');
+            }
 
+            $statuss = DB::table('orders')->select('id')->where('id', 'IN', $ids)->pluck('id');
+
+            if (!$statuss){
+                $result['message'] = 'Ошибка при GET';
+                break;
+            }
+
+            $result['statuss'] = $statuss;
+            $result['success'] = true;
+        }while(false);
+
+        return response()->json($result);
+    }
 }
