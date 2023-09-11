@@ -997,13 +997,14 @@ class SzpController extends Controller
             if ($pass != $this->key_szp_allfood) {
                 exit('Error Key');
             }
-
-            $statuss = DB::table('orders')->select('id')->where('id', 'IN', $ids)->pluck('id');
+            $result['ids'] = $ids;
+            $statuss = DB::table('orders')->select('id', 'status')->whereIn('id',  $ids)->pluck('status', 'id');
 
             if (!$statuss){
                 $result['message'] = 'Ошибка при GET';
                 break;
             }
+
 
             $result['statuss'] = $statuss;
             $result['success'] = true;
