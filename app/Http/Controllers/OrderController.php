@@ -191,7 +191,12 @@ class OrderController extends Controller
 
 
         if ($status == 7){
-            $oneMoreOrder = DB::table('orders')->select('status', 'id')->where('id_courier', $id_courier)->whereNotIn('status', [1,7,9])->where('id', '!=', $id_order)->first();
+            $oneMoreOrder = DB::table('orders')
+                ->select('status', 'id')
+                ->where('id_courier', $id_courier)
+                ->whereNotIn('status', [1,7,9])
+                ->where('id', '!=', $id_order)
+                ->first();
 
             if ($oneMoreOrder){
                 $user_state = $oneMoreOrder->status;
