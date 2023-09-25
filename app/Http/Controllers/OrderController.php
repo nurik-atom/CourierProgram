@@ -602,7 +602,7 @@ class OrderController extends Controller
 
 
             $order = DB::table("orders")
-                        ->where("id", $id_order)
+                        ->where("id_allfood", $id_order)
                         ->where('type', $type)
                         ->select("status", "id_courier")
                         ->first();
