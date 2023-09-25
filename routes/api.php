@@ -60,6 +60,8 @@ Route::post('/finishDeliveryOrder',[OrderController::class,'finishDeliveryOrder'
 Route::post('/refusingOrderReq',[OrderController::class,'refusingOrderReq']);
 Route::post('/cancelOrder',[OrderController::class,'cancelOrder']);
 
+Route::post('/not_found_driver_update',[OrderController::class,'managerNotFoundDriver']);
+
 Route::post('/register', [UserController::class, 'register']);
 Route::post('/signIn', [UserController::class, 'signIn']);
 Route::post('/profile', [UserController::class, 'profile']);

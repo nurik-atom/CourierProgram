@@ -591,4 +591,41 @@ class OrderController extends Controller
         return response()->json($result);
     }
 
+    public function managerNotFoundDriver(Request $request){
+
+        $id_order = $request['id_order'];
+        $type     = $request['type'];
+
+        $result['success'] = false;
+        $result['driver'] = array();
+        do {
+
+
+            $order = DB::table("orders")
+                        ->where("id", $id_order)
+                        ->where('type', $type)
+                        ->select("status", "id_courier")
+                        ->first();
+
+            if (!$order) {
+                $result['message'] = 'Заказ не найден';
+                break;
+            }
+
+            if ($order->id_courier){
+                $driver = DB::table('users')
+                    ->select('id','name','photo', 'phone', 'type')
+                    ->where('id', $order->id_courier)
+                    ->first();
+                if ($driver) {
+                    $result['driver'] = $driver;
+                }
+            }
+
+            $result['success'] = true;
+
+        } while (false);
+        return response()->json($result);
+    }
+
 }
