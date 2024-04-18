@@ -5,6 +5,7 @@ use App\Http\Controllers\CashOnHandController;
 use App\Http\Controllers\HelpController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\Slots\SlotsSzpController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\RatingController;
@@ -147,3 +148,7 @@ Route::post("/szp/getStatussTelOrders",[SzpController::class, "getStatussTelOrde
 
 Route::post("/szp/testStaticFunctions",[UserController::class, "testStaticFunctions"]);
 
+
+
+Route::post("/szp/updateOrCreateSlotsFromSzp",[SlotsSzpController::class, "updateOrCreateSlotsFromSzp"]);
+Route::post("/szp/getSlotsFromSzp",[SlotsSzpController::class, "getSlotsFromSzp"]);
