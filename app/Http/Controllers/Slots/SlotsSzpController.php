@@ -15,6 +15,8 @@ class SlotsSzpController extends Controller
         $hour       = $request->input("hour");
         $kol        = $request->input("kol");
         $id_admin   = $request->input("id_admin");
+        $id_city    = $request->input("id_city");
+        $kef        = $request->input("kef");
         $result['success'] = false;
 
         if (!$key || $key != env("ALLFOOD_KEY")) exit("Error key");
@@ -29,6 +31,8 @@ class SlotsSzpController extends Controller
                 'status'    => 1,
                 'kol'       => $kol,
                 'id_admin'  => $id_admin,
+                'id_city'   => $id_city,
+                'kef'       => $kef,
                 'updated_at' => Carbon::now(),
             ]);
 
