@@ -57,7 +57,7 @@ class SlotsSzpController extends Controller
         $to   = $request->input("to");
         $id_city   = $request->input("id_city");
         $result['success'] = false;
-
+        if (!$key || $key != env("ALLFOOD_KEY")) exit("Error key");
         do{
 
             $slots = DB::table('slots')
@@ -66,8 +66,19 @@ class SlotsSzpController extends Controller
                 ->where('id_city', $id_city)
                 ->get();
 
-            $result['slots_ids'] = $slots->pluck('id');
-//            $slots_user =
+            $slots_user = DB::table('slots_users')
+                ->selectRaw('id_slot, COUNT(*) as kol')
+                ->whereIn('id_slot', $slots->pluck('id'))
+                ->groupBy('id_slot')
+                ->pluck('kol', 'id_slot');
+
+            foreach ($slots as $key => $s){
+                if ($slots_user[$s->id]){
+                    $slots[$key]->kol = $slots_user[$s->id];
+                }else{
+                    $slots[$key]->kol = 0;
+                }
+            }
 
             if (!$slots) break;
 
