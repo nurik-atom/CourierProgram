@@ -73,7 +73,7 @@ class SlotsSzpController extends Controller
                 ->pluck('kol', 'id_slot');
 
             foreach ($slots as $key => $s){
-                if ($slots_user[$s->id]){
+                if (!empty($slots_user[$s->id])){
                     $slots[$key]->kol = $slots_user[$s->id];
                 }else{
                     $slots[$key]->kol = 0;
