@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('slots', function (Blueprint $table) {
             $table->integer('id_city')->nullable()->after('id');
-            $table->integer('kef')->default(1)->after('kol');
+            $table->float('kef')->default(1)->after('kol');
         });
     }
 
