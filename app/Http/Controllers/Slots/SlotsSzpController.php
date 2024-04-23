@@ -74,9 +74,9 @@ class SlotsSzpController extends Controller
 
             foreach ($slots as $key => $s){
                 if (!empty($slots_user[$s->id])){
-                    $slots[$key]->kol = $slots_user[$s->id];
+                    $slots[$key]->kol_users = $slots_user[$s->id];
                 }else{
-                    $slots[$key]->kol = 0;
+                    $slots[$key]->kol_users = 0;
                 }
             }
 
