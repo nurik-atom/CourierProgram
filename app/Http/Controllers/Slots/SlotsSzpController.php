@@ -55,6 +55,7 @@ class SlotsSzpController extends Controller
         $key  = $request->input("key");
         $from = $request->input("from");
         $to   = $request->input("to");
+        $id_city   = $request->input("id_city");
         $result['success'] = false;
 
         do{
@@ -62,7 +63,11 @@ class SlotsSzpController extends Controller
             $slots = DB::table('slots')
                 ->where('date_day', '>=', $from)
                 ->where('date_day', '<=', $to)
+                ->where('id_city', $id_city)
                 ->get();
+
+            $result['slots_ids'] = $slots->pluck('id');
+//            $slots_user =
 
             if (!$slots) break;
 

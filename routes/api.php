@@ -5,6 +5,7 @@ use App\Http\Controllers\CashOnHandController;
 use App\Http\Controllers\HelpController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\Slots\SlotsAppController;
 use App\Http\Controllers\Slots\SlotsSzpController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\SearchController;
@@ -114,6 +115,12 @@ Route::get("/insertTestGeoPositon",[SearchController::class, 'insertTestGeoPosit
 
 Route::post("/addComment",[RatingController::class, "addComment"]);
 Route::post("/getRatingUser",[RatingController::class, "getRatingUser"]);
+
+//!SLOTS
+Route::post("/slots/subsToSlotFromApp",[SlotsAppController::class, "subsToSlotFromApp"]);
+Route::post("/slots/unSubsFromSlotFromApp",[SlotsAppController::class, "unSubsFromSlotFromApp"]);
+
+
 
 Route::post("/szp/getAllDrivers",[SzpController::class, "getAllDrivers"]);
 Route::post("/szp/getOneDriverDetails",[SzpController::class, "getOneDriverDetails"]);
