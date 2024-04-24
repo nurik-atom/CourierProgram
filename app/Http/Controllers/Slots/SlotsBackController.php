@@ -7,5 +7,7 @@ use Illuminate\Http\Request;
 
 class SlotsBackController extends Controller
 {
-    //
+    public function canSubsToSlot($id_slot){
+
+    }
 }

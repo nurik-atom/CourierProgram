@@ -16,6 +16,7 @@ class SlotsSzpController extends Controller
         $kol        = $request->input("kol");
         $id_admin   = $request->input("id_admin");
         $id_city    = $request->input("id_city");
+        $status     = $request->input("status");
         $kef        = $request->input("kef");
         $result['success'] = false;
 
@@ -25,10 +26,10 @@ class SlotsSzpController extends Controller
 
             $updateOrInsert = DB::table('slots')->updateOrInsert(
                 [   'date_day'  => $date_day,
-                    'hour'      => $hour
+                    'hour'      => $hour,
                 ],
                 [
-                'status'    => 1,
+                'status'    => $status,
                 'kol'       => $kol,
                 'id_admin'  => $id_admin,
                 'id_city'   => $id_city,
