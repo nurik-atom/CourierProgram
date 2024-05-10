@@ -117,6 +117,7 @@ Route::post("/addComment",[RatingController::class, "addComment"]);
 Route::post("/getRatingUser",[RatingController::class, "getRatingUser"]);
 
 //!SLOTS
+Route::post("/slots/getAllSlotsFromApp",[SlotsAppController::class, "getAllSlotsFromApp"]);
 Route::post("/slots/subsToSlotFromApp",[SlotsAppController::class, "subsToSlotFromApp"]);
 Route::post("/slots/unSubsFromSlotFromApp",[SlotsAppController::class, "unSubsFromSlotFromApp"]);
 
