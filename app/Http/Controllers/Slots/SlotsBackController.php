@@ -96,7 +96,7 @@ class SlotsBackController extends Controller
                 if (empty($user_slots[$key1])){
                     //!Юзер не подписан 0, 1 или 2
 
-                    $slots_statuss[$ss->id] = ($time_proverka < time() ? 0 : $sql_slots->status);
+                    $slots_statuss[$ss->id] = ($time_proverka < time() ? 0 : $ss->status);
 
                     if ($slots_statuss[$ss->id] == 1 && $ss->kol <= $ss->sub_users_kol) {
                         $slots_statuss[$ss->id] = 2;
