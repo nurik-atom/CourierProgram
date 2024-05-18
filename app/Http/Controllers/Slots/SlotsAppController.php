@@ -42,7 +42,7 @@ class SlotsAppController extends Controller
 
                 $all_slots[$key]['name_day'] = $current_day->isoFormat('dddd');
                 $all_slots[$key]['date_day'] = $current_day->isoFormat('DD.MM');
-                $all_slots[$key]['status'] = 1;
+                $all_slots[$key]['status'] = $i<3 ? 1: 0;
                 $key2 = 0;
                 $ds = array();
                 for ($j = 0; $j < 24; $j++){
