@@ -108,9 +108,11 @@ class SlotsAppController extends Controller
             }
             $updateOrInsert = DB::table('slots_users')->updateOrInsert(
                 [   'id_slot'  => $id_slot,
-                    'id_user'  => $user->id,
+                    'id_user'  => $user->id
+                ],[
                     'status'   => 2
-                ]);
+                ]
+            );
 
             if ($updateOrInsert){
                 $result['success'] = true;
