@@ -99,7 +99,7 @@ class SlotsBackController extends Controller
                     $slots_statuss[$ss->id] = ($time_proverka < time() ? 0 : $ss->status);
 
                     if ($slots_statuss[$ss->id] == 1 && $ss->kol <= $ss->sub_users_kol) {
-                        $slots_statuss[$ss->id] = 2;
+                        $slots_statuss[$ss->id] = 0;
                     }
                 }else{
                     $slots_statuss[$ss->id] = $user_slots[$key1]->status;
