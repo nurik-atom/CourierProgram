@@ -136,6 +136,18 @@ class SlotsAppController extends Controller
                 break;
             }
 
+            $slot = DB::table('slots')->where('id', $id_slot)->first();
+
+            if (!$slot){
+                $result['message'] = 'Слот не найден';
+                break;
+            }
+
+            if ($slot->type == 2){
+                $result['message'] = 'От этого слота нельзя отказаться. Обращайтесь оператору.';
+                break;
+            }
+
             $slots_zapis = DB::table('slots_users')
                 ->where('id_slot', $id_slot)
                 ->where('id_user', $user->id)
