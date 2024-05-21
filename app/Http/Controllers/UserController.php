@@ -13,6 +13,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 //use Illuminate\Support\Facades\Hash;
 //use Illuminate\Support\Str;
@@ -235,10 +237,8 @@ class UserController extends Controller
         $id_city = $request->input('id_city');
         $type_transport = $request->input('type_transport');
         $iin = $request->input('iin');
-
         $data['success'] = false;
         do {
-
             if (!$password) {
                 $data['message'] = 'Пользователь не найден';
                 break;
@@ -251,19 +251,21 @@ class UserController extends Controller
             }
 
             if ($request->hasFile('photo')) {
-                $image = $request->photo->store('images', "public");
+                $mimeType =  $request->file('photo')->getMimeType();
+                $extension = explode('/', $mimeType)[1];
+                $filename = Str::random(16).".".$extension;
+                $request->photo->storeAs('images', $filename,'public');
             } else {
                 $data['message'] = 'Ошибка загрузки Фото';
                 break;
             }
-
             $user_data_update = DB::table("users")
                 ->where([["password", '=', $password], ['phone', '=', $phone]])
-                ->update(['name' => $name, 'surname' => $surname, 'id_city' => $id_city, 'birthday' => $birthday, 'type' => $type_transport, 'status' => '2', 'photo' => $image, 'iin' =>$iin]);
+                ->update(['name' => $name, 'surname' => $surname, 'id_city' => $id_city, 'birthday' => $birthday, 'type' => $type_transport, 'status' => '2', 'photo' => $filename, 'iin' =>$iin]);
 
             if ($user_data_update) {
                 $data['success'] = true;
-                $data['image'] = 'https://courier.qala.kz/storage/app/' . $image;
+                $data['image'] = 'https://courier.qala.kz/storage/images/' . $filename;
             }
 
         } while (false);
@@ -727,6 +729,86 @@ class UserController extends Controller
         return response()->json($result);
     }
 
+    public function getBalanceHistoryUser(Request $request){
+
+        $password = $request->input("password");
+        $result['success'] = false;
+        do {
+            $user = self::getUser($password);
+            if(!$user){
+                $request['message'] = "Пользователь не найден";
+                break;
+            }
+            //WEEK
+            $weekStartDate = Carbon::now()->startOfMonth()->format('Y-m-d H:i:s');
+            $this_week = DB::table("balance_history")
+                ->where("id_user", $user->id)
+                ->where("id_order", "!=", 0)
+                ->where("created_at", ">=", $weekStartDate)
+                ->sum("amount");
+
+            if (!$this_week)
+                $result['this_week'] = 0;
+            else
+                $result['this_week'] = $this_week;
+
+            //TODAY
+            $startToday = date("Y-m-d")." 00:00:00";
+            $today =  DB::table("balance_history")
+                ->where("id_user", $user->id)
+                ->where("id_order", "!=", 0)
+                ->where("created_at", ">=", $startToday)
+                ->sum("amount");
+
+            if (!$today)
+                $result['today'] = 0;
+            else
+                $result['today'] = $today;
+
+            //BALANCE
+            $balance = DB::table("balance")->where("id_user", $user->id)
+                ->pluck("amount")->first();
+
+            if (!$balance)
+                $result['balance'] = 0;
+            else
+                $result['balance'] = $balance;
+
+            $result['help_balance_pages'] = array();
+
+//            $help_balance_pages = DB::table("help_balance_pages")
+//                ->select("id", "name", "icon", "type")
+//                ->orderBy("sort")
+//                ->get();
+
+//            if ($help_balance_pages) {
+//                $result['help_balance_pages'] = $help_balance_pages;
+//            }
+
+            $result['orders'] = array();
+
+            $history = DB::table('balance_history', 'h')
+                ->leftJoin('orders as o', 'h.id_order', '=', 'o.id')
+                ->select('h.amount', 'h.description', 'h.id_order', 'h.created_at', 'o.cafe_name', 'o.status', 'h.id_user', 'o.sposob_oplaty','o.summ_order')
+                ->where("h.id_user", $user->id)
+                ->orderByDesc("h.id")
+                ->limit(20)->get();
+
+            $result['orders'] = BalanceHistoryMiniOrderResource::collection($history);
+
+//            $orders = DB::table("orders")
+//                ->select("id","id_courier", "sposob_oplaty", "summ_order", "cafe_name", "created_at","price_delivery", "status")
+//                ->where("id_courier", $user->id)
+//                ->orderByDesc("id")
+//                ->limit(20)->get();
+//            $result['orders'] = OrderMiniResource::collection($orders);
+
+            $result['date'] = Carbon::now()->startOfMonth()->diffForHumans();
+            $result['success'] = true;
+        } while (false);
+        return response()->json($result);
+    }
+
     public function getDateRangeOrders(Request $request){
         $password = $request->input("password");
         $from = $request->input("from");
@@ -769,7 +851,6 @@ class UserController extends Controller
 
         return response()->json($result);
     }
-
 
     public function getDateRangeStatistica(Request $request){
         $password = $request->input("password");
