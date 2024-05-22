@@ -36,7 +36,7 @@ class AllfoodController extends Controller
         $sposob_oplaty = $request->input('sposob_oplaty');
         $type = $request->input('type');
         $distance = SearchController::getDistance($from_geo, $to_geo);
-        $arrive_minute = $request->input("arrive_minute");
+        $arrive_minute = (int) $request->input("arrive_minute");
         $kef = $request->input("kef");
         $status = 1;
         $id_courier = 0;
@@ -82,7 +82,7 @@ class AllfoodController extends Controller
                 'distance' => $distance,
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
-                'arrive_time' => Carbon::now()->addMinute($arrive_minute)
+                'arrive_time' => Carbon::now()->addMinutes($arrive_minute)
             ]);
 
             $result['success'] = true;

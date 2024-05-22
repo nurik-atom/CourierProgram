@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\DB;
 class SlotsAppController extends Controller
 {
 
-    function getAllSlotsFromApp(Request $request){
+    public function getAllSlotsFromApp(Request $request){
         $result['success'] = false;
         do{
             $user = UserController::getUser($request->input('password'));
