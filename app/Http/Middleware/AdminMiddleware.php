@@ -15,7 +15,7 @@ class AdminMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!Auth::guard('admin')->check() || is_null(session('adminData'))) {
+        if (!\Auth::guard('admin')->check() || is_null(session('adminData'))) {
             return redirect()->route('admin.login')->withErrors('Not authorized');
         }
 
