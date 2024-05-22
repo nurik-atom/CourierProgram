@@ -19,8 +19,8 @@ class AdminAuthController extends Controller
             'password' => 'required',
         ]);
 
-        if(auth()->guard('admin')->attempt(['email' => $request->input('email'),  'password' => $request->input('password')])){
-            $user = auth()->guard('admin')->user();
+        if(auth()->guard('admins')->attempt(['email' => $request->input('email'),  'password' => $request->input('password')])){
+            $user = auth()->guard('admins')->user();
             if($user->is_admin == 1){
                 return redirect()->route('adminDashboard')->with('success','You are Logged in sucessfully.');
             }
@@ -31,7 +31,7 @@ class AdminAuthController extends Controller
 
     public function adminLogout(Request $request)
     {
-        auth()->guard('admin')->logout();
+        auth()->guard('admins')->logout();
         Session::flush();
         Session::put('success', 'You are logout sucessfully');
         return redirect(route('adminLogin'));
