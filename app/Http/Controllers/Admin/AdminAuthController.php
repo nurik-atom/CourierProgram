@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Session;
 class AdminAuthController extends Controller
 {
     public function getLogin(){
-        return view('admin.auth.login');
+        return view('admid_login');
     }
 
     public function postLogin(Request $request)
