@@ -15,10 +15,19 @@ class AdminMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!\Auth::guard('admin')->check() || is_null(session('adminData'))) {
-            return redirect()->route('admin.login')->withErrors('Not authorized');
+        if (\Auth::guard('admin')->user()) {
+            return $next($request);
+        }
+        if ($request->ajax() || $request->wantsJson()) {
+            return response('Unauthorized.', 401);
+        } else {
+            return redirect(route('adminLogin'));
         }
 
-        return $next($request);
+//        if (!\Auth::guard('admin')->check() || is_null(session('adminData'))) {
+//            return redirect()->route('admin.login')->withErrors('Not authorized');
+//        }
+
+//        return $next($request);
     }
 }
