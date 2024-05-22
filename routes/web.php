@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/',[UserController::class,'test']);
 Route::get('/test',[UserController::class,'test']);
 
-Route::group(['prefix' => 'admin', 'namespace' => 'Admin'], function () {
+Route::group(['prefix' => 'adminLogin', 'namespace' => 'Admin'], function () {
     Route::get('/login', [AdminAuthController::class, 'getLogin'])->name('adminLogin');
     Route::post('/login', [AdminAuthController::class, 'postLogin'])->name('adminLoginPost');
 
