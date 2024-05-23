@@ -17,7 +17,7 @@ class AdminMiddleware
      */
     public function handle(Request $request, Closure $next)
     {
-        if (auth()->guard('admins')->user()) {
+        if (Auth::guard('admins')->user()) {
             return $next($request);
         }
         if ($request->ajax() || $request->wantsJson()) {
