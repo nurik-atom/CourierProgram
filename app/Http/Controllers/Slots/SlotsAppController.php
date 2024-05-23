@@ -65,7 +65,7 @@ class SlotsAppController extends Controller
                         $ds[$key2]['status'] = $slotsStatuss[$ds[$key2]['id_slot']];
                     }
 
-                    if ($ds[$key2]['status'] == 1 && $all_slots[$key]['status'] == 0){
+                    if ($ds[$key2]['status'] != 0 && $all_slots[$key]['status'] == 0){
                         $all_slots[$key]['status'] = 1;
                     }
 
