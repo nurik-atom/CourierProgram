@@ -35,8 +35,7 @@ class Kernel extends ConsoleKernel
         $schedule->call("\App\Http\Controllers\UserController::addBonusZaProstoi")->dailyAt('00:01');
         $schedule->call("\App\Http\Controllers\UserController::addBonusBenzin")->dailyAt('00:02');
 //        $schedule->call("\App\Http\Controllers\UserController::raschetDriverIn0400Hour")->dailyAt('04:00');
-
-        $this->command('telescope:prune --hours=48')->daily();
+        $schedule->command('telescope:prune --hours=48')->daily();
 
 
 
