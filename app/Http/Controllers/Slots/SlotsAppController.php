@@ -161,6 +161,13 @@ class SlotsAppController extends Controller
                 break;
             }
 
+            $startTimeSlot = strtotime($slot->date_day.' '.$slot->hour.':00:00');
+
+            if ((time()+7200) > $startTimeSlot){
+                $result['message'] = 'До начала слота осталось менее 2 часа';
+                break;
+            }
+
             $update = DB::table('slots_users')
                 ->where('id', $slots_zapis->id)
                 ->update(['status'   => 4, 'prichina_otmena'=> $prichina]);

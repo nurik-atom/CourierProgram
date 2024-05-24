@@ -46,6 +46,7 @@ class SlotsBackController extends Controller
         $slots_sql_count = DB::table('slots_users')
                             ->selectRaw('COUNT(*) as kol, id_slot')
                             ->whereIn('id_slot', $slots_sql->pluck('id'))
+                            ->where('status', 2)
                             ->groupBy('id_slot')
                             ->pluck('kol', 'id_slot');
 
@@ -101,7 +102,16 @@ class SlotsBackController extends Controller
                         $slots_statuss[$ss->id] = 0;
                     }
                 }else{
-                    $slots_statuss[$ss->id] = $user_slots[$key1]->status;
+                    //* Если клиент отказался и слот был заполнен тогда слот стаус 0 т.е. недоступен
+                    if ($user_slots[$key1]->status == 4) {
+                        $slots_statuss[$ss->id] = ($time_proverka < time() ? 0 : $ss->status);
+
+                        if ($slots_statuss[$ss->id] == 1 && $ss->kol <= $ss->sub_users_kol) {
+                            $slots_statuss[$ss->id] = 0;
+                        }
+                    }else{
+                        $slots_statuss[$ss->id] = $user_slots[$key1]->status;
+                    }
                 }
             }
         }
