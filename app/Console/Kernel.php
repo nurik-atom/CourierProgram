@@ -34,6 +34,8 @@ class Kernel extends ConsoleKernel
         $schedule->call("\App\Http\Controllers\UserController::updateStateIn0000Hour")->dailyAt('23:59');
         $schedule->call("\App\Http\Controllers\UserController::addBonusZaProstoi")->dailyAt('00:01');
         $schedule->call("\App\Http\Controllers\UserController::addBonusBenzin")->dailyAt('00:02');
+        $schedule->call("\App\Http\Controllers\Slots\SlotsBackController::sendNotifAboutSlotStartToDriver")->hourlyAt(45);
+
 //        $schedule->call("\App\Http\Controllers\UserController::raschetDriverIn0400Hour")->dailyAt('04:00');
         $schedule->command('telescope:prune --hours=48')->daily();
 

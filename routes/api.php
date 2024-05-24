@@ -125,6 +125,9 @@ Route::post("/slots/getAllSlotsFromApp",[SlotsAppController::class, "getAllSlots
 Route::post("/slots/subsToSlotFromApp",[SlotsAppController::class, "subsToSlotFromApp"]);
 Route::post("/slots/unSubsFromSlotFromApp",[SlotsAppController::class, "unSubsFromSlotFromApp"]);
 
+//! Potom alyp tastau kerek
+Route::post("/slots/sendNotifAboutSlotStartToDriver",[\App\Http\Controllers\Slots\SlotsBackController::class, "sendNotifAboutSlotStartToDriver"]);
+
 
 
 Route::post("/szp/getAllDrivers",[SzpController::class, "getAllDrivers"]);

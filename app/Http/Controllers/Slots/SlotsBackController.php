@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Slots;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\PushController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -108,5 +109,51 @@ class SlotsBackController extends Controller
         return $slots_statuss;
     }
 
+    public static function sendNotifAboutSlotStartToDriver()
+    {
+        $result = array();
+
+        $one_hour_plus_date = date('Y-m-d&&H', time()+3600);
+
+        $prev_slot = DB::table('slots')
+            ->select('id')
+            ->where('date_day', date('Y-m-d'))
+            ->where('hour', date('H'))
+            ->first();
+
+        $slot = DB::table('slots')
+            ->select('id')
+            ->where('date_day', explode('&&',$one_hour_plus_date)[0])
+            ->where('hour', explode('&&',$one_hour_plus_date)[1])
+            ->first();
+        if (!$slot) return 'slot Not Found';
+
+        $users_ids_for_push = DB::table('slots_users')->where('id_slot', $slot->id)->pluck('id_user');
+        $prev_slot_users = array();
+
+        if ($prev_slot){
+            $prev_slot_users = DB::table('slots_users')->where('id_slot', $prev_slot->id)->pluck('id_user');
+            $users_ids_for_push = array_diff($users_ids_for_push->toArray(), $prev_slot_users->toArray());
+        }
+
+        if ($users_ids_for_push){
+            $user_tokens = DB::table('users')->select('id', 'token')
+                ->whereIn('id', $users_ids_for_push)->pluck('token', 'id');
+
+            foreach ($users_ids_for_push as $user_id){
+                PushController::sendDataPush($user_tokens[$user_id],
+                        array('type' => 'start_slot'),
+                        array('title'=> 'Время зарабатывать! 💵', 'body'=>'Ваша смена начнется через 15 минут 🕒'));
+            }
+        }
+
+        $result['$one_hour_plus_date'] = $one_hour_plus_date;
+        $result['$prev_slot'] = $prev_slot;
+        $result['$users_ids_for_push'] = $users_ids_for_push;
+        $result['$prev_slot_users'] = $prev_slot_users;
+        $result['$user_tokens'] = $user_tokens ?? 0;
+
+        return response()->json($result);
+    }
 
 }
