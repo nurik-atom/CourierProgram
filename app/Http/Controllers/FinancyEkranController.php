@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -28,15 +29,22 @@ class FinancyEkranController extends Controller
             $result['nalichnie'] = $user->cash_on_hand;
             $result['ojidanie'] = $balance ?? 0;
 
-            $vyplaty = DB::table("vyplaty")->select('id', 'period', 'summa', 'nalogi')
+            $vyplaty = DB::table("vyplaty")->select('id', 'date_from', 'date_to', 'summa', 'nalogi')
                 ->where("id_user", $user->id)->limit(5)->orderByDesc('id')->get();
+
+            if (count($vyplaty) > 0) {
+                foreach ($vyplaty as $v) {
+                    $v->period = Carbon::createFromFormat('Y-m-d', $v->date_from)->format('d.m');
+                    $v->period .= ' - '.Carbon::createFromFormat('Y-m-d', $v->date_to)->format('d.m.Y');
+                    $result['vyplaty'][] = $v;
+                }
+            }
 
 //            $result['vyplaty'] = array(
 //              array("id"=>3, "period"=>'01.05 - 15.05.2024', "summa"=>230000),
 //              array("id"=>2, "period"=>'16.04 - 30.04.2024', "summa"=>57450),
 //              array("id"=>1, "period"=>'01.04 - 15.04.2024', "summa"=>198000)
 //            );
-            $result['vyplaty'] = $vyplaty ?? array();
             $result['success'] = true;
         }while(false);
 
