@@ -28,6 +28,8 @@ class FinancyEkranController extends Controller
             $result['nalichnie'] = $user->cash_on_hand;
             $result['ojidanie'] = $balance ?? 0;
 
+            $vyplaty = DB::table("vyplaty")->where("id_user", $user->id);
+
             $result['vyplaty'] = array(
               array("id"=>3, "period"=>'01.05 - 15.05.2024', "summa"=>230000),
               array("id"=>2, "period"=>'16.04 - 30.04.2024', "summa"=>57450),
