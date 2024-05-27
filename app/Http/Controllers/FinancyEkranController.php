@@ -89,6 +89,7 @@ class FinancyEkranController extends Controller
                 ->where("amount",'>', 0)
                 ->where("balance_history.created_at", '>=', $vyplata->date_from)
                 ->where("balance_history.created_at", '<=', $vyplata->date_to)
+                ->where('id_user', $user->id)
                 ->orderByDesc('id')
                 ->orderBy('type')
                 ->get();
