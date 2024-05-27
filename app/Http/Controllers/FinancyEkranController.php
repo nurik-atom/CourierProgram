@@ -50,4 +50,97 @@ class FinancyEkranController extends Controller
 
         return response()->json($result);
     }
+
+    public function getVyplatyDataById(Request $request)
+    {
+        $password   = $request->input("password");
+        $id_vyplaty = $request->input("id_vyplaty");
+        $result['success'] = false;
+
+        do{
+            $user = UserController::getUser($password);
+            if (!$user) {
+                $result['message'] = 'Пользователь не найден';
+                break;
+            }
+
+            $vyplata = DB::table("vyplaty")->where("id", $id_vyplaty)->first();
+
+            if (!$vyplata){
+                $result['message'] = 'Выплата не найдено';
+                break;
+            }
+
+//            $result['vyplata'] = $vyplata;
+
+            $result['vyplata']['kol_orders'] = $vyplata->kol_orders;
+            $result['vyplata']['summa'] = $vyplata->summa;
+            $result['vyplata']['nalogi'] = $vyplata->nalogi;
+            $result['vyplata']['itogo_nachisleno'] = $vyplata->summa - $vyplata->nalogi;
+
+            $result['vyplata']['period'] = Carbon::createFromFormat('Y-m-d', $vyplata->date_from)->format('d.m');
+            $result['vyplata']['period'] .= ' - '.Carbon::createFromFormat('Y-m-d', $vyplata->date_to)->format('d.m.Y');
+
+
+
+            $balance = DB::table("balance_history")
+                ->leftJoin('orders', 'balance_history.id_order', '=', 'orders.id')
+                ->selectRaw('balance_history.*, orders.cafe_name')
+                ->where("amount",'>', 0)
+                ->where("balance_history.created_at", '>=', $vyplata->date_from)
+                ->where("balance_history.created_at", '<=', $vyplata->date_to)
+                ->orderByDesc('id')
+                ->orderBy('type')
+                ->get();
+
+            if ($balance){
+                $result['svodka_zakazov'] = self::groupBalanceByIdOrder($balance);
+            }else{
+                $result['svodka_zakazov'] = array();
+            }
+            $result['success'] = true;
+        }while(false);
+
+        return response()->json($result);
+    }
+
+    public static function groupBalanceByIdOrder($data = null)
+    {
+        $types = array(
+          1 => 'Базовая оплата',
+          2 => 'Бонус до кафе',
+          3 => 'Доплата за слот',
+          4 => 'Оператор корректировка',
+          5 => 'Кэф слота',
+          6 => 'Кэф от ALLFOOD',
+        );
+
+        $result = array();
+
+        $i = -1;
+        $current_id_order = 0;
+
+        foreach ($data as $d){
+            if($current_id_order != $d->id_order || $d->id_order == 0)
+            {
+                $i++; $j = 0;
+                $current_id_order = $d->id_order;
+                $result[$i]['itogo'] = 0;
+            }
+
+            $result[$i]['id_order'] = $d->id_order;
+            $result[$i]['cafe_name'] = $d->cafe_name ?? $types[$d->type];
+            $result[$i]['date']     = Carbon::createFromFormat('Y-m-d H:i:s', $d->created_at)
+                                            ->locale("ru_RU")->isoFormat('LL');
+            $result[$i]['tran'][$j]['title'] = $types[$d->type];
+            $result[$i]['tran'][$j]['amount'] = $d->amount;
+
+            $result[$i]['itogo'] +=$d->amount;
+
+            $j++;
+        }
+
+//        return response()->json($result);
+        return $result;
+    }
 }
