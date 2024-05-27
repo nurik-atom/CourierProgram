@@ -129,6 +129,10 @@ Route::post("/slots/unSubsFromSlotFromApp",[SlotsAppController::class, "unSubsFr
 Route::post("/slots/sendNotifAboutSlotStartToDriver",[\App\Http\Controllers\Slots\SlotsBackController::class, "sendNotifAboutSlotStartToDriver"]);
 
 
+//!
+Route::post("/financy/getFinancyFirstEkranData",[\App\Http\Controllers\FinancyEkranController::class, "getFinancyFirstEkranData"]);
+
+
 
 Route::post("/szp/getAllDrivers",[SzpController::class, "getAllDrivers"]);
 Route::post("/szp/getOneDriverDetails",[SzpController::class, "getOneDriverDetails"]);
