@@ -138,6 +138,8 @@ Route::post("/financy/getAllVyplaty",[\App\Http\Controllers\FinancyEkranControll
 /**Tol'ko dlya Nurika */
 Route::post("/financy/groupBalanceByIdOrder",[\App\Http\Controllers\FinancyEkranController::class, "groupBalanceByIdOrder"]);
 
+/** Statistika User Controller*/
+Route::post("/statistika/getStatistikaEkranFirstReq",[\App\Http\Controllers\StatistikaUserController::class, "getStatistikaEkranFirstReq"]);
 
 
 
