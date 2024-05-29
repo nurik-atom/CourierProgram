@@ -112,4 +112,20 @@ class MoneyController extends Controller
             ]);
         }
     }
+
+    public static function calculateCashOnHand($id_user)
+    {
+        $cash_on_hand = DB::table("cash_driver_history")->where("id_driver", $id_user)->sum("summa");
+        if ($cash_on_hand){
+            DB::table("users")->where("id",$id_user)
+                ->update([
+                    "cash_on_hand"=>$cash_on_hand,
+                    "updated_at"=>Carbon::now()
+                ]);
+        }else{
+            $cash_on_hand = 0;
+        }
+
+        return $cash_on_hand;
+    }
 }

@@ -144,4 +144,45 @@ class FinancyEkranController extends Controller
 //        return response()->json($result);
         return $result;
     }
+
+    public function getCashDetailsEkran(Request $request)
+    {
+        $password   = $request->input("password");
+        $result['success'] = false;
+
+        do {
+            $user = UserController::getUser($password);
+            if (!$user) {
+                $result['message'] = 'Пользователь не найден';
+                break;
+            }
+            $cash_on_hand = MoneyController::calculateCashOnHand($user->id);
+
+            $last_cash_vozvrat_id_zapis = DB::table("cash_driver_history")->select('id')
+                ->where("id_driver", $user->id)
+                ->where('summa', '<', 0)
+                ->orderByDesc('id')
+                ->pluck('id')
+                ->first();
+
+
+            $svodka = DB::table("cash_driver_history")
+                ->leftJoin('orders', 'cash_driver_history.id_order', '=', 'orders.id')
+                ->selectRaw('cash_driver_history.*, orders.cafe_name')
+                ->where('cash_driver_history.id_driver', $user->id)
+                ->where('cash_driver_history.id', '>', $last_cash_vozvrat_id_zapis)
+                ->orderByDesc('cash_driver_history.id')
+                ->get();
+
+
+            $result['svodka'] = $svodka ?? array();
+            $result['cash_on_hand'] = $cash_on_hand;
+
+//            $result['$last_cash_vozvrat'] = $last_cash_vozvrat_id_zapis;
+            $result['success'] = true;
+
+        } while (false);
+
+        return response()->json($result);
+    }
 }

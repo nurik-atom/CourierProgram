@@ -132,6 +132,7 @@ Route::post("/slots/sendNotifAboutSlotStartToDriver",[\App\Http\Controllers\Slot
 //!
 Route::post("/financy/getFinancyFirstEkranData",[\App\Http\Controllers\FinancyEkranController::class, "getFinancyFirstEkranData"]);
 Route::post("/financy/getVyplatyDataById",[\App\Http\Controllers\FinancyEkranController::class, "getVyplatyDataById"]);
+Route::post("/financy/getCashDetailsEkran",[\App\Http\Controllers\FinancyEkranController::class, "getCashDetailsEkran"]);
 
 /**Tol'ko dlya Nurika */
 Route::post("/financy/groupBalanceByIdOrder",[\App\Http\Controllers\FinancyEkranController::class, "groupBalanceByIdOrder"]);
