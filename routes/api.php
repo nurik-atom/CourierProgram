@@ -140,6 +140,7 @@ Route::post("/financy/groupBalanceByIdOrder",[\App\Http\Controllers\FinancyEkran
 
 /** Statistika User Controller*/
 Route::post("/statistika/getStatistikaEkranFirstReq",[\App\Http\Controllers\StatistikaUserController::class, "getStatistikaEkranFirstReq"]);
+Route::post("/statistika/getStatistikaFromTo",[\App\Http\Controllers\StatistikaUserController::class, "getStatistikaFromTo"]);
 
 
 

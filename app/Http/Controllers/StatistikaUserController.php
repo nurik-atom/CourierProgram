@@ -49,6 +49,29 @@ class StatistikaUserController extends Controller
             );
 
             $result['data'] = self::getStatistikaData($user->id, Carbon::now()->format("Y-m-d"), Carbon::now()->format("Y-m-d"));
+            $result['success'] = true;
+        }while(false);
+
+        return response()->json($result);
+
+    }
+
+    public function getStatistikaFromTo(Request $request){
+        $password  = $request->input("password");
+        $date_from = $request->input("date_from");
+        $date_to   = $request->input("date_to");
+        $result['success'] = false;
+
+        do {
+            $user = UserController::getUser($password);
+            if (!$user) {
+                $result['message'] = 'Пользователь не найден';
+                break;
+            }
+
+            $result['data'] = self::getStatistikaData($user->id, $date_from, $date_to);
+
+            $result['success'] = true;
         }while(false);
 
         return response()->json($result);
@@ -65,7 +88,7 @@ class StatistikaUserController extends Controller
             ->first();
 
         $result['kol_orders'] = $orders->count;
-        $result['distance']   = (int) $orders->distance;
+        $result['distance']   = round($orders->distance/1000,1).' км';
 
         $result['kol_otmena'] = DB::table('order_user')
             ->where('status', 9)
