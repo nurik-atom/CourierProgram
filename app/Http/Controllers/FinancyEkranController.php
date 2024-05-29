@@ -209,7 +209,7 @@ class FinancyEkranController extends Controller
                 $result['message'] = 'Пользователь не найден';
                 break;
             }
-            $take = 3;
+            $take = 7;
             $skip = $count_req * $take;
             $vyplaty = DB::table("vyplaty")
                 ->select('id', 'date_from', 'date_to', 'summa')
