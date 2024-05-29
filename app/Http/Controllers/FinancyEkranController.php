@@ -26,7 +26,9 @@ class FinancyEkranController extends Controller
             $balance = DB::table("balance")->where("id_user", $user->id)
                 ->pluck("amount")->first();
 
-            $result['nalichnie'] = $user->cash_on_hand;
+            $cash_on_hand = MoneyController::calculateCashOnHand($user->id);
+
+            $result['nalichnie'] = $cash_on_hand;
             $result['ojidanie'] = $balance ?? 0;
 
             $vyplaty = DB::table("vyplaty")->select('id', 'date_from', 'date_to', 'summa', 'nalogi')
@@ -156,7 +158,7 @@ class FinancyEkranController extends Controller
                 $result['message'] = 'Пользователь не найден';
                 break;
             }
-            $cash_on_hand = MoneyController::calculateCashOnHand($user->id);
+            $cash_on_hand = $user->cash_on_hand;
 
             $last_cash_vozvrat_id_zapis = DB::table("cash_driver_history")->select('id')
                 ->where("id_driver", $user->id)
@@ -188,10 +190,44 @@ class FinancyEkranController extends Controller
 
             $result['cash_on_hand'] = $cash_on_hand;
 
-//            $result['$last_cash_vozvrat'] = $last_cash_vozvrat_id_zapis;
             $result['success'] = true;
 
         } while (false);
+
+        return response()->json($result);
+    }
+
+    public function getAllVyplaty(Request $request){
+        $password = $request->input("password");
+        $count_req = $request->input("count_req");
+        $result['success'] = false;
+        $result['vyplaty'] = array();
+
+        do{
+            $user = UserController::getUser($password);
+            if (!$user) {
+                $result['message'] = 'Пользователь не найден';
+                break;
+            }
+            $take = 3;
+            $skip = $count_req * $take;
+            $vyplaty = DB::table("vyplaty")
+                ->select('id', 'date_from', 'date_to', 'summa')
+                ->where("id_user", $user->id)
+                ->orderByDesc('id')
+                ->skip($skip)->take($take)
+                ->get();
+
+            if (count($vyplaty) > 0) {
+                foreach ($vyplaty as $v) {
+                    $v->period = Carbon::createFromFormat('Y-m-d', $v->date_from)->format('d.m');
+                    $v->period .= ' - '.Carbon::createFromFormat('Y-m-d', $v->date_to)->format('d.m.Y');
+                    $result['vyplaty'][] = $v;
+                }
+            }
+
+            $result['success'] = true;
+        }while(false);
 
         return response()->json($result);
     }
