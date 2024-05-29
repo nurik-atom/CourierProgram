@@ -174,8 +174,17 @@ class FinancyEkranController extends Controller
                 ->orderByDesc('cash_driver_history.id')
                 ->get();
 
+            if ($svodka){
+                foreach ($svodka as $key => $s) {
+                    $result['svodka'][$key]['id'] = $s->id;
+                    $result['svodka'][$key]['date'] =  Carbon::createFromFormat('Y-m-d H:i:s', $s->created_at)->locale("ru_RU")->isoFormat('LL');;
+                    $result['svodka'][$key]['cafe_name'] = $s->cafe_name;
+                    $result['svodka'][$key]['id_order'] = $s->id_order;
+                }
+            }else{
+                $result['svodka'] = array();
+            }
 
-            $result['svodka'] = $svodka ?? array();
             $result['cash_on_hand'] = $cash_on_hand;
 
 //            $result['$last_cash_vozvrat'] = $last_cash_vozvrat_id_zapis;
