@@ -180,6 +180,7 @@ class FinancyEkranController extends Controller
                     $result['svodka'][$key]['date'] =  Carbon::createFromFormat('Y-m-d H:i:s', $s->created_at)->locale("ru_RU")->isoFormat('LL');;
                     $result['svodka'][$key]['cafe_name'] = $s->cafe_name;
                     $result['svodka'][$key]['id_order'] = $s->id_order;
+                    $result['svodka'][$key]['summa'] = $s->summa;
                 }
             }else{
                 $result['svodka'] = array();
