@@ -170,4 +170,45 @@ class NotificationController extends Controller
         } while (false);
         return response()->json($result);
     }
+
+    public function getNotifMessage(Request $request){
+        $password = $request->input("password");
+        $count_req = $request->input("count_req");
+        $result['success'] = false;
+        $take = 10;
+        $skip = $count_req * $take;
+        do {
+            $user = UserController::getUser($password);
+            if (!$user) {
+                $result['message'] = 'Пользователь не найден';
+                break;
+            }
+
+            $notifications = DB::table('notifications')
+                ->select('id', 'name', 'short_text', 'created_at')
+                ->where(function ($query) {
+                    $query->where('id_user', 1)
+                        ->orWhereNull('id_user');
+                })
+                ->where(function ($query) {
+                    $query->where('id_city', 1)
+                        ->orWhereNull('id_city');
+                })
+                ->take($take)->skip($skip)
+                ->orderByDesc("id")
+                ->get();
+
+            if ($notifications) {
+                foreach ($notifications as $n) {
+                    $n->date = Carbon::createFromFormat('Y-m-d H:i:s', $n->created_at)
+                        ->locale("ru_RU")->isoFormat('LLL');
+                    $result['notifs'][] = $n;
+                }
+            }
+
+            $result['success'] = true;
+        }while(false);
+
+        return response()->json($result);
+    }
 }

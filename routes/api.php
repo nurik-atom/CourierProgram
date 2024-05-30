@@ -142,7 +142,8 @@ Route::post("/financy/groupBalanceByIdOrder",[\App\Http\Controllers\FinancyEkran
 Route::post("/statistika/getStatistikaEkranFirstReq",[\App\Http\Controllers\StatistikaUserController::class, "getStatistikaEkranFirstReq"]);
 Route::post("/statistika/getStatistikaFromTo",[\App\Http\Controllers\StatistikaUserController::class, "getStatistikaFromTo"]);
 
-
+/** Notif Message Look Like*/
+Route::post("/notif/getNotifMessage",[\App\Http\Controllers\NotificationController::class, "getNotifMessage"]);
 
 Route::post("/szp/getAllDrivers",[SzpController::class, "getAllDrivers"]);
 Route::post("/szp/getOneDriverDetails",[SzpController::class, "getOneDriverDetails"]);
