@@ -104,54 +104,6 @@ class SearchController extends Controller
         return response()->json($result);
     }
 
-    //! Поиск курьеров к заказу 1 стадия
-    public static function searchCourier($order)
-    {
-        $drivers = array();
-        do {
-            //Поиск пеших курьеров
-            if($order->distance_matrix < self::MAX_FOOT_DRIVER){
-                $c = self::searchCourierSql("1", "1000", $order);
-                if ($c){
-                    $drivers[] = $c;
-                    self::offerToCourier($c, $order);
-                    break;
-                }
-            }
-
-            //Поиск велосипедных курьеров
-            if($order->distance_matrix < self::MAX_VELO_DRIVER) {
-                $c = self::searchCourierSql("2", "2000", $order);
-                if ($c){
-                    $drivers[] = $c;
-                    self::offerToCourier($c, $order);
-                    break;
-                }
-            }
-            //Поиск мопедных курьеров
-            if($order->distance_matrix < self::MAX_MOPED_DRIVER) {
-                $c = self::searchCourierSql("3", "4000", $order);
-                if ($c){
-                    $drivers[] = $c;
-                    self::offerToCourier($c, $order);
-                    break;
-                }
-            }
-            //Поиск авто курьеров
-            if($order->distance_matrix < self::MAX_AUTO_DRIVER) {
-                $c = self::searchCourierSql("4", "10000", $order);
-                if ($c){
-                    $drivers[] = $c;
-                    self::offerToCourier($c, $order);
-                    break;
-                }
-            }
-
-        } while (false);
-
-        return $drivers;
-    }
-
     public static function searchCourierSql($type, $distance, $order){
         $from_lat = explode("\n", $order->from_geo)[0];
         $from_lon = explode("\n", $order->from_geo)[1];
@@ -253,7 +205,7 @@ class SearchController extends Controller
 
             //Поиск велосипедных курьеров
             if($order->distance_matrix < self::MAX_VELO_DRIVER) {
-                $c = self::searchCourierSql("2", "2000", $order);
+                $c = self::searchCourierSql("2", "1500", $order);
                 if ($c){
                     self::offerToCourier($c, $order);
                     break;
