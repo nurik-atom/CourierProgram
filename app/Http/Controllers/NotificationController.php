@@ -197,7 +197,7 @@ class NotificationController extends Controller
                 ->take($take)->skip($skip)
                 ->orderByDesc("id")
                 ->get();
-
+            $result['notifs'] = array();
             if ($notifications) {
                 foreach ($notifications as $n) {
                     $n->date = Carbon::createFromFormat('Y-m-d H:i:s', $n->created_at)

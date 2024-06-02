@@ -21,7 +21,8 @@ class OrderController extends Controller
 //3. назначен курьер
 //4. Курьер в Кафе
 //5. на доставке
-//6 доставлен
+//6. Возле клиента
+//7. Доставлен Успешно
 //8 отмена курьер
 //9 отмена
 
@@ -248,6 +249,58 @@ class OrderController extends Controller
         } while (false);
 
         return response()->json($result);
+    }
+
+    public function poluchilZakaz(Request $request)
+    {
+        $password = $request->input("password");
+        $id_order = $request->input("id_order");
+        $lat = $request->input("lat");
+        $lon = $request->input("lon");
+        $result['success'] = false;
+        do {
+            $checkedDataResult = $this->checkUserAndOrder($password, $id_order, 3);
+
+            if (!$checkedDataResult['success']) {
+                $result['message'] = $checkedDataResult['message'];
+                break;
+            }
+            $user = $checkedDataResult['user'];
+            $order = $checkedDataResult['order'];
+
+            $distance_to_cafe = SearchController::getDistance($order->from_geo, $lat . "\n" . $lon);
+
+            if ($distance_to_cafe > 300) {
+                $result['message'] = 'Вы слишком далеко находитесь от кафе';
+                 break;
+             }
+
+            if (!self::autoStartDelivery($order->id, $user->id)) {
+                self::changeOrderCourierStatus($order->id, $user->id, 4);
+            }
+
+            //Curl to allfood kz
+            $result['allfood'] = PushController::courierInCafe($order, $user);
+            $result['success'] = true;
+        } while (false);
+        return response()->json($result);
+    }
+
+    public function autoStartDelivery($id_order, $id_user)
+    {
+        $result = false;
+        $other_order = DB::table("orders")->select('id')
+            ->where("id_courier", $id_user)
+            ->whereNot('id', $id_order)
+            ->where('status', 5)
+            ->first();
+
+        if (!$other_order){
+            self::changeOrderCourierStatus($id_order, $id_user, 5);
+            $result = true;
+        }
+
+        return $result;
     }
 
     public function courierInCafe(Request $request)
