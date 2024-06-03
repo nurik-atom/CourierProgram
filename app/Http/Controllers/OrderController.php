@@ -197,10 +197,14 @@ class OrderController extends Controller
                 ->where('id_courier', $id_courier)
                 ->whereNotIn('status', [1,7,9])
                 ->where('id', '!=', $id_order)
+                ->orderBy('id')
                 ->first();
 
             if ($oneMoreOrder){
                 $user_state = $oneMoreOrder->status;
+                if ($oneMoreOrder->status == 4){
+                    self::autoStartDelivery($oneMoreOrder->id, $id_courier);
+                }
             }else{
                 $user_state = 1;
             }
@@ -303,80 +307,117 @@ class OrderController extends Controller
         return $result;
     }
 
-    public function courierInCafe(Request $request)
+//    public function courierInCafe(Request $request)
+//    {
+//        $password = $request->input("password");
+//        $id_order = $request->input("id_order");
+//        $lat = $request->input("lat");
+//        $lon = $request->input("lon");
+//        $result['success'] = false;
+//        do {
+//            $checkedDataResult = $this->checkUserAndOrder($password, $id_order, 3);
+//
+//            if (!$checkedDataResult['success']) {
+//                $result['message'] = $checkedDataResult['message'];
+//                break;
+//            }
+//            $user = $checkedDataResult['user'];
+//            $order = $checkedDataResult['order'];
+//
+//            //$distance_to_cafe = SearchController::getDistance($order->from_geo, $lat . "\n" . $lon);
+//
+//            //if ($distance_to_cafe > 100) {
+//            //    $result['message'] = 'Вы слишком далеко находитесь от кафе';
+//            //     break;
+//            // }
+//
+//            self::changeOrderCourierStatus($order->id, $user->id, 4);
+//            //Curl to allfood kz
+//            $result['allfood'] = PushController::courierInCafe($order, $user);
+//            $result['success'] = true;
+//        } while (false);
+//        return response()->json($result);
+//    }
+
+//    public function startDeliveryOrder(Request $request)
+//    {
+//        $password = $request->input("password");
+//        $id_order = $request->input('id_order');
+//        $lat = $request->input("lat");
+//        $lon = $request->input("lon");
+//        $result['success'] = false;
+//        do {
+//            $checkedDataResult = $this->checkUserAndOrder($password, $id_order, 4);
+//
+//            if (!$checkedDataResult['success']) {
+//                $result['message'] = $checkedDataResult['message'];
+//                break;
+//            }
+//            $user = $checkedDataResult['user'];
+//            $order = $checkedDataResult['order'];
+//
+//            //$distance_to_cafe = SearchController::getDistance($order->from_geo, $lat . "\n" . $lon);
+//
+//
+//
+//            //if ($distance_to_cafe > 100) {
+//            //    $result['message'] = 'Вы слишком далеко находитесь от кафе';
+//            //     break;
+//            // }
+//
+//            $result['seconds'] = $order->needed_sec;
+//
+//            self::changeOrderCourierStatus($order->id, $user->id, 5);
+//            //Curl to allfood kz
+//            $result['allfood'] = PushController::startDeliveryOrder($order, $user, $order->needed_sec);
+//            (new CashOnHandController)->minusSumma($order->id_courier, $order->pay_to_cafe, $order->id);
+//            $result['success'] = true;
+//        } while (false);
+//
+//        return response()->json($result);
+//    }
+
+//    public function courierAtTheClient(Request $request)
+//    {
+//        $password = $request->input("password");
+//        $id_order = $request->input('id_order');
+//        $result['success'] = false;
+//        do {
+//            $checkedDataResult = $this->checkUserAndOrder($password, $id_order, 5);
+//
+//            if (!$checkedDataResult['success']) {
+//                $result['message'] = $checkedDataResult['message'];
+//                break;
+//            }
+//            $user = $checkedDataResult['user'];
+//            $order = $checkedDataResult['order'];
+//
+//            $start_time = DB::table("order_user")
+//                ->where("id_user", $user->id)->where("id_order", $order->id)
+//                ->where("status", 4)
+//                ->pluck("created_at")->first();
+//
+//            $duration_sec = time() - strtotime($start_time);
+//            //Insert Duration Second
+//            DB::table("orders")->where('id', $order->id)
+//                ->update(['duration_sec' => $duration_sec]);
+//
+//            self::changeOrderCourierStatus($order->id, $user->id, 6);
+//
+//            //Curl to allfood kz
+//            $result['allfood'] = PushController::courierAtTheClient($order, $user);
+//            $result['success'] = true;
+//        } while (false);
+//        return response()->json($result);
+//    }
+
+    public function finishDeliveryOrder(Request $request)
     {
         $password = $request->input("password");
         $id_order = $request->input("id_order");
         $lat = $request->input("lat");
         $lon = $request->input("lon");
-        $result['success'] = false;
-        do {
-            $checkedDataResult = $this->checkUserAndOrder($password, $id_order, 3);
 
-            if (!$checkedDataResult['success']) {
-                $result['message'] = $checkedDataResult['message'];
-                break;
-            }
-            $user = $checkedDataResult['user'];
-            $order = $checkedDataResult['order'];
-
-            //$distance_to_cafe = SearchController::getDistance($order->from_geo, $lat . "\n" . $lon);
-
-            //if ($distance_to_cafe > 100) {
-            //    $result['message'] = 'Вы слишком далеко находитесь от кафе';
-            //     break;
-            // }
-
-            self::changeOrderCourierStatus($order->id, $user->id, 4);
-            //Curl to allfood kz
-            $result['allfood'] = PushController::courierInCafe($order, $user);
-            $result['success'] = true;
-        } while (false);
-        return response()->json($result);
-    }
-
-    public function startDeliveryOrder(Request $request)
-    {
-        $password = $request->input("password");
-        $id_order = $request->input('id_order');
-        $lat = $request->input("lat");
-        $lon = $request->input("lon");
-        $result['success'] = false;
-        do {
-            $checkedDataResult = $this->checkUserAndOrder($password, $id_order, 4);
-
-            if (!$checkedDataResult['success']) {
-                $result['message'] = $checkedDataResult['message'];
-                break;
-            }
-            $user = $checkedDataResult['user'];
-            $order = $checkedDataResult['order'];
-
-            //$distance_to_cafe = SearchController::getDistance($order->from_geo, $lat . "\n" . $lon);
-
-
-
-            //if ($distance_to_cafe > 100) {
-            //    $result['message'] = 'Вы слишком далеко находитесь от кафе';
-            //     break;
-            // }
-
-            $result['seconds'] = $order->needed_sec;
-
-            self::changeOrderCourierStatus($order->id, $user->id, 5);
-            //Curl to allfood kz
-            $result['allfood'] = PushController::startDeliveryOrder($order, $user, $order->needed_sec);
-            (new CashOnHandController)->minusSumma($order->id_courier, $order->pay_to_cafe, $order->id);
-            $result['success'] = true;
-        } while (false);
-
-        return response()->json($result);
-    }
-
-    public function courierAtTheClient(Request $request)
-    {
-        $password = $request->input("password");
-        $id_order = $request->input('id_order');
         $result['success'] = false;
         do {
             $checkedDataResult = $this->checkUserAndOrder($password, $id_order, 5);
@@ -388,39 +429,12 @@ class OrderController extends Controller
             $user = $checkedDataResult['user'];
             $order = $checkedDataResult['order'];
 
-            $start_time = DB::table("order_user")
-                ->where("id_user", $user->id)->where("id_order", $order->id)
-                ->where("status", 4)
-                ->pluck("created_at")->first();
+            $distance_to_cafe = SearchController::getDistance($order->to_geo, $lat . "\n" . $lon);
 
-            $duration_sec = time() - strtotime($start_time);
-            //Insert Duration Second
-            DB::table("orders")->where('id', $order->id)
-                ->update(['duration_sec' => $duration_sec]);
-
-            self::changeOrderCourierStatus($order->id, $user->id, 6);
-
-            //Curl to allfood kz
-            $result['allfood'] = PushController::courierAtTheClient($order, $user);
-            $result['success'] = true;
-        } while (false);
-        return response()->json($result);
-    }
-
-    public function finishDeliveryOrder(Request $request)
-    {
-        $password = $request->input("password");
-        $id_order = $request->input("id_order");
-        $result['success'] = false;
-        do {
-            $checkedDataResult = $this->checkUserAndOrder($password, $id_order, 6);
-
-            if (!$checkedDataResult['success']) {
-                $result['message'] = $checkedDataResult['message'];
+            if ($distance_to_cafe > 300) {
+                $result['message'] = 'Вы слишком далеко находитесь от адреса клиента';
                 break;
             }
-            $user = $checkedDataResult['user'];
-            $order = $checkedDataResult['order'];
 
             $description = "Заказ №" . $order->id;
             MoneyController::addAmount($user->id, $order->id, $order->price_delivery, $description, 1);
