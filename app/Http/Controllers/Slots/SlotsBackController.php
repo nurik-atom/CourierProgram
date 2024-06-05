@@ -179,4 +179,9 @@ class SlotsBackController extends Controller
         return $zapis->kef ?? 0.9;
     }
 
+    public static function getKefNowSlot()
+    {
+
+    }
+
 }
