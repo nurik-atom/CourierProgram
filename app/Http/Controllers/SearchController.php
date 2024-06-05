@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Slots\SlotsBackController;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -143,7 +144,7 @@ class SearchController extends Controller
 
         $matrix = PushController::getPointsRoutinAndTime($order->from_geo, $order->to_geo, $user->type);
         if ($order->type == 1){
-            $price_delivery = MoneyController::costDelivery($matrix['distance'], $user->type) * $order->kef;
+            $price_delivery = MoneyController::costDelivery($matrix['distance'], $user->type, $order->kef, SlotsBackController::driverSlotKefForCost($user->id));
         }else{
             $price_delivery = $order->price_delivery;
         }
@@ -248,7 +249,7 @@ class SearchController extends Controller
 
         $matrix = PushController::getPointsRoutinAndTime($order->from_geo, $order->to_geo, $user->type);
         if ($order->type == 1){
-            $price_delivery = MoneyController::costDelivery($matrix['distance'], $user->type) * $order->kef;
+            $price_delivery = MoneyController::costDelivery($matrix['distance'], $user->type, $order->kef, SlotsBackController::driverSlotKefForCost($user->id));
         }else{
             $price_delivery = $order->price_delivery;
         }

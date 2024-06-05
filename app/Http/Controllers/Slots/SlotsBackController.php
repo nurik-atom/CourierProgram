@@ -166,4 +166,17 @@ class SlotsBackController extends Controller
         return response()->json($result);
     }
 
+    public static function driverSlotKefForCost($id_user)
+    {
+        $zapis = DB::table('slots_users')
+            ->leftJoin('slots', 'slots_users.id_slot', '=', 'slots.id')
+            ->select('slots.id','slots.kef')
+            ->where('slots.date_day',  date('Y-m-d'))
+            ->where('slots.hour',  date('H'))
+            ->where('slots_users.id_user', $id_user)
+            ->first();
+
+        return $zapis->kef ?? 0.9;
+    }
+
 }

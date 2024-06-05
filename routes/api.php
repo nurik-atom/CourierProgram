@@ -56,9 +56,9 @@ Route::post("/allfood/getStatusOrder", [AllfoodController::class, 'getStatusOrde
 Route::post('/imReady',[UserController::class,'imReady']);
 Route::post('/takeOrder',[OrderController::class,'takeOrder']);
 Route::post('/poluchilZakaz',[OrderController::class,'poluchilZakaz']);
-Route::post('/courierInCafe',[OrderController::class,'courierInCafe']);
-Route::post('/startDeliveryOrder',[OrderController::class,'startDeliveryOrder']);
-Route::post('/courierAtTheClient',[OrderController::class,'courierAtTheClient']);
+//Route::post('/courierInCafe',[OrderController::class,'courierInCafe']);
+//Route::post('/startDeliveryOrder',[OrderController::class,'startDeliveryOrder']);
+//Route::post('/courierAtTheClient',[OrderController::class,'courierAtTheClient']);
 Route::post('/finishDeliveryOrder',[OrderController::class,'finishDeliveryOrder']);
 Route::post('/refusingOrderReq',[OrderController::class,'refusingOrderReq']);
 Route::post('/cancelOrder',[OrderController::class,'cancelOrder']);

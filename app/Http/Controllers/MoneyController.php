@@ -26,10 +26,10 @@ class MoneyController extends Controller
         return $this->costDelivery($distance, $type);
     }
 
-    public static function costDelivery($distance, $type){
+    public static function costDelivery($distance, $type, $allfood_kef = 1, $slot_kef = 1){
         // Вернем стоимость для Курьера
         // Должен быть минимальные ставки для курьеров разного типа,
-        // Если авто минимум 500, если мото 400, пешком 300
+        // Если авто минимум 600, если мото 450, пешком 300
         // Можем взять Данные чтобы уменьшить запрос а не ID. надо подумать
 
         $summa = 0;
@@ -50,7 +50,7 @@ class MoneyController extends Controller
 //        $res['$metr_500'] = $metr_500;
 //        $res['summa'] = ;
 
-        return ceil($summa);
+        return ceil($summa * $allfood_kef * $slot_kef);
     }
 
     /** TYPE

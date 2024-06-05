@@ -163,6 +163,7 @@ class OrderController extends Controller
                 break;
             }
             $result['user_state'] = $user->state;
+            $result['user_type'] = $user->type;
             $result['user_online'] = $user->state != 0 ? 1 : 0;
 
             $orders = DB::table("orders")
@@ -306,110 +307,6 @@ class OrderController extends Controller
 
         return $result;
     }
-
-//    public function courierInCafe(Request $request)
-//    {
-//        $password = $request->input("password");
-//        $id_order = $request->input("id_order");
-//        $lat = $request->input("lat");
-//        $lon = $request->input("lon");
-//        $result['success'] = false;
-//        do {
-//            $checkedDataResult = $this->checkUserAndOrder($password, $id_order, 3);
-//
-//            if (!$checkedDataResult['success']) {
-//                $result['message'] = $checkedDataResult['message'];
-//                break;
-//            }
-//            $user = $checkedDataResult['user'];
-//            $order = $checkedDataResult['order'];
-//
-//            //$distance_to_cafe = SearchController::getDistance($order->from_geo, $lat . "\n" . $lon);
-//
-//            //if ($distance_to_cafe > 100) {
-//            //    $result['message'] = 'Вы слишком далеко находитесь от кафе';
-//            //     break;
-//            // }
-//
-//            self::changeOrderCourierStatus($order->id, $user->id, 4);
-//            //Curl to allfood kz
-//            $result['allfood'] = PushController::courierInCafe($order, $user);
-//            $result['success'] = true;
-//        } while (false);
-//        return response()->json($result);
-//    }
-
-//    public function startDeliveryOrder(Request $request)
-//    {
-//        $password = $request->input("password");
-//        $id_order = $request->input('id_order');
-//        $lat = $request->input("lat");
-//        $lon = $request->input("lon");
-//        $result['success'] = false;
-//        do {
-//            $checkedDataResult = $this->checkUserAndOrder($password, $id_order, 4);
-//
-//            if (!$checkedDataResult['success']) {
-//                $result['message'] = $checkedDataResult['message'];
-//                break;
-//            }
-//            $user = $checkedDataResult['user'];
-//            $order = $checkedDataResult['order'];
-//
-//            //$distance_to_cafe = SearchController::getDistance($order->from_geo, $lat . "\n" . $lon);
-//
-//
-//
-//            //if ($distance_to_cafe > 100) {
-//            //    $result['message'] = 'Вы слишком далеко находитесь от кафе';
-//            //     break;
-//            // }
-//
-//            $result['seconds'] = $order->needed_sec;
-//
-//            self::changeOrderCourierStatus($order->id, $user->id, 5);
-//            //Curl to allfood kz
-//            $result['allfood'] = PushController::startDeliveryOrder($order, $user, $order->needed_sec);
-//            (new CashOnHandController)->minusSumma($order->id_courier, $order->pay_to_cafe, $order->id);
-//            $result['success'] = true;
-//        } while (false);
-//
-//        return response()->json($result);
-//    }
-
-//    public function courierAtTheClient(Request $request)
-//    {
-//        $password = $request->input("password");
-//        $id_order = $request->input('id_order');
-//        $result['success'] = false;
-//        do {
-//            $checkedDataResult = $this->checkUserAndOrder($password, $id_order, 5);
-//
-//            if (!$checkedDataResult['success']) {
-//                $result['message'] = $checkedDataResult['message'];
-//                break;
-//            }
-//            $user = $checkedDataResult['user'];
-//            $order = $checkedDataResult['order'];
-//
-//            $start_time = DB::table("order_user")
-//                ->where("id_user", $user->id)->where("id_order", $order->id)
-//                ->where("status", 4)
-//                ->pluck("created_at")->first();
-//
-//            $duration_sec = time() - strtotime($start_time);
-//            //Insert Duration Second
-//            DB::table("orders")->where('id', $order->id)
-//                ->update(['duration_sec' => $duration_sec]);
-//
-//            self::changeOrderCourierStatus($order->id, $user->id, 6);
-//
-//            //Curl to allfood kz
-//            $result['allfood'] = PushController::courierAtTheClient($order, $user);
-//            $result['success'] = true;
-//        } while (false);
-//        return response()->json($result);
-//    }
 
     public function finishDeliveryOrder(Request $request)
     {
