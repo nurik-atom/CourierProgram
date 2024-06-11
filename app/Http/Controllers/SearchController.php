@@ -144,7 +144,7 @@ class SearchController extends Controller
 
         $matrix = PushController::getPointsRoutinAndTime($order->from_geo, $order->to_geo, $user->type);
         if ($order->type == 1){
-            $price_delivery = MoneyController::costDelivery($matrix['distance'], $user->type, $order->kef, SlotsBackController::driverSlotKefForCost($user->id));
+            $price_delivery = MoneyController::costDeliveryAll($matrix['distance'], $user->type, $order->kef, SlotsBackController::driverSlotKefForCost($user->id));
         }else{
             $price_delivery = $order->price_delivery;
         }
@@ -249,7 +249,7 @@ class SearchController extends Controller
 
         $matrix = PushController::getPointsRoutinAndTime($order->from_geo, $order->to_geo, $user->type);
         if ($order->type == 1){
-            $price_delivery = MoneyController::costDelivery($matrix['distance'], $user->type, $order->kef, SlotsBackController::driverSlotKefForCost($user->id));
+            $price_delivery = MoneyController::costDeliveryAll($matrix['distance'], $user->type, $order->kef, SlotsBackController::driverSlotKefForCost($user->id));
         }else{
             $price_delivery = $order->price_delivery;
         }

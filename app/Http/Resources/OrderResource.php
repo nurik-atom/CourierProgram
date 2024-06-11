@@ -86,8 +86,7 @@ class OrderResource extends JsonResource
         // Cafe Phone
         // price_delivery tekseru kerek
 
-
-        $date =  Carbon::parse($this->created_at,'Asia/Aqtau');
+//        $date =  Carbon::parse($this->created_at,'Asia/Aqtau');
         return [
             "id" => $this->id,
             "id_city" => $this->id_city,
@@ -119,7 +118,10 @@ class OrderResource extends JsonResource
             "routing_points" => json_decode($this->routing_points,true),
          //   "add_time" => Carbon::createFromFormat('Y-m-d H:i:s', $this->created_at)->timezone("Asia/Almaty")
             "add_time" =>Carbon::createFromFormat('Y-m-d H:i:s',$this->created_at),
-            'seconds' => $this->getSeconds($this)
+            'seconds' => $this->getSeconds($this),
+            "title_text" => $this->title_text,
+            "button_text" => $this->button_text,
+            "button_active" => $this->button_active,
         ];
     }
 }

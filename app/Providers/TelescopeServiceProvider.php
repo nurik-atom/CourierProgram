@@ -21,6 +21,26 @@ class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
         $isLocal = $this->app->environment('local');
 
         Telescope::filter(function (IncomingEntry $entry) use ($isLocal) {
+            // Here you can define your custom logic to ignore specific requests
+            if ($entry->type === 'request') {
+                $ignoredEndpoints = [
+                    'api/szp/getCountActiveOrders',
+                    'api/szp/getAllDrivers',
+                    'api/setUserGeoPosition',
+                ];
+
+                foreach ($ignoredEndpoints as $endpoint) {
+                    if (str_contains($entry->content['uri'], $endpoint)) {
+                        return false;
+                    }
+                }
+            }
+
+            // Default: log everything in local environment
+//            if ($this->app->environment('local')) {
+//                return true;
+//            }
+
             return $isLocal ||
                    $entry->isReportableException() ||
                    $entry->isFailedRequest() ||

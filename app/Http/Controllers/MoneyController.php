@@ -23,10 +23,12 @@ class MoneyController extends Controller
 
         $distance = $request->input("distance");
         $type = $request->input("type");
-        return $this->costDelivery($distance, $type);
+        return $this->costDeliveryAll($distance, $type);
     }
 
-    public static function costDelivery($distance, $type, $allfood_kef = 1, $slot_kef = 1){
+    public static function costDeliveryTekBaza($distance, $type)
+    {
+
         // Вернем стоимость для Курьера
         // Должен быть минимальные ставки для курьеров разного типа,
         // Если авто минимум 600, если мото 450, пешком 300
@@ -46,6 +48,11 @@ class MoneyController extends Controller
         if ($summa < self::MIN_AMOUNT[$type])
             $summa = self::MIN_AMOUNT[$type];
 
+    }
+
+    public static function costDeliveryAll($distance, $type, $allfood_kef = 1, $slot_kef = 1){
+
+        $summa = self::costDeliveryTekBaza($distance, $type);
 //        $res['$count_500'] = $count_500;
 //        $res['$metr_500'] = $metr_500;
 //        $res['summa'] = ;
@@ -59,7 +66,7 @@ class MoneyController extends Controller
      *  3 Доплата за часы
      *  4 Оператор корректировка
     */
-    public static function addAmount($id_user, $id_order, $amount, $description, $type=1){
+    public static function addAmount($id_user, $id_order, $amount, $description, $type){
         $add = DB::table("balance_history")->insert([
             "id_user"=>$id_user,
             "id_order"=>$id_order,
@@ -127,5 +134,44 @@ class MoneyController extends Controller
         }
 
         return $cash_on_hand;
+    }
+
+    public static function oplatitZakasPosleFinish($order, $user)
+    {
+
+//      1 => 'Базовая оплата',
+//      2 => 'Бонус до кафе',
+//      3 => 'Доплата за слот',
+//      4 => 'Оператор корректировка',
+//      5 => 'Кэф слота',
+//      6 => 'Кэф от ALLFOOD',
+
+//TODO bitpedi ali
+        $baza = self::costDeliveryTekBaza($order->distance, $order->type);
+        $description = "Заказ №" . $order->id;
+        MoneyController::addAmount($user->id, $order->id, $baza, $description, 1);
+
+        //! Доплата Дистанция до кафе
+        $summa_to_cafe = self::getSummaToCafe($order->distance_to_cafe);
+
+        if ($summa_to_cafe > 0){
+            MoneyController::addAmount($user->id, $order->id, $summa_to_cafe, 'Расстояние до заведения '.round($order->distance_to_cafe/1000, 2).' км', 2);
+        }
+
+        if ($order->kef != 1){
+            $summa = $baza;
+            $description = 'Кэф от allfood';
+            MoneyController::addAmount($user->id, $order->id, $baza, $description, 5);
+        }
+
+    }
+
+    public static function getSummaToCafe($distance){
+        if ($distance < 2000){
+            $res = 0;
+        }else{
+            $res = (int) (50 * ($distance / 1000));
+        }
+        return $res;
     }
 }

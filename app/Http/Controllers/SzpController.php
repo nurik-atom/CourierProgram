@@ -259,7 +259,7 @@ class SzpController extends Controller
             $matrix = PushController::getPointsRoutinAndTime($order->from_geo, $order->to_geo, $new_driver->type);
 
             if ($order->type == 1) {
-                $price_delivery = MoneyController::costDelivery($matrix['distance'], $new_driver->type, $order->kef, SlotsBackController::driverSlotKefForCost($new_driver->id));
+                $price_delivery = MoneyController::costDeliveryAll($matrix['distance'], $new_driver->type, $order->kef, SlotsBackController::driverSlotKefForCost($new_driver->id));
             }else{
                 $price_delivery = $order->price_delivery;
             }

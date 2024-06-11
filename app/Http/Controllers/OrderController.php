@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use http\Client\Curl\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use function Laravel\Prompts\select;
 
 //use App\Http\Controllers\UserController;
 
@@ -151,6 +152,101 @@ class OrderController extends Controller
 
     }
 
+    public static function getOrderTitleAndButtonState($orders)
+    {
+        $texts = [
+            2 => [
+                'title' => 'Новая доставка из',
+                'button' => 'Принят заказ',
+                'active' => true,
+            ],
+            3 => [
+                'title' => 'Заберите заказ в',
+                'button' => 'Подтвердить получение заказа',
+                'active' => true,
+            ],
+            4 => [
+                'title' => 'Заберите следующий заказ',
+                'button' => 'Заберите следующий заказ',
+                'active' => false,
+            ],
+            5 => [
+                'title' => 'Доставка',
+                'button' => 'Завершить доставку',
+                'active' => true,
+            ],
+            330 => [
+                'title' => 'Заберите заказ в',
+                'button' => 'Подтвердить получение заказа',
+                'active' => true,
+            ],
+            331 => [
+                'title' => 'Заберите предыдущий заказ',
+                'button' => 'Заберите предыдущий заказ',
+                'active' => false,
+            ],
+            430 => [
+                'title' => 'Заберите следующий заказ',
+                'button' => 'Заберите следующий заказ',
+                'active' => false,
+            ],
+            431 => [
+                'title' => 'Заберите заказ в',
+                'button' => 'Подтвердить получение заказа',
+                'active' => true,
+            ],
+            540 => [
+                'title' => 'Доставка',
+                'button' => 'Завершить доставку',
+                'active' => true,
+            ],
+            541 => [
+                'title' => 'Доставьте предыдущий заказ',
+                'button' => 'Доставьте предыдущий заказ',
+                'active' => false,
+            ],
+            530 => [
+                'title' => 'Доставка',
+                'button' => 'Завершить доставку',
+                'active' => true,
+            ],
+            531 => [
+                'title' => 'Доставьте предыдущий заказ',
+                'button' => 'Доставьте предыдущий заказ',
+                'active' => false,
+            ],
+        ];
+
+        $res = array();
+        $kol_order = count($orders);
+
+        if ($kol_order > 1) {
+            $ss0 = (int) $orders[0]->status.$orders[1]->status.'0';
+            $ss1 = (int) $orders[0]->status.$orders[1]->status.'1';
+
+            $orders[0]->title_text = $texts[$ss0]['title'];
+            $orders[0]->button_text = $texts[$ss0]['button'];
+            $orders[0]->button_active = $texts[$ss0]['active'];
+
+            $orders[1]->title_text = $texts[$ss1]['title'];
+            $orders[1]->button_text = $texts[$ss1]['button'];
+            $orders[1]->button_active = $texts[$ss1]['active'];
+
+        }else{
+            $orders[0]->title_text = $texts[$orders[0]->status]['title'];
+            $orders[0]->button_text = $texts[$orders[0]->status]['button'];
+            $orders[0]->button_active = $texts[$orders[0]->status]['active'];
+        }
+
+        return $orders;
+
+    }
+
+    public static function getActiveOrderTabIndex($orders)
+    {
+        return (int) ($orders[0]->status === 4 && $orders[1]->status === 3);
+    }
+
     public function checkOrderUser_2(Request $request){
         $password = $request->input("password");
         $user = UserController::getUser($password);
@@ -173,7 +269,12 @@ class OrderController extends Controller
                 ->get();
             if ($orders){
                 $result['kol_order'] = count($orders);
+                $orders = self::getOrderTitleAndButtonState($orders);
+                $result['active_order_tab_index'] = ($result['kol_order'] > 1)
+                    ? self::getActiveOrderTabIndex($orders)
+                    : 0;
                 $result['orders'] = OrderResource::collection($orders);
+
             }else{
                 $result['kol_order'] = 0;
                 $result['orders'] = array();
@@ -297,8 +398,12 @@ class OrderController extends Controller
         $other_order = DB::table("orders")->select('id')
             ->where("id_courier", $id_user)
             ->whereNot('id', $id_order)
-            ->where('status', 5)
+            ->whereIn('status', [3,4,5])
             ->first();
+
+        if ($other_order->status == 4){
+            self::changeOrderCourierStatus($other_order->id, $id_user, 5);
+        }
 
         if (!$other_order){
             self::changeOrderCourierStatus($id_order, $id_user, 5);
@@ -333,26 +438,20 @@ class OrderController extends Controller
                 break;
             }
 
-            $description = "Заказ №" . $order->id;
-            MoneyController::addAmount($user->id, $order->id, $order->price_delivery, $description, 1);
-
-            //! Доплата Дистанция до кафе
-            $summa_to_cafe = self::getSummaToCafe($order->distance_to_cafe);
-
-            if ($summa_to_cafe > 0){
-                MoneyController::addAmount($user->id, $order->id, $summa_to_cafe, 'Расстояние до заведения '.round($order->distance_to_cafe/1000, 2).' км', 2);
-            }
+            MoneyController::oplatitZakasPosleFinish($order, $user);
 
             (new CashOnHandController)->plusSumma($order->id_courier, $order->summ_order, $order->id);
 
-            $hour = (int) date('H', strtotime($order->created_at));
-            $bonus_morning = 0;
-            if ($hour > 05 && $hour < 13){
-                $bonus_morning = ceil($order->price_delivery * 0.25);
-                MoneyController::addAmount($user->id, $order->id, $bonus_morning, 'Бонус. Заказы до 14:00', 5);
-            }
+//            $hour = (int) date('H', strtotime($order->created_at));
+//            $bonus_morning = 0;
+//            if ($hour > 05 && $hour < 13){
+//                $bonus_morning = ceil($order->price_delivery * 0.25);
+//                MoneyController::addAmount($user->id, $order->id, $bonus_morning, 'Бонус. Заказы до 14:00', 5);
+//            }
 
-            $result['price'] = $order->price_delivery + $summa_to_cafe + $bonus_morning;
+//            $result['price'] = $order->price_delivery + $summa_to_cafe + $bonus_morning;
+
+
             self::changeOrderCourierStatus($order->id, $user->id, 7);
 
             //Curl to allfood kz
@@ -366,15 +465,6 @@ class OrderController extends Controller
 
         return response()->json($result);
 
-    }
-
-    public static function getSummaToCafe($distance){
-        if ($distance < 2000){
-            $res = 0;
-        }else{
-            $res = (int) (50 * ($distance / 1000));
-        }
-        return $res;
     }
 
     public function refusingOrderReq(Request $request)
