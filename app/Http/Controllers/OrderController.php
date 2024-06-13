@@ -395,7 +395,7 @@ class OrderController extends Controller
     public function autoStartDelivery($id_order, $id_user)
     {
         $result = false;
-        $other_order = DB::table("orders")->select('id')
+        $other_order = DB::table("orders")->select('id', 'status')
             ->where("id_courier", $id_user)
             ->whereNot('id', $id_order)
             ->whereIn('status', [3,4,5])
