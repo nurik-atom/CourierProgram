@@ -213,11 +213,6 @@ class PushController extends Controller
         $req['order_id']    = $order->id_allfood;
         $req['order_type']  = $order->type;
         $req['driver_id']   = $driver->id;
-//        $req['driver_name'] = $driver->name;
-//        $req['driver_photo']= $driver->photo;
-//        $req['driver_phone']= $driver->phone;
-//        $req['driver_type'] = $driver->type;
-
         return self::sendReqToAllfood("courierInCafe", $req);
     }
 

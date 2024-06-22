@@ -48,6 +48,8 @@ class MoneyController extends Controller
         if ($summa < self::MIN_AMOUNT[$type])
             $summa = self::MIN_AMOUNT[$type];
 
+        return $summa;
+
     }
 
     public static function costDeliveryAll($distance, $type, $allfood_kef = 1, $slot_kef = 1){
@@ -158,10 +160,16 @@ class MoneyController extends Controller
             MoneyController::addAmount($user->id, $order->id, $summa_to_cafe, 'Расстояние до заведения '.round($order->distance_to_cafe/1000, 2).' км', 2);
         }
 
-        if ($order->kef != 1){
-            $summa = $baza;
+        if ($order->kef > 1){
+            $summa = (int) $baza * $order->kef;
             $description = 'Кэф от allfood';
-            MoneyController::addAmount($user->id, $order->id, $baza, $description, 5);
+            MoneyController::addAmount($user->id, $order->id, $summa, $description, 5);
+        }
+
+        if ($order->kef_slota != 1){
+            $summa = (int) $baza * $order->kef_slota;
+            $description = 'Кэф слота';
+            MoneyController::addAmount($user->id, $order->id, $summa, $description, 6);
         }
 
     }
