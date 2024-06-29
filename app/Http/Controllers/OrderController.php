@@ -267,7 +267,7 @@ class OrderController extends Controller
                 ->whereNotIn('status', [7,9])
                 ->orderBy("id")
                 ->get();
-            if ($orders){
+            if (count($orders) > 0){
                 $result['kol_order'] = count($orders);
                 $orders = self::getOrderTitleAndButtonState($orders);
                 $result['active_order_tab_index'] = ($result['kol_order'] > 1)
@@ -378,8 +378,8 @@ class OrderController extends Controller
 
             if ($distance_to_cafe > 300) {
                 $result['message'] = 'Вы слишком далеко находитесь от кафе';
-                 break;
-             }
+                break;
+            }
 
             if (!self::autoStartDelivery($order->id, $user->id)) {
                 self::changeOrderCourierStatus($order->id, $user->id, 4);
@@ -401,13 +401,13 @@ class OrderController extends Controller
             ->whereIn('status', [3,4,5])
             ->first();
 
-        if ($other_order->status == 4){
-            self::changeOrderCourierStatus($other_order->id, $id_user, 5);
-        }
-
         if (!$other_order){
             self::changeOrderCourierStatus($id_order, $id_user, 5);
             $result = true;
+        }
+
+        if ($other_order && $other_order->status == 4){
+            self::changeOrderCourierStatus($other_order->id, $id_user, 5);
         }
 
         return $result;
@@ -656,10 +656,10 @@ class OrderController extends Controller
 
 
             $order = DB::table("orders")
-                        ->where("id_allfood", $id_order)
-                        ->where('type', $type)
-                        ->select("status", "id_courier")
-                        ->first();
+                ->where("id_allfood", $id_order)
+                ->where('type', $type)
+                ->select("status", "id_courier")
+                ->first();
 
             if (!$order) {
                 $result['message'] = 'Заказ не найден';

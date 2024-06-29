@@ -67,7 +67,7 @@ class MoneyController extends Controller
      *  2 Бонус до кафе
      *  3 Доплата за часы
      *  4 Оператор корректировка
-    */
+     */
     public static function addAmount($id_user, $id_order, $amount, $description, $type){
         $add = DB::table("balance_history")->insert([
             "id_user"=>$id_user,
@@ -109,9 +109,9 @@ class MoneyController extends Controller
         if ($balance){
             DB::table("balance")->where("id_user",$id_user)
                 ->update([
-                "amount"=>$summ,
-                "updated_at"=>Carbon::now()
-            ]);
+                    "amount"=>$summ,
+                    "updated_at"=>Carbon::now()
+                ]);
         }else{
             DB::table("balance")->insert([
                 "id_user"=>$id_user,
