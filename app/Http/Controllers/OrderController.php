@@ -392,7 +392,7 @@ class OrderController extends Controller
         return response()->json($result);
     }
 
-    public function autoStartDelivery($id_order, $id_user)
+    public static function autoStartDelivery($id_order, $id_user)
     {
         $result = false;
         $other_order = DB::table("orders")->select('id', 'status')
