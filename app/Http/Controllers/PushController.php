@@ -266,10 +266,10 @@ class PushController extends Controller
         $post_str = http_build_query($post);
         $result = Http::timeout(15)->asForm()->post($url,$post);
 
-        if ($result->failed()) {
-            // Логирование ошибки или другое действие
-            throw new \Exception('Ошибка запроса: ' . $result->body());
-        }
+//        if ($result->failed()) {
+//            // Логирование ошибки или другое действие
+//            throw new \Exception('Ошибка запроса: ' . $result->body());
+//        }
 //        $ch = curl_init();
 //        curl_setopt($ch, CURLOPT_URL, $url);
 //        curl_setopt($ch, CURLOPT_POST, true);
@@ -279,7 +279,7 @@ class PushController extends Controller
 //        $result = curl_exec($ch);
 //        curl_close($ch);
 
-        return $result->json();
+        return 'ok';
 
     }
 
@@ -287,8 +287,11 @@ class PushController extends Controller
         $data_notif = [
             "notification"=>[
                 "title"=>$title,
-                "body"=>$body
+                "body"=>$body,
+                'sound'=>'default'
             ],
+            "priority"=>"high",
+            "content-available"=>true,
             "data"=>[
                 "type"=>'notification'
             ]
