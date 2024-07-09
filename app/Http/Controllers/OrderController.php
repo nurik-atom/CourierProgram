@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\checkOrderUserRequest;
 use App\Http\Resources\OrderResource;
 use App\Jobs\CalculateRatingUser;
+use App\Jobs\RequestFinishOrderToAllfood;
 use Carbon\Carbon;
 use http\Client\Curl\User;
 use Illuminate\Http\Request;
@@ -440,26 +441,16 @@ class OrderController extends Controller
 
             MoneyController::oplatitZakasPosleFinish($order, $user);
 
-            (new CashOnHandController)->plusSumma($order->id_courier, $order->summ_order, $order->id);
-
-//            $hour = (int) date('H', strtotime($order->created_at));
-//            $bonus_morning = 0;
-//            if ($hour > 05 && $hour < 13){
-//                $bonus_morning = ceil($order->price_delivery * 0.25);
-//                MoneyController::addAmount($user->id, $order->id, $bonus_morning, 'Бонус. Заказы до 14:00', 5);
-//            }
-
-//            $result['price'] = $order->price_delivery + $summa_to_cafe + $bonus_morning;
-
+            if ($order->sposob_oplaty == 1){
+                (new CashOnHandController)->plusSumma($order->id_courier, $order->summ_order, $order->id);
+            }
 
             self::changeOrderCourierStatus($order->id, $user->id, 7);
-
-            //Curl to allfood kz
-            $result['allfood'] = PushController::finishDeliveryOrder($order, $user);
 
             $result['success'] = true;
 
             CalculateRatingUser::dispatch($order->id_courier)->delay(30);
+            RequestFinishOrderToAllfood::dispatch($order, $user)->delay(15);
 
         } while (false);
 

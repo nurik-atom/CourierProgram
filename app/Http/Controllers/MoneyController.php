@@ -157,18 +157,20 @@ class MoneyController extends Controller
         $summa_to_cafe = self::getSummaToCafe($order->distance_to_cafe);
 
         if ($summa_to_cafe > 0){
-            MoneyController::addAmount($user->id, $order->id, $summa_to_cafe, 'Расстояние до заведения '.round($order->distance_to_cafe/1000, 2).' км', 2);
+            MoneyController::addAmount($user->id, $order->id, $summa_to_cafe, 'Расстояние до заведения '.round($order->distance_to_cafe/1000, 2).' км. Заказ №'. $order->id, 2);
         }
 
+        //ALLFOOD тан кэф, погода мкр ға байланысты
         if ($order->kef > 1){
-            $summa = (int) $baza * $order->kef;
-            $description = 'Кэф от allfood';
+            $summa = (int) $baza * ($order->kef - 1);
+            $description = 'Кэф от allfood. Заказ №'. $order->id;
             MoneyController::addAmount($user->id, $order->id, $summa, $description, 5);
         }
 
+        //Slottyn кэфы, уақыт и қаланың погодасы бойынша
         if ($order->kef_slota != 1){
-            $summa = (int) $baza * $order->kef_slota;
-            $description = 'Кэф слота';
+            $summa = (int) $baza * ($order->kef_slota - 1);
+            $description = 'Кэф слота. Заказ №'. $order->id;
             MoneyController::addAmount($user->id, $order->id, $summa, $description, 6);
         }
 
