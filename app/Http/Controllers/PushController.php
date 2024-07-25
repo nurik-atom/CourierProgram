@@ -266,19 +266,6 @@ class PushController extends Controller
         $post_str = http_build_query($post);
         $result = Http::timeout(15)->asForm()->post($url,$post);
 
-//        if ($result->failed()) {
-//            // Логирование ошибки или другое действие
-//            throw new \Exception('Ошибка запроса: ' . $result->body());
-//        }
-//        $ch = curl_init();
-//        curl_setopt($ch, CURLOPT_URL, $url);
-//        curl_setopt($ch, CURLOPT_POST, true);
-//        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-//        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
-//        curl_setopt($ch, CURLOPT_POSTFIELDS, $post_str);
-//        $result = curl_exec($ch);
-//        curl_close($ch);
-
         return 'ok';
 
     }

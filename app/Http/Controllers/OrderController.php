@@ -10,6 +10,7 @@ use Carbon\Carbon;
 use http\Client\Curl\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use function Laravel\Prompts\select;
 
 //use App\Http\Controllers\UserController;
@@ -446,6 +447,17 @@ class OrderController extends Controller
             }
 
             self::changeOrderCourierStatus($order->id, $user->id, 7);
+
+            if ($request->hasFile('photo_check')) {
+                $file = $request->file('photo_check');
+                $filename = time() . '_' . rand(11111,99999).'.'.$file->getClientOriginalExtension();
+                $path = $file->storeAs('photo_checks', $filename, 'public'); // Сохраняем файл в папке 'photo_checks' на диске 'public'
+                $fullUrl = Storage::url($path);
+                $update_photo_check = DB::table("orders")
+                    ->where('id', $order->id)
+                    ->update(['photo_check' => $fullUrl]);
+                $result['photo_check'] = true;
+            }
 
             $result['success'] = true;
 
