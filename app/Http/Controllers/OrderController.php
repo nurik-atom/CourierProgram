@@ -685,4 +685,35 @@ class OrderController extends Controller
         return response()->json($result);
     }
 
+    public function getQROplatyOrder(Request $request)
+    {
+        $id_order = $request['id_order'];
+
+        $result['success'] = false;
+        do {
+
+
+            $order = DB::table("orders")
+                ->where("id", $id_order)
+                ->select("status", "id_courier")
+                ->first();
+
+            if (!$order) {
+                $result['message'] = 'Заказ не найден';
+                break;
+            }
+
+            $qr = array(
+                'name'=>'ALLFOOD',
+                'bank'=>'Kaspi',
+                'qr' => 'https://allfood.kz/upload/file_1723635093_346245619.jpg'
+            );
+
+            $result['oplaty'] = $qr;
+
+            $result['success'] = true;
+
+        } while (false);
+        return response()->json($result);
+    }
 }
