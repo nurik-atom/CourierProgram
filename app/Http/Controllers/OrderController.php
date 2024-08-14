@@ -703,10 +703,16 @@ class OrderController extends Controller
                 break;
             }
 
-            $qr = array(
+            $qr = array(array(
                 'name'=>'ALLFOOD',
                 'bank'=>'Kaspi',
                 'qr' => 'https://allfood.kz/upload/file_1723635093_346245619.jpg'
+            ),array(
+                'name'=>'ALLFOOD',
+                'bank'=>'Halyk Bank',
+                'qr' => 'https://allfood.kz/upload/file_1723635093_346245619.jpg'
+            )
+
             );
 
             $result['oplaty'] = $qr;
