@@ -693,9 +693,9 @@ class OrderController extends Controller
         do {
 
 
-            $order = DB::table("orders")
-                ->where("id", $id_order)
-                ->select("status", "id_courier")
+            $order = DB::table('orders')
+                ->where('id', $id_order)
+                ->select('status', 'id_courier','type', 'id_cafe')
                 ->first();
 
             if (!$order) {
@@ -703,17 +703,24 @@ class OrderController extends Controller
                 break;
             }
 
-            $qr = array(array(
-                'name'=>'ALLFOOD',
-                'bank'=>'Kaspi',
-                'qr' => 'https://allfood.kz/upload/file_1723635093_346245619.jpg'
-            ),array(
-                'name'=>'ALLFOOD',
-                'bank'=>'Halyk Bank',
-                'qr' => 'https://allfood.kz/upload/file_1723635093_346245619.jpg'
-            )
+            if ($order->type == 1){
+                $qr = array(
+                    array(
+                        'name'=>'ALLFOOD',
+                        'bank'=>'Kaspi',
+                        'qr' => 'https://allfood.kz/upload/file_1723635093_346245619.jpg'
+                    ),array(
+                        'name'=>'ALLFOOD',
+                        'bank'=>'Halyk Bank',
+                        'qr' => 'https://allfood.kz/upload/file_1723635093_346245619.jpg'
+                    )
 
-            );
+                );
+            }else{
+                $qr = PushController::sendReqToAllfoodGetResult('getQROplatyCafe', $order->id_cafe);
+            }
+
+
 
             $result['oplaty'] = $qr;
 
