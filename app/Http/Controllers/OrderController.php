@@ -717,7 +717,7 @@ class OrderController extends Controller
 
                 );
             }else{
-                $qr = PushController::sendReqToAllfoodGetResult('getQROplatyCafe', $order->id_cafe);
+                $qr = PushController::sendReqToAllfoodGetResult('getQROplatyCafe', array('id_cafe' => $order->id_cafe));
             }
 
 
