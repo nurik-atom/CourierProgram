@@ -262,6 +262,7 @@ class PushController extends Controller
 
     public static function sendReqToAllfood($url, $post){
         $url = "https://allfood.kz/need_courier/".$url;
+        $post = array();
         $post['key'] = md5("ALL".date("Ymd")."FOOD");
         $post_str = http_build_query($post);
         $result = Http::timeout(15)->asForm()->post($url,$post);
@@ -272,6 +273,7 @@ class PushController extends Controller
 
     public static function sendReqToAllfoodGetResult($url, $post){
         $url = "https://allfood.kz/need_courier/".$url;
+        $post = array();
         $post['key'] = md5("ALL".date("Ymd")."FOOD");
         $post_str = http_build_query($post);
         $result = Http::timeout(15)->asForm()->post($url,$post)->json();
