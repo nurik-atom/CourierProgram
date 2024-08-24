@@ -6,6 +6,7 @@ use App\Http\Requests\checkOrderUserRequest;
 use App\Http\Resources\OrderResource;
 use App\Jobs\CalculateRatingUser;
 use App\Jobs\RequestFinishOrderToAllfood;
+use App\Jobs\RequestTakedOrderToAllfood;
 use Carbon\Carbon;
 use http\Client\Curl\User;
 use Illuminate\Http\Request;
@@ -351,7 +352,9 @@ class OrderController extends Controller
             self::changeOrderCourierStatus($order->id, $user->id, 3);
 
             //Curl to allfood kz
-            $result['allfood'] = PushController::takedOrderAllfood($order, $user, "5");
+            RequestTakedOrderToAllfood::dispatch($order, $user, 5)->delay(15);
+
+//            $result['allfood'] = PushController::takedOrderAllfood($order, $user, "5");
             $result['success'] = true;
 
         } while (false);
