@@ -6,6 +6,8 @@ use App\Http\Requests\checkOrderUserRequest;
 use App\Http\Resources\OrderResource;
 use App\Jobs\CalculateRatingUser;
 use App\Jobs\RequestFinishOrderToAllfood;
+use App\Jobs\RequestPoluchilOrderToAllfood;
+use App\Jobs\RequestStartDeliveryOrderToAllfood;
 use App\Jobs\RequestTakedOrderToAllfood;
 use Carbon\Carbon;
 use http\Client\Curl\User;
@@ -388,10 +390,15 @@ class OrderController extends Controller
 
             if (!self::autoStartDelivery($order->id, $user->id)) {
                 self::changeOrderCourierStatus($order->id, $user->id, 4);
+                RequestPoluchilOrderToAllfood::dispatch($order, $user)->delay(15);
+
+            }else{
+                RequestStartDeliveryOrderToAllfood::dispatch($order, $user,15)->delay(15);
             }
 
+
             //Curl to allfood kz
-            $result['allfood'] = PushController::courierInCafe($order, $user);
+//            $result['allfood'] = PushController::courierInCafe($order, $user);
             $result['success'] = true;
         } while (false);
         return response()->json($result);
