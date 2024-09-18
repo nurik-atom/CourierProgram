@@ -216,10 +216,10 @@ class PushController extends Controller
         return self::sendReqToAllfood("courierInCafe", $req);
     }
 
-    public static function startDeliveryOrder($order, $driver, $time){
+    public static function startDeliveryOrder($order, $time){
         $req['order_id']    = $order->id_allfood;
         $req['order_type']  = $order->type;
-        $req['driver_id']   = $driver->id;
+        $req['driver_id']   = $order->id_courier;
         $req['time']        = $time;
 
         return self::sendReqToAllfood("start_delivery", $req);

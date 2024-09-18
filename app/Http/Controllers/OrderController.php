@@ -300,7 +300,7 @@ class OrderController extends Controller
 
         if ($status == 7){
             $oneMoreOrder = DB::table('orders')
-                ->select('status', 'id')
+                ->select('status', 'id', 'id_allfood', 'type', 'id_courier')
                 ->where('id_courier', $id_courier)
                 ->whereNotIn('status', [1,7,9])
                 ->where('id', '!=', $id_order)
@@ -311,6 +311,9 @@ class OrderController extends Controller
                 $user_state = $oneMoreOrder->status;
                 if ($oneMoreOrder->status == 4){
                     self::autoStartDelivery($oneMoreOrder->id, $id_courier);
+
+                    RequestStartDeliveryOrderToAllfood::dispatch($oneMoreOrder,15)->delay(15);
+
                 }
             }else{
                 $user_state = 1;
@@ -393,7 +396,7 @@ class OrderController extends Controller
                 RequestPoluchilOrderToAllfood::dispatch($order, $user)->delay(15);
 
             }else{
-                RequestStartDeliveryOrderToAllfood::dispatch($order, $user,15)->delay(15);
+                RequestStartDeliveryOrderToAllfood::dispatch($order,15)->delay(15);
             }
 
 
